@@ -1,0 +1,766 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>OLAP and Data Mining Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Familjen+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F4F4F9; --surface:#FFFFFF; --surface2:#EAE9F2; --ink:#221F3B; --muted:#5B5776; --line:#D6D4E3;
+  --hero:#2E2A4F; --on-hero:#F2F1FA; --on-hero-muted:#BDB8DA;
+  --violet:#6445A0; --lime:#7BC200; --lime-ink:#3D6900; --lime-soft:#E4F3C8;
+  --warn:#B93C0B; --warn-soft:#FBE3D6; --ok:#2B7A2F; --ok-soft:#DDF0DC;
+  --f-display:"Familjen Grotesk","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#15132A; --surface:#1F1C37; --surface2:#2A2646; --ink:#ECEAF7; --muted:#ABA6C8; --line:#3A3659;
+    --hero:#26224A; --on-hero:#F2F1FA; --on-hero-muted:#B8B3D8;
+    --violet:#B9A0F2; --lime:#9BDB2E; --lime-ink:#B6EC5A; --lime-soft:#2D3B15;
+    --warn:#FF976B; --warn-soft:#42251A; --ok:#8FDB8F; --ok-soft:#1F3A22;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#15132A; --surface:#1F1C37; --surface2:#2A2646; --ink:#ECEAF7; --muted:#ABA6C8; --line:#3A3659;
+  --hero:#26224A; --on-hero:#F2F1FA; --on-hero-muted:#B8B3D8;
+  --violet:#B9A0F2; --lime:#9BDB2E; --lime-ink:#B6EC5A; --lime-soft:#2D3B15;
+  --warn:#FF976B; --warn-soft:#42251A; --ok:#8FDB8F; --ok-soft:#1F3A22;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h2{font-size:clamp(1.6rem,3.2vw,2.2rem);letter-spacing:-.01em}
+h3{font-size:1.2rem}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-size:.9em}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--violet)}
+
+/* level visibility */
+.lv{display:none}
+body[data-level="support"] .lv.support, body[data-level="stretch"] .lv.stretch{display:block}
+.ko-in{display:none;color:var(--violet);font-weight:400}
+body[data-level="support"] .ko-in{display:inline}
+.tier{display:inline-block;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1.5px solid currentColor;margin-bottom:6px}
+.box-support{background:var(--surface2);border-left:4px solid var(--violet);padding:12px 14px;border-radius:0 8px 8px 0}
+.box-stretch{background:var(--surface2);border:1.5px dashed var(--lime-ink);padding:12px 14px;border-radius:8px}
+.box-support .tier{color:var(--violet)} .box-stretch .tier{color:var(--lime-ink)}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1 1 320px;min-width:0}
+.nav a{white-space:nowrap;color:var(--muted);text-decoration:none;font-size:.9rem;padding:6px 10px;border-radius:6px}
+.nav a:hover{background:var(--surface2);color:var(--ink)}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;flex-shrink:0}
+.seg button{background:transparent;border:0;padding:6px 12px;font-size:.88rem;color:var(--muted)}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--hero);color:var(--on-hero);font-weight:700}
+.lvl-wrap{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted)}
+
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+section{padding-block:56px 8px;scroll-margin-top:70px}
+.sec-head{display:grid;gap:10px;margin-bottom:24px;max-width:66ch}
+.sec-head p{color:var(--muted)}
+
+/* hero */
+.hero{background:var(--hero);color:var(--on-hero);border-radius:0 0 20px 20px;margin-inline:-16px;padding:40px 16px 36px}
+.hero-in{max-width:1080px;margin:0 auto;display:grid;gap:22px}
+.hero .eyebrow{color:var(--lime)}
+.hero h1{font-size:clamp(2rem,5vw,3.3rem);letter-spacing:-.02em;max-width:18ch}
+.hero .lede{color:var(--on-hero-muted);max-width:60ch;font-size:1.05rem}
+.pipe{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:stretch}
+.stage{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:14px;display:grid;gap:6px;align-content:start}
+.stage b{font-family:var(--f-display);font-size:1.15rem}
+.stage .tag{font-family:var(--f-mono);font-size:.72rem;color:var(--lime);letter-spacing:.05em;text-transform:uppercase}
+.stage .ex{font-size:.88rem;color:var(--on-hero-muted)}
+.stage .rows{font-family:var(--f-mono);font-size:.74rem;color:var(--on-hero-muted);line-height:1.5}
+.arrow{align-self:center;color:var(--lime);font-size:1.4rem}
+.engines{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.engine{border-radius:12px;padding:16px;display:grid;gap:6px;background:var(--on-hero);color:#221F3B}
+.engine .kind{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:#6445A0}
+.engine h3{font-size:1.35rem}
+.engine p{font-size:.95rem;color:#48445F}
+@media (max-width:760px){
+  .pipe{grid-template-columns:1fr}
+  .arrow{transform:rotate(90deg);justify-self:center}
+  .engines{grid-template-columns:1fr}
+}
+
+/* terms */
+.terms{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.term{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.term b{font-family:var(--f-display);font-size:1.05rem}
+.term span{font-size:.92rem;color:var(--muted)}
+@media (max-width:640px){.terms{grid-template-columns:1fr}}
+
+/* cube tools */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.tools{display:grid;gap:16px}
+.lab{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.presets{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.preset{background:var(--surface2);border:1.5px solid transparent;border-radius:99px;padding:6px 12px;font-size:.9rem;text-align:left}
+.preset:hover{border-color:var(--violet)}
+.filters{display:grid;grid-template-columns:repeat(4,auto);gap:14px 22px;justify-content:start}
+.dim{display:grid;gap:6px;align-content:start}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 10px;font-size:.9rem}
+.chip[aria-pressed="true"]{background:var(--lime-soft);border-color:var(--lime-ink);font-weight:700}
+.chip[aria-pressed="true"]::before{content:"✓ ";color:var(--lime-ink)}
+.chip.all{color:var(--muted);border-style:dashed}
+.chip:disabled{opacity:.4;cursor:not-allowed}
+.dim-note{font-size:.8rem;color:var(--muted)}
+@media (max-width:860px){.filters{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.filters{grid-template-columns:1fr}}
+
+.cube-out{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:16px;align-items:start}
+@media (max-width:860px){.cube-out{grid-template-columns:1fr}}
+.layers{display:flex;flex-wrap:wrap;gap:12px}
+.layer{flex:1 1 200px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.layer h4{margin:0 0 8px;font-family:var(--f-display);font-size:1rem;display:flex;justify-content:space-between;align-items:baseline}
+.layer h4 small{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);font-weight:400}
+.cgrid{display:grid;grid-template-columns:auto repeat(3,1fr);gap:4px;align-items:center}
+.cgrid .hd{font-size:.72rem;color:var(--violet);text-align:center;font-weight:700}
+.cgrid .rl{font-size:.75rem;color:var(--violet);font-weight:700;padding-right:4px}
+.cell{border:1.5px solid transparent;background:var(--surface2);border-radius:6px;padding:8px 2px;font-family:var(--f-mono);font-size:.8rem;font-variant-numeric:tabular-nums;text-align:center;color:var(--muted);position:relative}
+.cell.on{background:var(--lime-soft);border-color:var(--lime-ink);color:var(--ink);font-weight:600}
+.cell.on::after{content:"";position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--lime-ink)}
+.cell.off{opacity:.42}
+.cell:hover{border-color:var(--violet)}
+.axis-note{font-size:.8rem;color:var(--muted);margin-top:8px}
+
+.result{display:grid;gap:12px}
+.op{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.op-badge{font-family:var(--f-display);font-size:1.5rem;font-weight:700;color:var(--lime-ink)}
+.query{font-family:var(--f-mono);font-size:.82rem;background:var(--surface2);padding:8px 10px;border-radius:8px;overflow-wrap:anywhere}
+.why{font-size:.95rem}
+.stats{display:flex;gap:18px;font-variant-numeric:tabular-nums}
+.stats div{display:grid}
+.stats b{font-family:var(--f-display);font-size:1.4rem}
+.stats span{font-size:.78rem;color:var(--muted)}
+.bars{display:grid;gap:6px}
+.bar{display:grid;grid-template-columns:minmax(0,1.3fr) 2fr auto;gap:8px;align-items:center;font-size:.82rem}
+.bar .bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.bar .track{height:14px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar .fill{height:100%;background:var(--lime)}
+.bar .bv{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.bar.top .bl{color:var(--ink);font-weight:700}
+.empty{color:var(--warn);background:var(--warn-soft);padding:10px;border-radius:8px}
+
+.drill{margin-top:16px}
+.drill-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline;margin-bottom:10px}
+.btn{background:var(--hero);color:var(--on-hero);border:0;border-radius:8px;padding:8px 14px;font-size:.9rem;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.chart-box{overflow-x:auto}
+.chart-box svg{width:100%;min-width:520px;height:auto;display:block}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:6px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+
+/* svg tokens */
+svg text{font-family:var(--f-body)}
+.f-ink{fill:var(--ink)} .f-muted{fill:var(--muted)} .f-a{fill:var(--violet)} .f-b{fill:var(--lime-ink)} .f-lime{fill:var(--lime)} .f-warn{fill:var(--warn)}
+.f-soft{fill:var(--lime-soft)} .f-s2{fill:var(--surface2)} .f-surface{fill:var(--surface)} .f-none{fill:none}
+.s-ink{stroke:var(--ink)} .s-line{stroke:var(--line)} .s-muted{stroke:var(--muted)} .s-warn{stroke:var(--warn)} .s-a{stroke:var(--violet)} .s-b{stroke:var(--lime-ink)}
+.t{fill:var(--muted);font-size:11px} .tb{fill:var(--ink);font-size:12px;font-weight:700}
+
+/* techniques */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.tab{background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:8px 14px;font-weight:700;font-family:var(--f-display);font-size:1rem}
+.tab[aria-selected="true"]{background:var(--hero);color:var(--on-hero);border-color:var(--hero)}
+.tech{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;align-items:start}
+@media (max-width:820px){.tech{grid-template-columns:1fr}}
+.fig{background:var(--surface2);border-radius:12px;padding:10px}
+.fig svg{width:100%;height:auto;display:block}
+.fig figcaption{font-size:.85rem;color:var(--muted);padding:6px 4px 0}
+.tech-body{display:grid;gap:14px}
+.tech-body h3{font-size:1.7rem}
+.badge{display:inline-block;font-family:var(--f-mono);font-size:.76rem;background:var(--lime-soft);color:var(--ink);padding:3px 9px;border-radius:6px}
+.ask{font-family:var(--f-display);font-size:1.2rem;color:var(--violet)}
+.steps{margin:0;padding-left:1.3em;display:grid;gap:4px}
+.exlist{display:flex;flex-wrap:wrap;gap:6px}
+.exlist span{border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:.9rem;background:var(--surface)}
+.phrase{border-left:4px solid var(--lime);padding:6px 12px;background:var(--surface)}
+.phrase small{display:block;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.trap{display:flex;gap:10px;align-items:flex-start;font-size:.95rem}
+.trap b{color:var(--warn);white-space:nowrap}
+
+.calc{display:grid;gap:10px}
+.calc-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.calc select{font:inherit;padding:4px 8px;border-radius:6px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+.baskets{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+@media (max-width:520px){.baskets{grid-template-columns:repeat(2,1fr)}}
+.bk{border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-size:.8rem;background:var(--surface)}
+.bk.hasA{border-color:var(--violet)}
+.bk.both{border-color:var(--lime-ink);background:var(--lime-soft);font-weight:700}
+.bk em{font-style:normal;font-family:var(--f-mono);font-size:.7rem;color:var(--muted);display:block}
+.calc-out{font-variant-numeric:tabular-nums}
+
+/* compare */
+.tbl-box{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;font-size:.95rem}
+thead th{font-family:var(--f-display);font-size:1.05rem;background:var(--surface2)}
+tbody th{font-weight:700;color:var(--muted);font-size:.85rem;width:22%}
+tr:last-child td,tr:last-child th{border-bottom:0}
+
+.finder{margin-top:24px;display:grid;gap:12px}
+.trail{font-size:.85rem;color:var(--muted)}
+.fq{font-family:var(--f-display);font-size:1.3rem}
+.fopts{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.fopt{text-align:left;background:var(--surface2);border:1.5px solid transparent;border-radius:10px;padding:12px 14px}
+.fopt:hover{border-color:var(--violet)}
+.fres{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.fres b{font-family:var(--f-display);font-size:1.6rem;color:var(--lime-ink)}
+
+/* practice */
+.pset{display:grid;gap:12px;margin-bottom:26px}
+.pset-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+.score{font-family:var(--f-mono);font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:10px}
+.q-text{font-size:1rem}
+.q-text .n{font-family:var(--f-mono);color:var(--muted);margin-right:6px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{background:var(--surface2);border:1.5px solid transparent;border-radius:8px;padding:5px 11px;font-size:.88rem}
+.opt:hover{border-color:var(--violet)}
+.opt.right{background:var(--ok-soft);border-color:var(--ok);font-weight:700}
+.opt.right::before{content:"✓ "}
+.opt.wrong{background:var(--warn-soft);border-color:var(--warn);text-decoration:line-through}
+.fb{font-size:.92rem;padding:8px 10px;border-radius:8px}
+.fb.good{background:var(--ok-soft)} .fb.bad{background:var(--warn-soft)}
+.hint{font-size:.88rem;color:var(--violet)}
+
+/* ethics */
+.eth{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:760px){.eth{grid-template-columns:1fr}}
+.eth .panel{display:grid;gap:6px;align-content:start}
+.eth .panel p{font-size:.95rem;color:var(--muted)}
+.eth .panel .ex{color:var(--ink)}
+
+.gl td:nth-child(2){color:var(--violet);white-space:nowrap}
+.foot{margin-top:40px;font-size:.82rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}.fill{transition:width .35s ease}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <nav class="nav" aria-label="Sections">
+      <a href="#big">Big picture</a><a href="#cube">OLAP cube</a><a href="#mining">Data mining</a><a href="#compare">Tell them apart</a><a href="#practice">Practice</a><a href="#ethics">Ethics</a><a href="#words">Key words</a>
+    </nav>
+    <div class="lvl-wrap"><span>Level</span>
+      <div class="seg" id="levelSeg" role="group" aria-label="Choose level">
+        <button type="button" data-level="support" aria-pressed="false">Support</button>
+        <button type="button" data-level="core" aria-pressed="true">Core</button>
+        <button type="button" data-level="stretch" aria-pressed="false">Stretch</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section id="big" class="hero" style="padding-top:40px">
+  <div class="hero-in">
+    <span class="eyebrow">IB Computer Science · A3.4.3</span>
+    <h1>From raw data to business decisions</h1>
+    <p class="lede">Business intelligence (BI) turns millions of rows into actions a manager can take. It uses two tools: OLAP and data mining.</p>
+    <div class="pipe" aria-label="Data becomes information, then knowledge">
+      <div class="stage"><span class="tag">1 · Data</span><b>Raw rows</b>
+        <div class="rows">Credit, Busan, 14 Feb, ₩21.4M<br>Credit, Busan, 15 Feb, ₩19.8M<br>Credit, Busan, 16 Feb, ₩9.6M<br>… millions more</div></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="stage"><span class="tag">2 · Information · the what</span><b>A clear fact</b>
+        <p class="ex">Busan credit card spending fell to ₩470M in February, its lowest month.</p></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="stage"><span class="tag">3 · Knowledge · why + what next</span><b>A decision</b>
+        <p class="ex">The dip is the short month plus Seollal, not lost customers. No action needed.</p></div>
+    </div>
+    <div class="engines">
+      <div class="engine"><span class="kind">Engine 1 · you ask</span><h3>OLAP is a flashlight</h3>
+        <p>You already have a question. OLAP lights up the answer fast: totals, summaries, "what happened?"</p></div>
+      <div class="engine"><span class="kind">Engine 2 · it finds</span><h3>Data mining is a metal detector</h3>
+        <p>You sweep the data. It beeps at patterns you did not know were there: groups, rules, predictions, odd cases.</p></div>
+    </div>
+    <div class="lv support box-support" style="background:rgba(255,255,255,.08);color:var(--on-hero)"><span class="tier" style="color:var(--lime)">Support</span>
+      <p>OLAP = 온라인 분석 처리 (look at data you have). Data mining = 데이터 마이닝 (find hidden patterns).</p></div>
+  </div>
+</section>
+
+<section id="cube">
+  <div class="sec-head">
+    <span class="eyebrow">Part 1 · OLAP</span>
+    <h2>Explore a bank's data cube</h2>
+    <p>A bank stores 27 numbers: 3 account types × 3 branches × 3 months. Pick values below and watch which cells come back. The page names the OLAP operation you just did.</p>
+  </div>
+  <div class="terms">
+    <div class="term"><b>Dimension <span class="ko-in">차원</span></b><span>An axis you group by: Account type, Branch, Month.</span></div>
+    <div class="term"><b>Cell <span class="ko-in">셀</span></b><span>One meeting point of all dimensions, e.g. (Credit, Busan, Mar).</span></div>
+    <div class="term"><b>Measure <span class="ko-in">측정값</span></b><span>The number in the cell, e.g. ₩540M.</span></div>
+  </div>
+
+  <div class="panel tools">
+    <div class="presets" id="presets"><span class="lab">Try a question</span></div>
+    <div class="filters">
+      <div class="dim"><span class="lab">Account type</span><div class="chips" id="chips-acc"></div></div>
+      <div class="dim"><span class="lab">Branch</span><div class="chips" id="chips-br"></div></div>
+      <div class="dim"><span class="lab">Month</span><div class="chips" id="chips-mo"></div><span class="dim-note" id="moNote" hidden>Months are rolled up into Q1.</span></div>
+      <div class="dim"><span class="lab">Time level</span>
+        <div class="seg" id="timeSeg" role="group" aria-label="Time level">
+          <button type="button" data-t="month" aria-pressed="true">◀ Months</button>
+          <button type="button" data-t="quarter" aria-pressed="false">Quarter ▶</button>
+        </div>
+        <span class="dim-note">▶ roll-up · ◀ drill-down</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cube-out">
+    <div>
+      <div class="layers" id="layers"></div>
+      <p class="axis-note">Each box is one layer of the cube. Rows = branch, columns = account type. Tap a cell to drill down to its daily figures.</p>
+    </div>
+    <aside class="panel result" id="result" aria-live="polite"></aside>
+  </div>
+  <div class="panel drill" id="drill" hidden></div>
+
+  <div class="lv stretch box-stretch" style="margin-top:16px"><span class="tier">Stretch</span>
+    <p>Why is OLAP fast? The cube stores pre-calculated totals (aggregates) for each level of the hierarchy (Day → Month → Quarter → Year). A query reads a few stored cells instead of adding up millions of raw transaction rows every time.</p>
+  </div>
+</section>
+
+<section id="mining">
+  <div class="sec-head">
+    <span class="eyebrow">Part 2 · Data mining</span>
+    <h2>Six techniques you must know</h2>
+    <p>Data mining searches large data sets for patterns nobody asked about. Each technique gives a different kind of answer. Pick one to see how it works.</p>
+  </div>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="panel" id="techPanel" role="tabpanel"></div>
+</section>
+
+<section id="compare">
+  <div class="sec-head">
+    <span class="eyebrow">Part 3 · Tell them apart</span>
+    <h2>OLAP or data mining? Which technique?</h2>
+  </div>
+  <div class="tbl-box">
+    <table>
+      <thead><tr><th></th><th>OLAP</th><th>Data mining</th></tr></thead>
+      <tbody>
+        <tr><th>Question it answers</th><td>What happened? (descriptive)</td><td>Why? What next? What is hidden? (predictive, discovery)</td></tr>
+        <tr><th>Who leads</th><td>The user picks dimensions and filters</td><td>An algorithm searches for patterns</td></tr>
+        <tr><th>Need a question first?</th><td>Yes. You must know what to ask.</td><td>No. It finds patterns you did not ask about.</td></tr>
+        <tr><th>Output</th><td>Totals, summaries, reports, dashboards</td><td>Rules, groups, predictions, flagged items</td></tr>
+        <tr><th>Key words</th><td>Slice, dice, roll-up, drill-down</td><td>Classification, clustering, regression, association, sequential, anomaly</td></tr>
+        <tr><th>Bank example</th><td>Total credit spending by branch in March</td><td>Flag a card payment that looks like fraud</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel finder" id="finder"></div>
+</section>
+
+<section id="practice">
+  <div class="sec-head">
+    <span class="eyebrow">Part 4 · Practice</span>
+    <h2>Name it</h2>
+    <p>Read each scenario and pick the answer. Your first click counts for the score.</p>
+  </div>
+  <div class="pset" id="set-olap"></div>
+  <div class="pset" id="set-core"></div>
+  <div class="lv stretch"><div class="pset" id="set-stretch"></div></div>
+</section>
+
+<section id="ethics">
+  <div class="sec-head">
+    <span class="eyebrow">Part 5 · Ethics · links to A4.4.1 and TOK</span>
+    <h2>Powerful data, real people</h2>
+  </div>
+  <div class="eth">
+    <div class="panel"><h3>Privacy <span class="ko-in">개인정보</span></h3>
+      <p>Card data shows where you go and what you buy.</p>
+      <p class="ex">Anonymise data, get consent, keep it secure, and only collect what you need.</p></div>
+    <div class="panel"><h3>Bias <span class="ko-in">편향</span></h3>
+      <p>A model learns from past decisions, including unfair ones.</p>
+      <p class="ex">A loan classifier trained on old approvals could keep refusing people from one district or age group.</p></div>
+    <div class="panel"><h3>Transparency <span class="ko-in">투명성</span></h3>
+      <p>People affected by a decision deserve a reason.</p>
+      <p class="ex">If a model declines a loan, the bank should explain why, and a named person should be accountable.</p></div>
+  </div>
+</section>
+
+<section id="words">
+  <div class="sec-head">
+    <span class="eyebrow">Key words · 핵심 용어</span>
+    <h2>Glossary</h2>
+  </div>
+  <div class="tbl-box gl">
+    <table>
+      <thead><tr><th>Term</th><th>한국어</th><th>Meaning</th></tr></thead>
+      <tbody id="glossary"></tbody>
+    </table>
+  </div>
+  <p class="foot">All bank and shop figures on this page are invented sample data for teaching.</p>
+</section>
+</main>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- level ---------- */
+function setLevel(l){
+  document.body.dataset.level=l;
+  document.querySelectorAll('#levelSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.level===l));
+  try{localStorage.setItem('a343-level',l)}catch(e){}
+}
+let saved='core';try{saved=localStorage.getItem('a343-level')||'core'}catch(e){}
+setLevel(saved);
+$('#levelSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setLevel(b.dataset.level)});
+
+/* ---------- cube data ---------- */
+const ACC=['Savings','Checking','Credit'],BR=['Seoul','Busan','Jeju'],MO=['Jan','Feb','Mar'];
+const V={Savings:{Seoul:[610,640,655],Busan:[380,395,402],Jeju:[150,148,162]},
+         Checking:{Seoul:[450,420,470],Busan:[300,285,310],Jeju:[120,115,130]},
+         Credit:{Seoul:[820,860,910],Busan:[505,470,540],Jeju:[210,190,230]}};
+const won=v=>'₩'+(Math.round(v*10)/10).toLocaleString('en-US')+'M';
+const S={acc:new Set(ACC),br:new Set(BR),mo:new Set(MO),q:false,drill:null};
+
+function chipRow(id,list,set,key){
+  const el=$(id);el.innerHTML='';
+  const dis=key==='mo'&&S.q;
+  list.forEach(v=>{
+    const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=v;
+    b.setAttribute('aria-pressed',set.has(v));b.disabled=dis;
+    b.onclick=()=>{set.has(v)?set.delete(v):set.add(v);render()};el.appendChild(b);
+  });
+  const a=document.createElement('button');a.type='button';a.className='chip all';a.textContent='All';a.disabled=dis;
+  a.onclick=()=>{list.forEach(v=>set.add(v));render()};el.appendChild(a);
+}
+
+const PRESETS=[
+  {t:'Which branch had the most credit spending in March?',s:{acc:['Credit'],br:BR,mo:['Mar'],q:false}},
+  {t:'Everything in March',s:{acc:ACC,br:BR,mo:['Mar'],q:false}},
+  {t:'Review the Jeju branch',s:{acc:ACC,br:['Jeju'],mo:MO,q:false}},
+  {t:'Total savings for Q1, all branches',s:{acc:['Savings'],br:BR,mo:MO,q:true}},
+  {t:'Why was Busan credit low in Feb?',s:{acc:['Credit'],br:['Busan'],mo:MO,q:false},drill:['Credit','Busan',1]},
+  {t:'Reset',s:{acc:ACC,br:BR,mo:MO,q:false}}
+];
+PRESETS.forEach(p=>{
+  const b=document.createElement('button');b.type='button';b.className='preset';b.textContent=p.t;
+  b.onclick=()=>{S.acc=new Set(p.s.acc);S.br=new Set(p.s.br);S.mo=new Set(p.s.mo);S.q=p.s.q;S.drill=p.drill||null;render();
+    if(p.drill)$('#drill').scrollIntoView({block:'nearest'})};
+  $('#presets').appendChild(b);
+});
+$('#timeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.q=b.dataset.t==='quarter';if(S.q)S.drill=null;render()});
+
+function render(){
+  chipRow('#chips-acc',ACC,S.acc,'acc');chipRow('#chips-br',BR,S.br,'br');chipRow('#chips-mo',MO,S.mo,'mo');
+  $('#moNote').hidden=!S.q;
+  document.querySelectorAll('#timeSeg button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.t==='quarter')===S.q));
+
+  /* layers */
+  const L=$('#layers');L.innerHTML='';
+  const layerList=S.q?[{name:'Q1 (Jan + Feb + Mar)',mi:-1}]:MO.map((m,i)=>({name:m,mi:i}));
+  const sel=[];
+  layerList.forEach(ly=>{
+    const d=document.createElement('div');d.className='layer';
+    let h=`<h4>${ly.name}<small>Month layer</small></h4><div class="cgrid"><span></span>${ACC.map(a=>`<span class="hd">${a}</span>`).join('')}`;
+    BR.forEach(br=>{
+      h+=`<span class="rl">${br}</span>`;
+      ACC.forEach(ac=>{
+        const v=ly.mi<0?V[ac][br].reduce((a,b)=>a+b,0):V[ac][br][ly.mi];
+        const on=S.acc.has(ac)&&S.br.has(br)&&(S.q||S.mo.has(MO[ly.mi]));
+        if(on)sel.push({lab:`${ac} · ${br} · ${ly.mi<0?'Q1':MO[ly.mi]}`,v});
+        h+=`<button type="button" class="cell ${on?'on':'off'}" data-ac="${ac}" data-br="${br}" data-mi="${ly.mi}" aria-label="${ac}, ${br}, ${ly.mi<0?'Q1':MO[ly.mi]}: ${won(v)}${on?', selected':''}">${v.toLocaleString('en-US')}</button>`;
+      });
+    });
+    h+='</div>';d.innerHTML=h.replace('<small>Month layer</small>',S.q?'<small>rolled up</small>':'<small>₩M</small>');L.appendChild(d);
+  });
+  L.querySelectorAll('.cell').forEach(c=>c.onclick=()=>{
+    const mi=+c.dataset.mi;
+    if(mi<0){S.q=false;S.drill=null;render();return}
+    S.drill=[c.dataset.ac,c.dataset.br,mi];render();$('#drill').scrollIntoView({block:'nearest'});
+  });
+
+  /* operation */
+  const dims=[['Account',ACC,S.acc],['Branch',BR,S.br]];if(!S.q)dims.push(['Month',MO,S.mo]);
+  const R=$('#result');
+  if(dims.some(d=>d[2].size===0)){R.innerHTML=`<span class="lab">Result</span><p class="empty">Pick at least one value in every dimension. With nothing picked, no cells match.</p>`;renderDrill();return}
+  const r=dims.filter(d=>d[2].size<d[1].length);
+  let op,why;
+  if(!r.length){op='Whole cube';why='No filters, so every cell comes back.'}
+  else if(r.length===1&&r[0][2].size===1){op='Slice';why=`You fixed ONE dimension (${r[0][0]}) to a single value. You get a flat 2D layer of the cube.`}
+  else if(r.length>=2){op='Dice';why=`You filtered ${r.length} dimensions. You get a smaller sub-cube.`}
+  else{op='Dice';why=`You kept ${r[0][2].size} values of ${r[0][0]}, not just one, so you get a sub-cube instead of a single layer.`}
+  let opLabel=op;
+  if(S.q){opLabel=op==='Whole cube'?'Roll-up':'Roll-up + '+op;why='Jan, Feb and Mar are added together into one Q1 total. '+(op==='Whole cube'?'':why)}
+  const parts=r.map(d=>d[2].size===1?`${d[0]} = ${[...d[2]][0]}`:`${d[0]} IN (${d[1].filter(x=>d[2].has(x)).join(', ')})`);
+  if(S.q)parts.unshift('Time level = Quarter');
+  const total=sel.reduce((a,b)=>a+b.v,0);
+  sel.sort((a,b)=>b.v-a.v);
+  const max=sel.length?sel[0].v:1;
+  const show=sel.slice(0,9);
+  R.innerHTML=`<span class="lab">OLAP operation</span>
+   <div class="op"><span class="op-badge">${opLabel}</span></div>
+   <div class="query">${esc(parts.length?parts.join(' AND '):'All cells')}</div>
+   <p class="why">${esc(why)}</p>
+   <div class="stats"><div><b>${sel.length}</b><span>cells returned</span></div><div><b>${won(total)}</b><span>total</span></div></div>
+   <div class="bars">${show.map((s,i)=>`<div class="bar ${i===0?'top':''}"><span class="bl">${s.lab}</span><span class="track"><span class="fill" style="width:${(s.v/max*100).toFixed(1)}%;display:block"></span></span><span class="bv">${won(s.v)}</span></div>`).join('')}</div>
+   ${sel.length>9?`<p class="dim-note">Showing the top 9 of ${sel.length} cells.</p>`:''}
+   ${sel.length>1?`<p class="dim-note">Highest: <b>${sel[0].lab}</b></p>`:''}`;
+  renderDrill();
+}
+
+/* ---------- drill-down to days ---------- */
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hash(s){let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0}
+const HOL=[{1:"New Year's Day"},{16:'Seollal',17:'Seollal',18:'Seollal'},{2:'Samiljeol substitute holiday'}];
+function daily(ac,br,mi){
+  const n=[31,28,31][mi],R=rng(hash(ac+br+mi)),credit=ac==='Credit',out=[];
+  for(let d=1;d<=n;d++){
+    const dow=new Date(2026,mi,d).getDay(),wk=dow===0||dow===6,h=HOL[mi][d];
+    const f=(h?(credit?.55:.08):wk?(credit?1.25:.2):1)*(.85+.3*R());
+    out.push({d,wk,h,f});
+  }
+  const s=out.reduce((a,b)=>a+b.f,0);out.forEach(o=>o.v=V[ac][br][mi]*o.f/s);return out;
+}
+function renderDrill(){
+  const D=$('#drill');
+  if(!S.drill||S.q){D.hidden=true;return}
+  const [ac,br,mi]=S.drill,days=daily(ac,br,mi),n=days.length;
+  const W=640,H=200,pl=44,pr=8,pt=16,pb=30,bw=(W-pl-pr)/n;
+  const mx=Math.max(...days.map(d=>d.v)),top=Math.ceil(mx/10)*10||10;
+  const y=v=>pt+(H-pt-pb)*(1-v/top);
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily values for ${ac}, ${br}, ${MO[mi]}">`;
+  [0,top/2,top].forEach(t=>{g+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" class="s-line" stroke-width="1"/><text x="${pl-6}" y="${y(t)+4}" text-anchor="end" class="t">${t}</text>`});
+  days.forEach((d,i)=>{
+    const x=pl+i*bw+1.5,h=y(0)-y(d.v);
+    const cls=d.h?'f-warn':d.wk?'f-a':'f-lime';
+    g+=`<rect x="${x.toFixed(1)}" y="${y(d.v).toFixed(1)}" width="${(bw-3).toFixed(1)}" height="${h.toFixed(1)}" class="${cls}" ${d.wk&&!d.h?'opacity=".55"':''}><title>${d.d} ${MO[mi]}: ${won(d.v)}${d.h?' ('+d.h+')':d.wk?' (weekend)':''}</title></rect>`;
+    if(d.h)g+=`<text x="${(x+(bw-3)/2).toFixed(1)}" y="${(y(d.v)-4).toFixed(1)}" text-anchor="middle" class="t" style="font-size:9px;font-weight:700">H</text>`;
+    if(d.d===1||d.d%7===0)g+=`<text x="${(x+(bw-3)/2).toFixed(1)}" y="${H-12}" text-anchor="middle" class="t">${d.d}</text>`;
+  });
+  g+=`<text x="${pl}" y="${H-1}" class="t">Day of ${MO[mi]} 2026 · values in ₩M</text></svg>`;
+  const hol=days.filter(d=>d.h).length,wk=days.filter(d=>d.wk&&!d.h).length,work=n-hol-wk;
+  const low=days.slice().sort((a,b)=>a.v-b.v).slice(0,3).map(d=>d.d+' '+MO[mi]).join(', ');
+  let msg=`${MO[mi]} has ${n} days: ${work} working days, ${wk} weekend days and ${hol} public holiday day${hol===1?'':'s'}. Lowest days: ${low}.`;
+  if(mi===1)msg+=' February is short, and Seollal (16–18 Feb) closes branches. The drill-down shows the low month is caused by the calendar, not by losing customers.';
+  D.innerHTML=`<div class="drill-head"><div><span class="lab">Drill-down · Month → Day</span><h3>${ac} · ${br} · ${MO[mi]} = ${won(V[ac][br][mi])}</h3></div>
+    <button type="button" class="btn ghost" id="drillUp">▲ Roll back up to the month</button></div>
+    <div class="chart-box">${g}</div>
+    <div class="legend"><span><i class="sw f-lime" style="background:var(--lime)"></i>Weekday</span><span><i class="sw" style="background:var(--violet);opacity:.55"></i>Weekend</span><span><i class="sw" style="background:var(--warn)"></i>Public holiday (marked H)</span></div>
+    <p style="margin-top:10px">${msg}</p>`;
+  D.hidden=false;
+  $('#drillUp').onclick=()=>{S.drill=null;render()};
+}
+render();
+
+/* ---------- techniques ---------- */
+const ax=(xl,yl)=>`<line x1="34" y1="172" x2="292" y2="172" class="s-muted" stroke-width="1.5"/><line x1="34" y1="18" x2="34" y2="172" class="s-muted" stroke-width="1.5"/><text x="163" y="192" text-anchor="middle" class="t">${xl}</text><text x="14" y="95" text-anchor="middle" class="t" transform="rotate(-90 14 95)">${yl}</text>`;
+const circ=(x,y,c='f-a')=>`<circle cx="${x}" cy="${y}" r="6" class="${c}"/>`;
+const sq=(x,y)=>`<rect x="${x-5.5}" y="${y-5.5}" width="11" height="11" class="f-b"/>`;
+const SVGS={
+classification:()=>`<svg viewBox="0 0 300 200" role="img" aria-label="Circles labelled stays and squares labelled leaves, split by a line. A new point on the leaves side is predicted as leaves.">${ax('Visits per month','Spend')}
+  ${[[200,70],[232,88],[252,56],[214,110],[262,104],[186,92],[240,130]].map(p=>circ(...p)).join('')}
+  ${[[60,132],[82,152],[96,118],[56,100],[112,148],[76,122],[124,160]].map(p=>sq(...p)).join('')}
+  <line x1="168" y1="24" x2="142" y2="170" class="s-ink" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <circle cx="104" cy="70" r="9" class="f-surface s-ink" stroke-width="2" stroke-dasharray="3 2"/><text x="104" y="74" text-anchor="middle" class="tb">?</text>
+  <text x="60" y="48" class="tb">New customer</text><text x="60" y="62" class="t">→ predicted: Leaves</text>
+  ${circ(200,14)}<text x="210" y="18" class="t">Stays</text>${sq(250,14)}<text x="260" y="18" class="t">Leaves</text></svg>`,
+clustering:()=>`<svg viewBox="0 0 300 200" role="img" aria-label="Unlabelled points that fall into three natural groups, each circled.">${ax('Visits per month','Average spend')}
+  <ellipse cx="82" cy="62" rx="36" ry="26" class="f-none s-a" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <ellipse cx="214" cy="70" rx="36" ry="26" class="f-none s-a" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <ellipse cx="152" cy="146" rx="38" ry="22" class="f-none s-a" stroke-width="1.5" stroke-dasharray="5 4"/>
+  ${[[70,52],[92,56],[80,72],[98,70],[64,64],[204,60],[222,58],[216,80],[232,74],[200,78],[138,142],[156,136],[168,150],[146,156],[172,140]].map(p=>circ(p[0],p[1],'f-muted')).join('')}
+  <text x="82" y="28" text-anchor="middle" class="tb">Group 1</text><text x="214" y="36" text-anchor="middle" class="tb">Group 2</text><text x="236" y="152" class="tb">Group 3</text></svg>`,
+regression:()=>{let pts='';const R=rng(7);for(let i=0;i<16;i++){const x=48+i*14.5,yv=160-.5*(x-40)+(R()-.5)*26;pts+=circ(x.toFixed(0),yv.toFixed(0))}
+  return `<svg viewBox="0 0 300 200" role="img" aria-label="Scatter of house size against price with a best-fit line used to predict a price.">${ax('Size (m²)','Price (₩)')}${pts}
+  <line x1="40" y1="163" x2="286" y2="40" class="s-b" stroke-width="2.5"/>
+  <line x1="262" y1="172" x2="262" y2="52" class="s-ink" stroke-width="1.2" stroke-dasharray="4 3"/><line x1="34" y1="52" x2="262" y2="52" class="s-ink" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <circle cx="262" cy="52" r="6" class="f-warn"/><text x="40" y="44" class="tb">Predicted price</text><text x="262" y="166" text-anchor="end" class="t">new house  </text></svg>`},
+association:()=>{const B=[['ramen','kimbap','cola'],['ramen','kimbap'],['ramen','eggs'],['ramen','kimbap','milk']];
+  let g='';B.forEach((b,i)=>{const x=12+i*71;g+=`<rect x="${x}" y="12" width="64" height="98" rx="6" class="f-surface s-line" stroke-width="1.5"/><text x="${x+8}" y="28" class="t" style="font-size:10px">Receipt ${i+1}</text>`;
+    b.forEach((it,j)=>{const hl=it==='ramen'||(it==='kimbap');g+=(hl?`<rect x="${x+5}" y="${36+j*22}" width="54" height="18" rx="4" class="${it==='kimbap'?'f-soft':'f-s2'}"/>`:'')+`<text x="${x+10}" y="${49+j*22}" class="${hl?'tb':'t'}" style="font-size:11px">${it}</text>`})});
+  return `<svg viewBox="0 0 300 200" role="img" aria-label="Four receipts. All contain ramen; three of them also contain kimbap, giving the rule if ramen then kimbap.">${g}
+  <rect x="12" y="124" width="276" height="62" rx="8" class="f-soft"/><text x="150" y="150" text-anchor="middle" class="tb" style="font-size:15px">IF ramen THEN kimbap</text>
+  <text x="150" y="172" text-anchor="middle" class="t">3 of the 4 ramen baskets also contain kimbap</text></svg>`},
+sequential:()=>{const rows=[['A',[[1,'Laptop'],[8,'Case'],[20,'Mouse']]],['B',[[3,'Laptop'],[12,'Case']]],['C',[[5,'Laptop'],[11,'Case'],[26,'Mouse']]]];
+  const X=d=>62+d*7.4;let g='';
+  rows.forEach((r,i)=>{const y=36+i*46;g+=`<text x="6" y="${y+4}" class="tb">Cust. ${r[0]}</text><line x1="${X(0)}" y1="${y}" x2="${X(30)}" y2="${y}" class="s-line" stroke-width="1.5"/>`;
+    r[1].forEach((e,j)=>{if(j){const px=X(r[1][j-1][0])+20;g+=`<line x1="${px}" y1="${y}" x2="${X(e[0])-24}" y2="${y}" class="s-b" stroke-width="2" marker-end="url(#ah)"/>`}
+      g+=`<rect x="${X(e[0])-21}" y="${y-10}" width="42" height="20" rx="5" class="${e[1]==='Laptop'?'f-s2':'f-soft'} s-b" stroke-width="1"/><text x="${X(e[0])}" y="${y+4}" text-anchor="middle" class="tb" style="font-size:10px">${e[1]}</text>`})});
+  return `<svg viewBox="0 0 300 200" role="img" aria-label="Three customers each buy a laptop, then a case about a week later, and some later buy a mouse."><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" class="f-b"/></marker></defs>${g}
+  <text x="${X(0)}" y="178" class="t">Day 1</text><text x="${X(30)}" y="178" text-anchor="end" class="t">Day 30</text>
+  <text x="150" y="196" text-anchor="middle" class="tb">Pattern: Laptop → Case (about 1 week later)</text></svg>`},
+anomaly:()=>{let p='';const R=rng(11);for(let i=0;i<26;i++){const a=R()*6.283,r=R()*34;p+=circ((130+Math.cos(a)*r*1.4).toFixed(0),(120+Math.sin(a)*r).toFixed(0),'f-muted')}
+  return `<svg viewBox="0 0 300 200" role="img" aria-label="Most card payments sit in one cluster; one payment far away is circled and flagged.">${ax('Time of day','Amount (₩)')}${p}
+  <circle cx="262" cy="38" r="6" class="f-warn"/><circle cx="262" cy="38" r="13" class="f-none s-warn" stroke-width="2"/>
+  <text x="246" y="34" text-anchor="end" class="tb">Flagged</text><text x="246" y="48" text-anchor="end" class="t">₩4.8M at 3 a.m.</text>
+  <text x="130" y="170" text-anchor="middle" class="t">normal payments</text></svg>`}
+};
+const TECH=[
+ {id:'classification',name:'Classification',ko:'분류',badge:'Learns from labelled examples · Output: a category',ask:'Which group does this new item belong to?',
+  steps:['Collect past data where the answer (the class) is already known. This is training data.','The model learns which attributes lead to which class.','It predicts the class of new, unseen data.'],
+  ex:['Will this customer churn? yes / no','Approve or decline a loan','Spam or not spam'],
+  phrase:'assigns data to predefined classes using a model built from training data with known classes',
+  trap:'In classification the categories exist before you start. If they do not, it is clustering.',
+  stretch:'This is supervised learning (A4). The model is tested on data it has not seen before, to check its accuracy before it is used.'},
+ {id:'clustering',name:'Clustering',ko:'군집화',badge:'No labels · Output: groups it discovers',ask:'What natural groups are hidden in this data?',
+  steps:['Measure how similar each item is to the others.','Put similar items in the same group and keep groups far apart.','People look at each group afterwards and give it a name.'],
+  ex:['Customer segments for marketing','Grouping news articles by topic'],
+  phrase:'groups similar data points together with no predefined categories',
+  trap:'The algorithm does not know the group names. Humans name the groups afterwards.',
+  stretch:'k-means: choose k groups, place k centres, give each point to its nearest centre, move each centre to the middle of its points, repeat until nothing changes. Unsupervised learning (A4).'},
+ {id:'regression',name:'Regression',ko:'회귀',badge:'Learns from past values · Output: a number',ask:'How much? How many? What value?',
+  steps:['Find the relationship between the inputs (independent variables) and the value you want (dependent variable).','Fit a line or curve to the past data.','Read off the predicted value for new inputs.'],
+  ex:['Next month’s sales from marketing spend','House price from size, location and bedrooms'],
+  phrase:'predicts a continuous numerical value from the relationship between dependent and independent variables',
+  trap:'If the answer is a label (yes/no, high/low), it is classification, not regression.',
+  stretch:'Linear regression fits y = mx + c so that the total squared distance between the points and the line is as small as possible.'},
+ {id:'association',name:'Association rules',ko:'연관 규칙',badge:'Same transaction · Output: IF A THEN B',ask:'Which items are bought together?',
+  steps:['Look at many baskets (transactions).','Count how often items appear together.','Keep rules that are frequent and reliable: IF A THEN B.'],
+  ex:['Market basket analysis','Place kimbap next to ramen','Bundle deals'],
+  phrase:'finds items that frequently occur together, expressed as "if A then B" rules',
+  trap:'Order and time do not matter here. The items are in the same basket.',
+  stretch:'calc'},
+ {id:'sequential',name:'Sequential patterns',ko:'순차 패턴',badge:'Order over time · Output: A, then B, then C',ask:'What usually happens next?',
+  steps:['Sort each customer’s events by time.','Look for the same order of events across many customers.','Keep sequences that happen often, with their typical time gap.'],
+  ex:['Laptop, then a case within a month','Web pages visited before buying'],
+  phrase:'identifies events that occur in a specific order over time; order and timing matter',
+  trap:'The events are in different transactions at different times. If they are in the same basket, it is association.',
+  stretch:'Support for a sequence counts customers who show that order, not single baskets. The time gap is useful: send the case offer a few days after the laptop sale.'},
+ {id:'anomaly',name:'Anomaly detection',ko:'이상 탐지',badge:'Find the odd one out · Output: flagged items',ask:'What does not fit the normal pattern?',
+  steps:['Learn what normal behaviour looks like.','Measure how far each new item is from normal.','Flag items that are too far away, so a person or system can check them.'],
+  ex:['Fraudulent card payments','Faulty products from sensor readings'],
+  phrase:'identifies rare data points that deviate significantly from normal or expected behaviour',
+  trap:'Unusual does not always mean wrong. A customer on holiday can be flagged by mistake.',
+  stretch:'False positive: a normal payment is blocked (annoys customers). False negative: fraud is missed (costs money). Moving the threshold trades one for the other.'}
+];
+const tabs=$('#tabs');
+TECH.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.className='tab';b.role='tab';b.id='tab-'+t.id;
+  b.innerHTML=`${t.name} <span class="ko-in">${t.ko}</span>`;b.onclick=()=>showTech(t.id);tabs.appendChild(b)});
+tabs.addEventListener('keydown',e=>{if(!['ArrowRight','ArrowLeft'].includes(e.key))return;const i=TECH.findIndex(t=>'tab-'+t.id===document.activeElement.id);if(i<0)return;
+  const n=TECH[(i+(e.key==='ArrowRight'?1:TECH.length-1))%TECH.length];showTech(n.id);$('#tab-'+n.id).focus()});
+
+const BASKETS=[['ramen','kimbap','cola'],['ramen','kimbap'],['ramen','eggs'],['kimbap','milk'],['ramen','kimbap','eggs'],['milk','bread'],['ramen','cola'],['ramen','kimbap','milk']];
+const ITEMS=['ramen','kimbap','cola','eggs','milk','bread'];
+function calcHTML(){return `<div class="calc"><p><b>Is the rule any good?</b> Two numbers decide.</p>
+  <div class="calc-row">IF <select id="cA" aria-label="Item A">${ITEMS.map(i=>`<option${i==='ramen'?' selected':''}>${i}</option>`).join('')}</select>
+  THEN <select id="cB" aria-label="Item B">${ITEMS.map(i=>`<option${i==='kimbap'?' selected':''}>${i}</option>`).join('')}</select></div>
+  <div class="baskets" id="cBk"></div><p class="calc-out" id="cOut"></p></div>`}
+function calcRun(){const A=$('#cA').value,B=$('#cB').value;let a=0,both=0;
+  $('#cBk').innerHTML=BASKETS.map((b,i)=>{const hA=b.includes(A),hB=b.includes(B);if(hA)a++;if(hA&&hB)both++;
+    return `<div class="bk ${hA&&hB?'both':hA?'hasA':''}"><em>Basket ${i+1}${hA&&hB?' · both':hA?' · A only':''}</em>${b.join(', ')}</div>`}).join('');
+  const sup=both/BASKETS.length*100,conf=a?both/a*100:0;
+  $('#cOut').innerHTML=A===B?'Pick two different items.':`<b>Support</b> = baskets with both ÷ all baskets = ${both} ÷ ${BASKETS.length} = <b>${sup.toFixed(0)}%</b><br><b>Confidence</b> = baskets with both ÷ baskets with ${A} = ${both} ÷ ${a} = <b>${conf.toFixed(0)}%</b>`}
+
+function showTech(id){
+  const t=TECH.find(x=>x.id===id);
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.id==='tab-'+id));
+  $('#techPanel').setAttribute('aria-labelledby','tab-'+id);
+  $('#techPanel').innerHTML=`<div class="tech">
+    <figure class="fig" style="margin:0">${SVGS[id]()}</figure>
+    <div class="tech-body">
+      <div><h3>${t.name} <span class="ko-in">${t.ko}</span></h3><span class="badge">${t.badge}</span></div>
+      <p class="ask">“${t.ask}”</p>
+      <ol class="steps">${t.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+      <div class="exlist">${t.ex.map(e=>`<span>${e}</span>`).join('')}</div>
+      <div class="phrase"><small>Exam phrase that earns the mark</small>${t.phrase}</div>
+      <p class="trap"><b>⚠ Trap</b><span>${t.trap}</span></p>
+      <div class="lv support box-support"><span class="tier">Support</span><p>Say it in one line: <b>${t.name}</b> (${t.ko}) answers “${t.ask}”</p></div>
+      <div class="lv stretch box-stretch"><span class="tier">Stretch</span>${t.stretch==='calc'?calcHTML():`<p>${t.stretch}</p>`}</div>
+    </div></div>`;
+  if(t.stretch==='calc'){calcRun();$('#cA').onchange=calcRun;$('#cB').onchange=calcRun}
+}
+showTech('classification');
+
+/* ---------- finder ---------- */
+const FIND={start:{q:'What do you want the output to be?',o:[['A prediction for each new item','pred'],['Groups of similar items, with no labels given','=clustering'],['A rule about items or events that go together','rule'],['The few items that do not fit the normal pattern','=anomaly']]},
+  pred:{q:'What kind of prediction?',o:[['A category or label (yes/no, spam/not spam)','=classification'],['A number (price, amount, sales)','=regression']]},
+  rule:{q:'When do the items happen?',o:[['At the same time, in the same basket','=association'],['One after another, over time','=sequential']]}};
+let trail=[];
+function finder(node){
+  const F=$('#finder');
+  let h=`<span class="lab">Technique finder · answer the questions</span>${trail.length?`<p class="trail">${trail.map(esc).join(' → ')}</p>`:''}`;
+  if(node.startsWith('=')){const t=TECH.find(x=>x.id===node.slice(1));
+    h+=`<div class="fres"><b>${t.name}</b><span class="ko-in">${t.ko}</span><button type="button" class="btn" id="fOpen">See how it works</button><button type="button" class="btn ghost" id="fRe">Start again</button></div>`;
+    F.innerHTML=h;$('#fOpen').onclick=()=>{showTech(t.id);$('#mining').scrollIntoView()};$('#fRe').onclick=()=>{trail=[];finder('start')};return}
+  const n=FIND[node];h+=`<p class="fq">${n.q}</p><div class="fopts">${n.o.map((o,i)=>`<button type="button" class="fopt" data-i="${i}">${o[0]}</button>`).join('')}</div>`;
+  if(trail.length)h+=`<div><button type="button" class="btn ghost" id="fRe">Start again</button></div>`;
+  F.innerHTML=h;
+  F.querySelectorAll('.fopt').forEach(b=>b.onclick=()=>{const o=n.o[+b.dataset.i];trail.push(o[0]);finder(o[1])});
+  if($('#fRe'))$('#fRe').onclick=()=>{trail=[];finder('start')};
+}
+finder('start');
+
+/* ---------- practice ---------- */
+const TN=['Classification','Clustering','Regression','Association rules','Sequential patterns','Anomaly detection'];
+const ON=['Slice','Dice','Roll-up','Drill-down'];
+const SETS={
+ olap:{title:'OLAP: name the operation',opts:ON,qs:[
+  ['Show every account type at every branch for February only.','Slice','One dimension (Month) is fixed to one value. You get one 2D layer.','How many dimensions did you fix?'],
+  ['Show Savings and Credit, for Seoul only, in January and February.','Dice','Three dimensions are filtered, so the result is a smaller sub-cube.','Count the dimensions you filtered.'],
+  ['Turn the three monthly totals into one Q1 total.','Roll-up','Moving up the hierarchy (Month → Quarter) adds cells together.','Are you going up to less detail or down to more?'],
+  ['Go from Busan’s February total to the figure for each day in February.','Drill-down','Moving down the hierarchy (Month → Day) shows more detail.','Are you going up to less detail or down to more?'],
+  ['Show Credit at the Busan branch only, for all months.','Dice','Two dimensions (Account and Branch) are filtered. A slice fixes only one.','Count the dimensions you filtered.']]},
+ core:{title:'Data mining: which technique? · Core',opts:TN,qs:[
+  ['A streaming service labels each new user “likely to cancel” or “likely to stay”, using data about past users.','Classification','Two predefined classes, learned from past labelled users.','Is there a label already decided?'],
+  ['A school groups students by how they use a study app, with no groups decided in advance.','Clustering','No predefined groups. The algorithm finds them.','Were the groups decided before?'],
+  ['An estate agent estimates the price of a Jeju apartment from its size, floor and distance to the sea.','Regression','The output is a number (a price).','Is the answer a number or a label?'],
+  ['A bakery finds that customers who buy a croissant often buy an americano in the same order.','Association rules','Items bought together in one transaction: IF croissant THEN americano.','Same basket or over time?'],
+  ['An online shop finds that people who read a review page, then a comparison page, usually buy within two days.','Sequential patterns','Events happen in a set order over time.','Does the order matter?'],
+  ['A factory sensor flags one motor running 40°C hotter than all the others.','Anomaly detection','One reading is far from normal.','Is it about the odd one out?'],
+  ['A bank blocks a card used overseas at 3 a.m. for a much larger amount than usual.','Anomaly detection','The payment deviates from the customer’s normal pattern, which may mean fraud.','Is it about the odd one out?'],
+  ['A weather service predicts tomorrow’s rainfall in millimetres.','Regression','Millimetres of rain is a continuous number.','Is the answer a number or a label?']]},
+ stretch:{title:'Data mining: which technique? · Stretch',opts:TN,qs:[
+  ['An email service sorts messages into Primary, Promotions or Spam, using millions of emails users have already sorted.','Classification','Three classes, but they are predefined and the training data is labelled. More than two classes is still classification.',''],
+  ['A music app groups songs by tempo and loudness, then staff call the groups “chill” and “workout”.','Clustering','The groups were found first and named afterwards. Naming later does not make it classification.',''],
+  ['A convenience store predicts how many umbrellas each branch will sell tomorrow.','Regression','A count of umbrellas is a numerical value to predict, even though it is a whole number.',''],
+  ['Customers who buy a phone often buy a case within two weeks.','Sequential patterns','Two different transactions, in a set order, with a time gap. Not association.',''],
+  ['Customers who put a phone and a case in the same order often add a screen protector to that order.','Association rules','All three items are in the same transaction, so order and time do not matter.',''],
+  ['A hospital predicts whether a patient will be readmitted within 30 days (yes/no).','Classification','Yes/no is a category. Being about the future does not make it regression.',''],
+  ['A game studio sees one player’s score rise 500% overnight compared with their usual scores.','Anomaly detection','One data point is far from that player’s normal behaviour, which could mean cheating.','']]}
+};
+function buildSet(key){
+  const s=SETS[key],box=$('#set-'+key);let right=0,done=0;
+  box.innerHTML=`<div class="pset-head"><h3>${s.title}${key==='stretch'?' <span class="tier" style="color:var(--lime-ink)">Stretch</span>':''}</h3><span class="score" id="sc-${key}">0 / ${s.qs.length} answered</span></div>`;
+  s.qs.forEach((q,i)=>{
+    const d=document.createElement('div');d.className='q';
+    d.innerHTML=`<p class="q-text"><span class="n">${i+1}.</span>${q[0]}</p>
+      ${q[3]?`<p class="lv support hint">Hint: ${q[3]}</p>`:''}
+      <div class="opts">${s.opts.map(o=>`<button type="button" class="opt">${o}</button>`).join('')}</div><div class="fbw"></div>`;
+    let first=true;
+    d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      const ok=b.textContent===q[1];
+      if(first){first=false;done++;if(ok)right++;$('#sc-'+key).textContent=`${right} correct · ${done} / ${s.qs.length} answered`}
+      d.querySelectorAll('.opt').forEach(x=>x.classList.remove('wrong'));
+      if(ok){d.querySelectorAll('.opt').forEach(x=>x.classList.toggle('right',x===b))}else b.classList.add('wrong');
+      d.querySelector('.fbw').innerHTML=ok?`<p class="fb good">✓ Correct. ${q[2]}</p>`:`<p class="fb bad">✗ Not ${esc(b.textContent)}. Try again, or check the table in Part 3.</p>`;
+    });
+    box.appendChild(d);
+  });
+}
+['olap','core','stretch'].forEach(buildSet);
+
+/* ---------- glossary ---------- */
+const GL=[['Business intelligence (BI)','비즈니스 인텔리전스','Analysing data to give managers actionable insights'],
+ ['OLAP','온라인 분석 처리','Fast, multi-dimensional analysis of data the user chooses to look at'],
+ ['Data warehouse','데이터 웨어하우스','A large store of historical data collected for analysis'],
+ ['Dimension','차원','An axis used to group data, e.g. Branch'],['Measure','측정값','The number stored in a cell, e.g. ₩540M'],
+ ['Slice','슬라이스','Fix one dimension to one value → a 2D layer'],['Dice','다이스','Filter two or more dimensions → a sub-cube'],
+ ['Roll-up','롤업 (집계)','Add cells together to a higher level, e.g. months → quarter'],['Drill-down','드릴다운','Go to more detail, e.g. month → days'],
+ ['Data mining','데이터 마이닝','Finding previously unknown, useful patterns in large data sets'],
+ ['Classification','분류','Put items into predefined classes'],['Clustering','군집화','Find natural groups with no predefined classes'],
+ ['Regression','회귀','Predict a continuous number'],['Association rule','연관 규칙','IF A THEN B for items in the same transaction'],
+ ['Sequential pattern','순차 패턴','Events that happen in a set order over time'],['Anomaly / outlier','이상치','A data point far from normal behaviour'],
+ ['Training data','학습 데이터','Past data with known answers used to build a model'],['Churn','고객 이탈','When a customer stops using a service'],
+ ['Support','지지도','% of all transactions that contain both A and B'],['Confidence','신뢰도','% of transactions with A that also contain B']];
+$('#glossary').innerHTML=GL.map(g=>`<tr><td><b>${g[0]}</b></td><td>${g[1]}</td><td>${g[2]}</td></tr>`).join('');
+})();
+</script>
+
+</body></html>
