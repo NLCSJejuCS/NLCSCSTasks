@@ -1,0 +1,908 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Distributed Database Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Familjen+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --surface2:#E8ECF2; --ink:#1B2433; --muted:#566175; --line:#D3D9E3;
+  --hero:#1D2A44; --on-hero:#F1F4FA; --on-hero-muted:#B3BED3;
+  --accent:#2F5FD0; --sig:#0FA3A3; --sig-ink:#0B6F70; --sig-soft:#D5F1F0;
+  --warn:#C23B12; --warn-soft:#FBE2D8; --ok:#237A3B; --ok-soft:#DCF0E0; --amber:#A86A00; --amber-soft:#FBEFD2;
+  --f-display:"Familjen Grotesk","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111827; --surface:#1A2334; --surface2:#243047; --ink:#E9EEF7; --muted:#A5B1C6; --line:#34405A;
+    --hero:#1B2A4A; --on-hero:#F1F4FA; --on-hero-muted:#B3BED3;
+    --accent:#8DB0FF; --sig:#3CCFCF; --sig-ink:#6BE3E3; --sig-soft:#15393C;
+    --warn:#FF9470; --warn-soft:#44241B; --ok:#87D99C; --ok-soft:#1C3A26; --amber:#F2C257; --amber-soft:#3D3217;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111827; --surface:#1A2334; --surface2:#243047; --ink:#E9EEF7; --muted:#A5B1C6; --line:#34405A;
+  --hero:#1B2A4A; --on-hero:#F1F4FA; --on-hero-muted:#B3BED3;
+  --accent:#8DB0FF; --sig:#3CCFCF; --sig-ink:#6BE3E3; --sig-soft:#15393C;
+  --warn:#FF9470; --warn-soft:#44241B; --ok:#87D99C; --ok-soft:#1C3A26; --amber:#F2C257; --amber-soft:#3D3217;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h2{font-size:clamp(1.6rem,3.2vw,2.2rem);letter-spacing:-.01em}
+h3{font-size:1.2rem}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-size:.9em}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lab{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+
+.lv{display:none}
+body[data-level="support"] .lv.support, body[data-level="stretch"] .lv.stretch{display:block}
+.ko-in{display:none;color:var(--accent);font-weight:400}
+body[data-level="support"] .ko-in{display:inline}
+.tier{display:inline-block;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1.5px solid currentColor;margin-bottom:6px}
+.box-support{background:var(--surface2);border-left:4px solid var(--accent);padding:12px 14px;border-radius:0 8px 8px 0}
+.box-stretch{background:var(--surface2);border:1.5px dashed var(--sig-ink);padding:12px 14px;border-radius:8px}
+.box-support .tier{color:var(--accent)} .box-stretch .tier{color:var(--sig-ink)}
+.box-stretch p+p,.box-support p+p{margin-top:6px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1 1 320px;min-width:0}
+.nav a{white-space:nowrap;color:var(--muted);text-decoration:none;font-size:.9rem;padding:6px 10px;border-radius:6px}
+.nav a:hover{background:var(--surface2);color:var(--ink)}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;flex-shrink:0;flex-wrap:wrap}
+.seg button{background:transparent;border:0;padding:6px 12px;font-size:.88rem;color:var(--muted)}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--hero);color:var(--on-hero);font-weight:700}
+.lvl-wrap{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted)}
+
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+section{padding-block:56px 8px;scroll-margin-top:70px}
+.sec-head{display:grid;gap:10px;margin-bottom:22px;max-width:68ch}
+.sec-head p{color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{background:var(--hero);color:var(--on-hero);border:0;border-radius:8px;padding:8px 14px;font-size:.92rem;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.sig{background:var(--sig-ink);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:.92rem;cursor:pointer;user-select:none}
+.toggle input{width:18px;height:18px;accent-color:var(--warn)}
+.note{font-size:.88rem;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.defn{border-left:4px solid var(--sig);padding:6px 12px;background:var(--surface)}
+.defn small{display:block;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* hero */
+.hero{background:var(--hero);color:var(--on-hero);border-radius:0 0 20px 20px;margin-inline:-16px;padding:40px 16px 36px}
+.hero-in{max-width:1080px;margin:0 auto;display:grid;gap:20px}
+.hero .eyebrow{color:var(--sig)}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:-.02em;max-width:20ch}
+.hero .lede{color:var(--on-hero-muted);max-width:62ch;font-size:1.05rem}
+.hero .seg{border-color:rgba(255,255,255,.25)}
+.hero .seg button{color:var(--on-hero-muted)}
+.hero .seg button+button{border-left-color:rgba(255,255,255,.25)}
+.hero .seg button[aria-pressed="true"]{background:var(--on-hero);color:#1D2A44}
+.hero-sim{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-items:start}
+@media (max-width:820px){.hero-sim{grid-template-columns:1fr}}
+.map{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:8px}
+.map svg{width:100%;height:auto;display:block}
+.map text{font-family:var(--f-body)}
+.users{display:grid;gap:8px}
+.user{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:10px 12px;font-size:.92rem}
+.user .who b{display:block;font-family:var(--f-display)}
+.user .who span{color:var(--on-hero-muted);font-size:.84rem}
+.pill{font-family:var(--f-mono);font-size:.76rem;padding:3px 8px;border-radius:99px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill.ok{background:#CFEFD9;color:#14532D}
+.pill.bad{background:#FAD4C8;color:#7A1E05}
+.pill.slow{background:#F9E7BE;color:#6B4400}
+.hero-sum{font-size:.95rem;color:var(--on-hero)}
+.hero-sum b{color:var(--sig)}
+
+/* partition */
+.tbl-box{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:.9rem;font-variant-numeric:tabular-nums}
+thead th{font-family:var(--f-display);font-size:.95rem;background:var(--surface2)}
+tr:last-child td,tr:last-child th{border-bottom:0}
+.frags{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px}
+.frag h4{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:8px;font-size:1rem}
+.frag h4 small{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);font-weight:400}
+.c-seoul{box-shadow:inset 4px 0 0 #2F5FD0} .c-busan{box-shadow:inset 4px 0 0 #C27A00} .c-jeju{box-shadow:inset 4px 0 0 #0FA3A3}
+.tag-city{font-family:var(--f-mono);font-size:.7rem;padding:1px 6px;border-radius:4px;border:1px solid var(--line)}
+td.key{font-weight:700;color:var(--accent)}
+
+/* replication */
+.nodes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:560px){.nodes{grid-template-columns:1fr}}
+.node{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:6px;position:relative}
+.node .nm{font-family:var(--f-display);font-weight:700;font-size:1.05rem;display:flex;justify-content:space-between;gap:8px}
+.node .val{font-family:var(--f-display);font-size:2.1rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.node .val small{font-size:.85rem;color:var(--muted);font-weight:500}
+.node.stale{border-color:var(--amber);background:var(--amber-soft)}
+.node.down{border-style:dashed;opacity:.6}
+.node.fresh{border-color:var(--ok)}
+.node .st{font-size:.8rem}
+.log{font-family:var(--f-mono);font-size:.8rem;background:var(--surface2);border-radius:10px;padding:10px 12px;display:grid;gap:3px;max-height:220px;overflow:auto}
+.log .t{color:var(--muted)}
+.log .w{color:var(--warn)} .log .g{color:var(--ok)}
+.meter{display:flex;gap:18px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.meter div{display:grid}
+.meter b{font-family:var(--f-display);font-size:1.4rem}
+.meter span{font-size:.78rem;color:var(--muted)}
+
+/* concurrency */
+.lanes{display:grid;grid-template-columns:1fr 150px 1fr;gap:8px;align-items:start}
+@media (max-width:640px){.lanes{grid-template-columns:1fr 100px 1fr}}
+.lane-h{font-family:var(--f-display);font-weight:700;text-align:center;padding:6px;border-radius:8px;background:var(--surface2)}
+.db{position:sticky;top:80px;text-align:center;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 6px;display:grid;gap:4px}
+.db b{font-family:var(--f-display);font-size:2rem;font-variant-numeric:tabular-nums;line-height:1}
+.db .lock{font-size:.8rem;min-height:1.2em}
+.ev{grid-column:span 1;font-size:.88rem;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.ev .n{font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.ev.wait{background:var(--amber-soft);border-color:var(--amber)}
+.ev.bad{background:var(--warn-soft);border-color:var(--warn)}
+.ev.good{background:var(--ok-soft);border-color:var(--ok)}
+.ev.new{animation:pop .35s ease}
+@keyframes pop{from{transform:translateY(6px);opacity:.3}to{transform:none;opacity:1}}
+.verdict{padding:10px 12px;border-radius:10px;font-weight:700}
+.verdict.bad{background:var(--warn-soft);color:var(--warn)} .verdict.good{background:var(--ok-soft);color:var(--ok)}
+
+/* ACID */
+.acid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:760px){.acid{grid-template-columns:1fr 1fr}}
+.acid button{text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:2px}
+.acid button b{font-family:var(--f-display);font-size:2rem;line-height:1;color:var(--accent)}
+.acid button span{font-weight:700}
+.acid button[aria-pressed="true"]{border-color:var(--accent);background:var(--surface2)}
+.acid-detail{margin-top:12px}
+.accts{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.acct{background:var(--surface2);border-radius:10px;padding:12px;display:grid;gap:2px}
+.acct b{font-family:var(--f-display);font-size:1.5rem;font-variant-numeric:tabular-nums}
+.acct.bad{background:var(--warn-soft)} .acct.good{background:var(--ok-soft)}
+.arrowbig{font-size:1.6rem;color:var(--muted)}
+.total{font-variant-numeric:tabular-nums}
+
+/* transparency / query */
+.view{display:grid;gap:12px}
+.sql{font-family:var(--f-mono);font-size:.88rem;background:var(--hero);color:#E8EEFA;padding:12px 14px;border-radius:10px;overflow-x:auto;white-space:pre}
+.sql .k{color:#8FD9FF} .sql .s{color:#FFD58A}
+.plan-out{display:grid;gap:10px}
+.flow{display:grid;gap:6px}
+.flow div{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;font-size:.88rem}
+.flow .track{height:14px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.flow .fill{height:100%;display:block;background:var(--sig)}
+.flow .fill.heavy{background:var(--warn)}
+.flow .v{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:.8rem}
+
+/* scale */
+.scale-out{display:grid;gap:12px}
+.racks{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;min-height:110px}
+.rack{background:var(--surface2);border:1.5px solid var(--line);border-radius:8px;display:flex;flex-direction:column-reverse;padding:4px;gap:3px;width:54px}
+.rack i{display:block;height:10px;border-radius:2px;background:var(--accent);opacity:.8}
+.rack.hot i{background:var(--warn)}
+.loadbar{height:22px;background:var(--surface2);border-radius:6px;overflow:hidden;position:relative}
+.loadbar span{display:block;height:100%;background:var(--sig)}
+.loadbar span.over{background:var(--warn)}
+.loadbar em{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+
+/* security */
+.sec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:860px){.sec-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.sec-grid{grid-template-columns:1fr}}
+.sec-grid .panel{display:grid;gap:6px;align-content:start}
+.sec-grid .panel p{font-size:.92rem;color:var(--muted)}
+.packet{font-family:var(--f-mono);font-size:.85rem;background:var(--surface2);border-radius:8px;padding:10px 12px;overflow-wrap:anywhere}
+.packet.clear{background:var(--warn-soft)} .packet.enc{background:var(--ok-soft)}
+
+/* features grid */
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.feat button{text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:4px}
+.feat button:hover{border-color:var(--accent)}
+.feat button b{font-family:var(--f-display);font-size:1.05rem}
+.feat button span{font-size:.88rem;color:var(--muted)}
+.feat button em{font-style:normal;font-family:var(--f-mono);font-size:.72rem;color:var(--sig-ink)}
+
+/* trade-off */
+.cmp{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.cmp table{min-width:560px}
+.cmp tbody th{font-weight:700;color:var(--muted);font-size:.85rem;width:24%}
+
+/* practice */
+.pset{display:grid;gap:12px;margin-bottom:26px}
+.pset-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+.score{font-family:var(--f-mono);font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:10px}
+.q-text .n{font-family:var(--f-mono);color:var(--muted);margin-right:6px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{background:var(--surface2);border:1.5px solid transparent;border-radius:8px;padding:5px 11px;font-size:.88rem}
+.opt:hover{border-color:var(--accent)}
+.opt.right{background:var(--ok-soft);border-color:var(--ok);font-weight:700}
+.opt.right::before{content:"✓ "}
+.opt.wrong{background:var(--warn-soft);border-color:var(--warn);text-decoration:line-through}
+.fb{font-size:.92rem;padding:8px 10px;border-radius:8px}
+.fb.good{background:var(--ok-soft)} .fb.bad{background:var(--warn-soft)}
+.hint{font-size:.88rem;color:var(--accent)}
+.gl table{min-width:520px}
+.gl td:nth-child(2){color:var(--accent);white-space:nowrap}
+.foot{margin-top:40px;font-size:.82rem;color:var(--muted)}
+.seg{flex-shrink:1;max-width:100%}
+.seg button{flex:1 1 auto}
+@media (max-width:560px){.seg button+button{border-left:0;border-top:1.5px solid var(--line)} .seg{flex-direction:column;width:100%}
+  .top .seg{flex-direction:row;width:auto} .top .seg button+button{border-top:0;border-left:1.5px solid var(--line)}
+  .accts{grid-template-columns:1fr} .arrowbig{text-align:center}}
+.panel>*,.two>*,.frags>*,.view>*{min-width:0}
+.frag h4{flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){.ev.new{animation:none}}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}.loadbar span,.flow .fill{transition:width .35s ease}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <nav class="nav" aria-label="Sections">
+      <a href="#big">Big picture</a><a href="#features">Features</a><a href="#partition">Partitioning</a><a href="#replication">Replication</a><a href="#concurrency">Concurrency</a><a href="#acid">ACID</a><a href="#query">Transparency</a><a href="#scale">Scalability</a><a href="#security">Security</a><a href="#practice">Practice</a><a href="#words">Key words</a>
+    </nav>
+    <div class="lvl-wrap"><span>Level</span>
+      <div class="seg" id="levelSeg" role="group" aria-label="Choose level">
+        <button type="button" data-level="support" aria-pressed="false">Support</button>
+        <button type="button" data-level="core" aria-pressed="true">Core</button>
+        <button type="button" data-level="stretch" aria-pressed="false">Stretch</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section id="big" class="hero">
+  <div class="hero-in">
+    <span class="eyebrow">IB Computer Science · A3.4.4 · HL only</span>
+    <h1>One database, many computers</h1>
+    <p class="lede">A distributed database spreads its data across several computers (nodes) in a network. A centralised database keeps everything on one server. <b style="color:var(--on-hero)">TicketWave</b> sells K-pop concert tickets from Seoul, Busan and Jeju. Tap a server to make it crash.</p>
+    <div class="row">
+      <div class="seg" id="archSeg" role="group" aria-label="Choose architecture">
+        <button type="button" data-a="central" aria-pressed="true">Centralised</button>
+        <button type="button" data-a="dist" aria-pressed="false">Distributed</button>
+      </div>
+      <button type="button" class="btn ghost" id="heal" style="color:var(--on-hero);border-color:rgba(255,255,255,.3)">Repair all servers</button>
+    </div>
+    <div class="hero-sim">
+      <div class="map" id="map"></div>
+      <div class="users">
+        <div class="users" id="users"></div>
+        <p class="hero-sum" id="heroSum"></p>
+      </div>
+    </div>
+    <div class="lv support box-support" style="background:rgba(255,255,255,.08);color:var(--on-hero)"><span class="tier" style="color:var(--sig)">Support</span>
+      <p>Distributed database = 분산 데이터베이스. Node = 노드 (one computer in the network). Centralised = 중앙 집중식.</p></div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="sec-head">
+    <span class="eyebrow">Overview</span>
+    <h2>Features of distributed databases</h2>
+    <p>Spreading data out brings speed and reliability, but it creates problems too. Each feature below either brings a benefit or solves one of those problems. Tap a card to jump to its simulation.</p>
+  </div>
+  <div class="feat" id="featGrid"></div>
+  <div class="defn" style="margin-top:16px"><small>The big challenge</small>When data is in several places, how do we keep every copy the same? Inconsistent data leads to wrong information, bad decisions, conflicting records and a loss of data integrity.</div>
+</section>
+
+<section id="partition">
+  <div class="sec-head">
+    <span class="eyebrow">Feature · Data partitioning <span class="ko-in">데이터 분할</span></span>
+    <h2>Cut the table into fragments</h2>
+    <p>Partitioning divides the database into smaller parts (fragments) and stores them on different nodes. Choose how to cut TicketWave's Members table.</p>
+  </div>
+  <div class="panel" style="display:grid;gap:14px">
+    <div class="row">
+      <div class="seg" id="partSeg" role="group" aria-label="Partitioning type">
+        <button type="button" data-p="none" aria-pressed="true">Whole table</button>
+        <button type="button" data-p="h" aria-pressed="false">Horizontal (rows)</button>
+        <button type="button" data-p="v" aria-pressed="false">Vertical (columns)</button>
+      </div>
+    </div>
+    <div id="partOut"></div>
+    <p id="partWhy" class="note" style="font-size:.95rem;color:var(--ink)"></p>
+  </div>
+  <div class="two" style="margin-top:14px">
+    <div class="defn"><small>Reasons to partition</small>Better performance (each node searches a smaller data set, close to its users) · higher availability (if one fragment's node fails, the others still work) · large data sets are easier to manage.</div>
+    <div class="lv stretch box-stretch"><span class="tier">Stretch</span><p>Vertical fragments must each keep the primary key (member_id). Without it, the system cannot join the fragments back into the original rows. Horizontal fragments must together contain every row exactly once, so that no data is lost or duplicated.</p></div>
+  </div>
+</section>
+
+<section id="replication">
+  <div class="sec-head">
+    <span class="eyebrow">Feature · Replication <span class="ko-in">복제</span> + data consistency</span>
+    <h2>Three copies of the seat count</h2>
+    <p>Replication keeps copies of the same data on several nodes. Here every node holds the number of seats left. Sell a ticket in Seoul and watch how the copies catch up.</p>
+  </div>
+  <div class="panel" style="display:grid;gap:14px">
+    <div class="row">
+      <span class="lab">Replication mode</span>
+      <div class="seg" id="repSeg" role="group" aria-label="Replication mode">
+        <button type="button" data-r="sync" aria-pressed="true">Synchronous</button>
+        <button type="button" data-r="async" aria-pressed="false">Asynchronous</button>
+        <button type="button" data-r="quorum" aria-pressed="false">Quorum (2 of 3)</button>
+      </div>
+    </div>
+    <div class="nodes" id="repNodes"></div>
+    <div class="row">
+      <button type="button" class="btn sig" id="sell">Sell 1 ticket in Seoul</button>
+      <button type="button" class="btn ghost" id="readJeju">Read seats in Jeju</button>
+      <label class="toggle"><input type="checkbox" id="cutJeju"> Cut the network link to Jeju</label>
+      <button type="button" class="btn ghost" id="repReset">Reset</button>
+    </div>
+    <div class="meter" id="repMeter"></div>
+    <div class="log" id="repLog" aria-live="polite"></div>
+  </div>
+  <div class="cmp" style="margin-top:14px">
+    <table>
+      <thead><tr><th></th><th>Synchronous</th><th>Asynchronous</th></tr></thead>
+      <tbody>
+        <tr><th>When is the write confirmed?</th><td>After every copy is updated</td><td>Straight away; copies update later</td></tr>
+        <tr><th>Consistency</th><td>High: all copies always match</td><td>Copies can be out of date (stale) for a short time</td></tr>
+        <tr><th>Latency (waiting time)</th><td>High: waits for the slowest node</td><td>Low</td></tr>
+        <tr><th>If one node is unreachable</th><td>Writes are blocked</td><td>Writes continue; that node catches up later</td></tr>
+        <tr><th>Good for</th><td>Bank balances, ticket seats</td><td>Social media likes, view counts</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:12px"><b>Trade-off:</b> strong consistency or low latency. You cannot fully have both, so the choice depends on what the application needs.</p>
+  <div class="lv stretch box-stretch" style="margin-top:12px"><span class="tier">Stretch</span>
+    <p><b>Consensus</b> means the nodes agree on the current state of the data. <b>Quorum</b> is one way to reach it: an operation succeeds when a majority of nodes (here 2 of 3) confirm it. This is faster than waiting for all nodes and still survives one node failing.</p>
+    <p>A common rule is W + R &gt; N: if a write goes to W nodes and a read asks R nodes, out of N copies, then every read overlaps at least one up-to-date copy. With N = 3, W = 2, R = 2 the rule holds.</p></div>
+</section>
+
+<section id="concurrency">
+  <div class="sec-head">
+    <span class="eyebrow">Feature · Concurrency control <span class="ko-in">동시성 제어</span></span>
+    <h2>Two fans, one seat left</h2>
+    <p>Concurrency control manages many users using the database at the same time. Minji (Seoul) and Joon (Busan) both try to buy the last seat. Step through what happens with each method.</p>
+  </div>
+  <div class="panel" style="display:grid;gap:14px">
+    <div class="row">
+      <div class="seg" id="ccSeg" role="group" aria-label="Concurrency method">
+        <button type="button" data-c="none" aria-pressed="true">No control</button>
+        <button type="button" data-c="lock" aria-pressed="false">Locking</button>
+        <button type="button" data-c="ts" aria-pressed="false">Timestamps</button>
+      </div>
+      <button type="button" class="btn" id="ccNext">Next step ▶</button>
+      <button type="button" class="btn ghost" id="ccBack">◀ Back</button>
+      <button type="button" class="btn ghost" id="ccAll">Show all</button>
+    </div>
+    <div class="lanes" id="lanes"></div>
+    <div id="ccVerdict" aria-live="polite"></div>
+  </div>
+  <div class="two" style="margin-top:14px">
+    <div class="defn"><small>Locking</small>A transaction locks the data before changing it. Other transactions must wait until the lock is released.</div>
+    <div class="defn"><small>Timestamps</small>Each transaction gets a timestamp when it starts. Conflicts are settled by timestamp order; a transaction that breaks the order is aborted and restarted.</div>
+  </div>
+  <div class="lv stretch box-stretch" style="margin-top:12px"><span class="tier">Stretch</span><p><b>Deadlock:</b> Minji locks seat A and waits for seat B, while Joon locks seat B and waits for seat A. Neither can continue. Systems detect this and abort one transaction. Timestamp methods avoid deadlock because nobody waits for a lock, but more transactions get aborted and restarted.</p></div>
+</section>
+
+<section id="acid">
+  <div class="sec-head">
+    <span class="eyebrow">Distributed transactions · ACID</span>
+    <h2>A transfer across two nodes</h2>
+    <p>A <b>transaction</b> is a sequence of operations treated as one logical unit of work. Minji's account is on the Seoul node and the café's account is on the Jeju node. She pays ₩30,000.</p>
+  </div>
+  <div class="panel" style="display:grid;gap:14px">
+    <div class="accts">
+      <div class="acct" id="acA"><span class="lab">Seoul node</span><span>Minji</span><b id="balA"></b></div>
+      <span class="arrowbig" aria-hidden="true">→ ₩30,000 →</span>
+      <div class="acct" id="acB"><span class="lab">Jeju node</span><span>Halla Café</span><b id="balB"></b></div>
+    </div>
+    <div class="row">
+      <label class="toggle"><input type="checkbox" id="crash"> Jeju node crashes during the transfer</label>
+    </div>
+    <div class="row">
+      <button type="button" class="btn ghost" id="runRaw">Run without transaction control</button>
+      <button type="button" class="btn sig" id="runAcid">Run as an ACID transaction</button>
+      <button type="button" class="btn ghost" id="acidReset">Reset</button>
+    </div>
+    <div class="log" id="acidLog" aria-live="polite"></div>
+    <p class="total" id="totalChk"></p>
+  </div>
+  <h3 style="margin-top:22px;margin-bottom:10px">The four ACID properties <span class="ko-in">원자성 · 일관성 · 고립성 · 지속성</span></h3>
+  <div class="acid" id="acidCards"></div>
+  <div class="panel acid-detail" id="acidDetail"></div>
+  <div class="lv stretch box-stretch" style="margin-top:12px"><span class="tier">Stretch</span><p><b>Two-phase commit (2PC)</b> gives atomicity across nodes. Phase 1 (prepare): a coordinator asks every node "can you commit?" and each node votes. Phase 2 (commit): only if all vote yes does the coordinator tell everyone to commit; one "no" or no reply means everyone rolls back. The ACID button above runs this.</p></div>
+</section>
+
+<section id="query">
+  <div class="sec-head">
+    <span class="eyebrow">Features · Distribution transparency <span class="ko-in">분산 투명성</span> + global query processing</span>
+    <h2>It looks like one table</h2>
+    <p>Distribution transparency hides the nodes from users and applications. They use the database as if it were one centralised system. Behind the scenes, global query processing decides how to fetch the data from the nodes.</p>
+  </div>
+  <div class="panel view">
+    <div class="row">
+      <span class="lab">Query</span>
+      <div class="seg" id="qSeg" role="group" aria-label="Choose query">
+        <button type="button" data-q="jeju" aria-pressed="true">Jeju members</button>
+        <button type="button" data-q="gold" aria-pressed="false">Members with 3,000+ points</button>
+      </div>
+    </div>
+    <div class="two">
+      <div style="display:grid;gap:8px">
+        <span class="lab">What the user writes (from Seoul)</span>
+        <div class="sql" id="sql"></div>
+        <p class="note">No node names, no locations. The same SQL would work on a centralised database.</p>
+      </div>
+      <div style="display:grid;gap:8px">
+        <span class="lab">What the system does · choose a plan</span>
+        <div class="seg" id="planSeg" role="group" aria-label="Query plan">
+          <button type="button" data-pl="ship" aria-pressed="true">A: Copy all rows to Seoul, then filter</button>
+          <button type="button" data-pl="push" aria-pressed="false">B: Filter at each node, send only matches</button>
+        </div>
+        <div class="plan-out" id="planOut"></div>
+      </div>
+    </div>
+  </div>
+  <div class="feat" style="margin-top:14px">
+    <div class="panel"><b>Location transparency</b><p class="note">Users do not need to know where the data is stored. The system finds it.</p></div>
+    <div class="panel"><b>Fragmentation transparency</b><p class="note">Users do not know the table is split into fragments. They query the whole table.</p></div>
+    <div class="panel"><b>Access transparency</b><p class="note">Local and remote data are accessed in exactly the same way.</p></div>
+  </div>
+  <p style="margin-top:12px">Benefit: programmers write simpler applications and users get a smoother experience. Global query processing aims to cut <b>network traffic</b> and <b>response time</b>.</p>
+</section>
+
+<section id="scale">
+  <div class="sec-head">
+    <span class="eyebrow">Features · Scalability <span class="ko-in">확장성</span> + fault tolerance <span class="ko-in">결함 허용</span></span>
+    <h2>Ticket day: 10,000 fans at once</h2>
+    <p>Scalability is the ability to handle more work by adding resources. Drag the slider to add fans, then choose how to grow.</p>
+  </div>
+  <div class="panel scale-out">
+    <label for="load" class="lab">Requests per second: <b id="loadV" style="color:var(--ink)"></b></label>
+    <input type="range" id="load" min="500" max="12000" step="500" value="5000">
+    <div class="two">
+      <div style="display:grid;gap:8px">
+        <h3>Horizontal: add more machines</h3>
+        <div class="row"><button type="button" class="btn ghost" id="hMinus" aria-label="Remove a node">− node</button><button type="button" class="btn" id="hPlus">+ Add node</button><span class="note" id="hInfo"></span></div>
+        <div class="racks" id="hRacks"></div>
+        <div class="loadbar"><span id="hBar"></span><em id="hTxt"></em></div>
+      </div>
+      <div style="display:grid;gap:8px">
+        <h3>Vertical: upgrade one machine</h3>
+        <div class="row"><button type="button" class="btn ghost" id="vMinus" aria-label="Smaller server">− size</button><button type="button" class="btn" id="vPlus">Upgrade ▲</button><span class="note" id="vInfo"></span></div>
+        <div class="racks" id="vRacks"></div>
+        <div class="loadbar"><span id="vBar"></span><em id="vTxt"></em></div>
+      </div>
+    </div>
+    <p id="scaleMsg"></p>
+  </div>
+  <div class="two" style="margin-top:14px">
+    <div class="defn"><small>Fault tolerance</small>The system keeps working correctly even when hardware or software fails. It is achieved with replication (several copies of data), redundant hardware and software, and failover (another node automatically takes over). You saw this in the Big picture: crash a node in Distributed mode.</div>
+    <div class="defn"><small>Scalability in exams</small>Horizontal scaling is the usual choice for distributed databases. It has almost no upper limit, and extra nodes add fault tolerance. Vertical scaling hits a hardware limit and leaves one point of failure.</div>
+  </div>
+</section>
+
+<section id="security">
+  <div class="sec-head">
+    <span class="eyebrow">Feature · Data security <span class="ko-in">데이터 보안</span></span>
+    <h2>More places to attack</h2>
+    <p>Data spread across many locations means more nodes and more network links to protect.</p>
+  </div>
+  <div class="panel" style="display:grid;gap:10px;margin-bottom:14px">
+    <div class="row"><span class="lab">Data travelling from Busan to Seoul</span><label class="toggle"><input type="checkbox" id="enc" checked style="accent-color:var(--ok)"> Encrypt in transit</label></div>
+    <div class="packet" id="packet"></div>
+  </div>
+  <div class="sec-grid">
+    <div class="panel"><h3>Authentication and authorisation</h3><p>Check who you are and what you may do, at every node, not just one.</p></div>
+    <div class="panel"><h3>Encryption</h3><p>In transit (moving between nodes) and at rest (stored on each node's disks).</p></div>
+    <div class="panel"><h3>Auditing and monitoring</h3><p>Log who accessed what and when, on every node, and watch for unusual access.</p></div>
+    <div class="panel"><h3>Consistent policies</h3><p>Every node follows the same security rules. One weak node puts all the data at risk.</p></div>
+  </div>
+</section>
+
+<section id="practice">
+  <div class="sec-head">
+    <span class="eyebrow">Practice</span>
+    <h2>Name it</h2>
+    <p>Read each scenario and pick the answer. Your first click counts for the score.</p>
+  </div>
+  <div class="pset" id="set-feat"></div>
+  <div class="pset" id="set-acid"></div>
+  <div class="lv stretch"><div class="pset" id="set-stretch"></div></div>
+</section>
+
+<section id="words">
+  <div class="sec-head"><span class="eyebrow">Key words · 핵심 용어</span><h2>Glossary</h2></div>
+  <div class="tbl-box gl"><table><thead><tr><th>Term</th><th>한국어</th><th>Meaning</th></tr></thead><tbody id="glossary"></tbody></table></div>
+  <p class="foot">TicketWave, its members and all figures are invented for teaching. Times in the simulations are scaled so you can watch them.</p>
+</section>
+</main>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>n.toLocaleString('en-US');
+
+/* level */
+function setLevel(l){document.body.dataset.level=l;document.querySelectorAll('#levelSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.level===l));try{localStorage.setItem('a344-level',l)}catch(e){}}
+let saved='core';try{saved=localStorage.getItem('a344-level')||'core'}catch(e){}
+setLevel(saved);
+$('#levelSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setLevel(b.dataset.level)});
+function segSet(sel,attr,val){document.querySelectorAll(sel+' button').forEach(b=>b.setAttribute('aria-pressed',b.dataset[attr]===val))}
+
+/* ---------- hero: centralised vs distributed ---------- */
+const CITY={Seoul:{x:150,y:60},Busan:{x:300,y:175},Jeju:{x:90,y:250}};
+const LAT={Seoul:{Seoul:8,Busan:22,Jeju:31},Busan:{Seoul:22,Busan:8,Jeju:26},Jeju:{Seoul:31,Busan:26,Jeju:8}};
+const USERS=[['Minji','Seoul'],['Joon','Busan'],['Hana','Jeju']];
+const H={arch:'central',down:new Set()};
+function renderHero(){
+  const servers=H.arch==='central'?['Seoul']:['Seoul','Busan','Jeju'];
+  let s=`<svg viewBox="0 0 400 300" role="img" aria-label="Map showing servers in ${servers.join(', ')}">`;
+  // links
+  const pairs=H.arch==='central'?[['Busan','Seoul'],['Jeju','Seoul']]:[['Seoul','Busan'],['Busan','Jeju'],['Jeju','Seoul']];
+  pairs.forEach(([a,b])=>{const A=CITY[a],B=CITY[b];s+=`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="#8FA3C7" stroke-width="2" stroke-dasharray="6 5" opacity=".7"/>`});
+  Object.entries(CITY).forEach(([c,p])=>{
+    const isServer=servers.includes(c),down=H.down.has(c);
+    if(isServer){
+      const col=down?'#C23B12':'#3CCFCF';
+      s+=`<g class="srv" data-c="${c}" tabindex="0" role="button" aria-label="${c} server, ${down?'crashed. Press to repair':'working. Press to crash'}" style="cursor:pointer">
+        <ellipse cx="${p.x}" cy="${p.y-14}" rx="26" ry="8" fill="${col}"/>
+        <rect x="${p.x-26}" y="${p.y-14}" width="52" height="30" fill="${col}"/>
+        <ellipse cx="${p.x}" cy="${p.y+16}" rx="26" ry="8" fill="${col}"/>
+        <ellipse cx="${p.x}" cy="${p.y-14}" rx="26" ry="8" fill="#ffffff" opacity=".35"/>
+        ${down?`<text x="${p.x}" y="${p.y+8}" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">✕</text>`:`<text x="${p.x}" y="${p.y+7}" text-anchor="middle" font-size="11" font-weight="700" fill="#10303A">${H.arch==='central'?'ALL DATA':'DATA'}</text>`}
+      </g>`;
+    } else {
+      s+=`<circle cx="${p.x}" cy="${p.y}" r="7" fill="#B3BED3"/>`;
+    }
+    s+=`<text x="${p.x+34}" y="${p.y+4}" font-size="14" font-weight="700" fill="#F1F4FA">${c}</text>`;
+    if(isServer)s+=`<text x="${p.x+34}" y="${p.y+20}" font-size="11" fill="#B3BED3">${down?'crashed':'tap to crash'}</text>`;
+  });
+  s+='</svg>';
+  $('#map').innerHTML=s;
+  document.querySelectorAll('.srv').forEach(g=>{
+    const t=()=>{const c=g.dataset.c;H.down.has(c)?H.down.delete(c):H.down.add(c);renderHero()};
+    g.addEventListener('click',t);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();t()}});
+  });
+  let served=0;
+  $('#users').innerHTML=USERS.map(([n,c])=>{
+    const live=servers.filter(x=>!H.down.has(x));
+    if(!live.length)return `<div class="user"><span aria-hidden="true">👤</span><div class="who"><b>${n}</b><span>in ${c}</span></div><span class="pill bad">✕ Site down</span></div>`;
+    const best=live.sort((a,b)=>LAT[c][a]-LAT[c][b])[0],ms=LAT[c][best];served++;
+    return `<div class="user"><span aria-hidden="true">👤</span><div class="who"><b>${n}</b><span>in ${c} → served by ${best}</span></div><span class="pill ${ms>20?'slow':'ok'}">✓ ${ms} ms</span></div>`;
+  }).join('');
+  let msg;
+  if(H.arch==='central')msg=H.down.size?'<b>Single point of failure.</b> The only server is down, so nobody can buy tickets.':'All data is on one server in Seoul. Fans in Busan and Jeju wait longer because their requests travel further. Try crashing the server.';
+  else msg=H.down.size===3?'Every node is down. Even a distributed system needs at least one working node.':H.down.size?`<b>Fault tolerance.</b> ${[...H.down].join(' and ')} crashed, but ${served} of 3 fans are still served by another node (failover). Their wait is a little longer.`:'Each city has its own node, so every fan is served locally and quickly. Try crashing one node.';
+  $('#heroSum').innerHTML=msg;
+  segSet('#archSeg','a',H.arch);
+}
+$('#archSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;H.arch=b.dataset.a;H.down.clear();renderHero()});
+$('#heal').onclick=()=>{H.down.clear();renderHero()};
+renderHero();
+
+/* ---------- features grid ---------- */
+const FEATS=[
+ ['Data partitioning','Split data into fragments on different nodes','#partition','partition'],
+ ['Replication','Keep copies of data on several nodes','#replication','replication'],
+ ['Data consistency','Keep every copy the same','#replication','replication'],
+ ['Concurrency control','Stop users clashing when they change data at the same time','#concurrency','concurrency'],
+ ['Distributed transactions (ACID)','Make changes across nodes reliable','#acid','acid'],
+ ['Distribution transparency','Hide the nodes so it looks like one database','#query','query'],
+ ['Global query processing','Plan the fastest way to fetch data from many nodes','#query','query'],
+ ['Scalability','Handle more work by adding nodes','#scale','scale'],
+ ['Fault tolerance','Keep working when a node fails','#big','big'],
+ ['Data security','Protect data at every node and on every link','#security','security']];
+$('#featGrid').innerHTML=FEATS.map(f=>`<button type="button" data-h="${f[2]}"><b>${f[0]}</b><span>${f[1]}</span><em>Try it ↓</em></button>`).join('');
+$('#featGrid').addEventListener('click',e=>{const b=e.target.closest('button');if(b)$(b.dataset.h).scrollIntoView()});
+
+/* ---------- partitioning ---------- */
+const MEM=[[101,'Minji Kim','Seoul','010-2231-4410',4200],[102,'Joon Park','Busan','010-9912-3321',1300],[103,'Hana Oh','Jeju','010-5520-1187',3100],
+ [104,'Seo-yeon Lee','Seoul','010-3348-9021',800],[105,'Daniel Cho','Jeju','010-7781-2204',2500],[106,'Ji-ho Han','Busan','010-6640-5512',5100],
+ [107,'Yuna Choi','Seoul','010-4456-7788',1900],[108,'Min-su Kang','Busan','010-2209-6631',3600],[109,'Aria Jung','Jeju','010-8812-4401',600]];
+const COLS=['member_id','name','city','phone','points'];
+function tbl(cols,rows,keyIdx=0){return `<div class="tbl-box"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${i===keyIdx?'key':''}">${typeof v==='number'&&i>0?fmt(v):esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+function renderPart(p){
+  segSet('#partSeg','p',p);
+  let h='',why='';
+  if(p==='none'){h=`<div class="frag"><h4>Members <small>1 table · 9 rows · 5 columns · one server</small></h4>${tbl(COLS,MEM)}</div>`;why='The whole table sits on one server. Every search reads all 9 rows, and if the server fails, all the data is gone.'}
+  if(p==='h'){h='<div class="frags">'+['Seoul','Busan','Jeju'].map(c=>{const r=MEM.filter(m=>m[2]===c);return `<div class="frag c-${c.toLowerCase()} panel"><h4>${c} node <small>${r.length} rows · all 5 columns</small></h4>${tbl(COLS,r)}</div>`}).join('')+'</div>';
+    why='Horizontal partitioning splits by ROWS. Each node stores the members from its own city, with all the columns. A Busan search only reads Busan rows, locally.'}
+  if(p==='v'){h=`<div class="frags"><div class="frag c-seoul panel"><h4>Accounts node <small>9 rows · 3 columns</small></h4>${tbl(['member_id','name','phone'],MEM.map(m=>[m[0],m[1],m[3]]))}</div>
+    <div class="frag c-jeju panel"><h4>Rewards node <small>9 rows · 3 columns</small></h4>${tbl(['member_id','city','points'],MEM.map(m=>[m[0],m[2],m[4]]))}</div></div>`;
+    why='Vertical partitioning splits by COLUMNS. Personal details (phone) go on one node and reward points on another. member_id is kept in both so rows can be joined back together. Staff who only need points never touch phone numbers.'}
+  $('#partOut').innerHTML=h;$('#partWhy').textContent=why;
+}
+$('#partSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)renderPart(b.dataset.p)});
+renderPart('none');
+
+/* ---------- replication ---------- */
+const RN=['Seoul','Busan','Jeju'],DELAY={Seoul:0,Busan:900,Jeju:1500};
+const R={mode:'sync',committed:20,val:{Seoul:20,Busan:20,Jeju:20},busy:false,timers:[],sold:0,wait:null,staleReads:0,pendingJeju:null};
+function rlog(msg,cls=''){const l=$('#repLog'),t=new Date();const d=document.createElement('div');d.className=cls;d.innerHTML=`<span class="t">${String(t.getMinutes()).padStart(2,'0')}:${String(t.getSeconds()).padStart(2,'0')}</span> ${msg}`;l.prepend(d)}
+function renderRep(){
+  segSet('#repSeg','r',R.mode);
+  const cut=$('#cutJeju').checked;
+  $('#repNodes').innerHTML=RN.map(n=>{
+    const stale=R.val[n]!==R.committed,down=n==='Jeju'&&cut;
+    return `<div class="node ${stale?'stale':'fresh'} ${down?'down':''}"><div class="nm">${n}${n==='Seoul'?' <span class="lab">primary</span>':''}</div>
+      <div class="val">${R.val[n]} <small>seats left</small></div>
+      <div class="st">${down?'⛔ link cut':''} ${stale?'⚠ stale copy (out of date)':'✓ up to date'}</div></div>`}).join('');
+  $('#repMeter').innerHTML=`<div><b>${R.sold}</b><span>tickets sold</span></div><div><b>${R.wait==null?'–':fmt(R.wait)+' ms'}</b><span>last buyer waited</span></div><div><b>${R.staleReads}</b><span>stale reads in Jeju</span></div>`;
+  $('#sell').disabled=R.busy;
+}
+function sell(){
+  if(R.busy)return;
+  const cut=$('#cutJeju').checked,mode=R.mode;
+  R.committed--;R.val.Seoul=R.committed;R.sold++;
+  const target=R.committed;
+  rlog(`Seoul writes seats = ${target}.`);
+  const reach={Busan:true,Jeju:!cut};
+  const arrive=n=>{R.val[n]=Math.min(R.val[n],target);rlog(`${n} copy updated to ${target}.`,'g');renderRep()};
+  if(mode==='async'){
+    R.wait=8;rlog('Asynchronous: the buyer is told "done" straight away.','g');
+    ['Busan','Jeju'].forEach(n=>{if(reach[n])R.timers.push(setTimeout(()=>arrive(n),DELAY[n]));else{rlog(`${n} unreachable. Its copy will stay stale until the link returns.`,'w');R.pendingJeju=true}});
+  } else {
+    const need=mode==='sync'?2:1; // other nodes that must confirm
+    if(mode==='sync'&&cut){
+      R.busy=true;renderRep();
+      R.timers.push(setTimeout(()=>arrive('Busan'),DELAY.Busan));
+      rlog('Synchronous: waiting for Busan AND Jeju to confirm…');
+      R.timers.push(setTimeout(()=>{rlog('Jeju never replies. The write is cancelled and Seoul and Busan roll back. The buyer gets an error. Consistency is kept, but availability is lost.','w');
+        R.committed++;R.sold--;R.val.Seoul=R.committed;R.val.Busan=R.committed;R.busy=false;R.wait=null;renderRep()},2400));
+      renderRep();return;
+    }
+    R.busy=true;renderRep();
+    rlog(mode==='sync'?'Synchronous: the buyer waits until ALL copies confirm…':'Quorum: the buyer waits for a majority (2 of 3 nodes)…');
+    ['Busan','Jeju'].forEach(n=>{if(reach[n])R.timers.push(setTimeout(()=>arrive(n),DELAY[n]));else{rlog(`${n} unreachable. Quorum does not need it.`,'w');R.pendingJeju=true}});
+    const wt=mode==='sync'?DELAY.Jeju:DELAY.Busan;
+    R.timers.push(setTimeout(()=>{R.busy=false;R.wait=wt;rlog(`Confirmed to the buyer after ${fmt(wt)} ms.`,'g');renderRep()},wt+30));
+  }
+  renderRep();
+}
+$('#sell').onclick=sell;
+$('#readJeju').onclick=()=>{
+  if($('#cutJeju').checked){rlog('Jeju reader: the link is cut. The Jeju node answers with its local copy: '+R.val.Jeju+' seats.',R.val.Jeju!==R.committed?'w':'');}
+  else rlog(`Jeju reader sees ${R.val.Jeju} seats.`+(R.val.Jeju!==R.committed?` Real value is ${R.committed}. Stale read!`:' Correct.'),R.val.Jeju!==R.committed?'w':'g');
+  if(R.val.Jeju!==R.committed)R.staleReads++;renderRep();
+};
+$('#cutJeju').onchange=()=>{
+  if(!$('#cutJeju').checked){rlog('Link to Jeju restored.');if(R.val.Jeju!==R.committed){R.timers.push(setTimeout(()=>{R.val.Jeju=R.committed;rlog(`Jeju catches up to ${R.committed}.`,'g');renderRep()},DELAY.Jeju))}}
+  else rlog('Link to Jeju cut.','w');
+  renderRep();
+};
+$('#repSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||R.busy)return;R.mode=b.dataset.r;rlog(`Mode: ${b.textContent}.`);renderRep()});
+function repReset(){R.timers.forEach(clearTimeout);R.timers=[];Object.assign(R,{committed:20,val:{Seoul:20,Busan:20,Jeju:20},busy:false,sold:0,wait:null,staleReads:0});$('#cutJeju').checked=false;$('#repLog').innerHTML='';rlog('20 seats left. All copies match.');renderRep()}
+$('#repReset').onclick=repReset;repReset();
+
+/* ---------- concurrency ---------- */
+const CC={
+ none:{steps:[
+  ['M','Reads seats → 1',1,'',''],
+  ['J','Reads seats → 1',1,'',''],
+  ['M','Sees 1 > 0, so buys. Writes seats = 0',0,'','good'],
+  ['J','His copy still says 1, so buys. Writes seats = 0',0,'','bad'],
+  ['X','Two tickets sold for one seat. Joon’s write overwrote Minji’s: a lost update.',0,'','bad']],
+  verdict:['bad','✕ Double booking. The data is wrong because both read before either wrote.']},
+ lock:{steps:[
+  ['M','Requests a lock on the seat row → granted',1,'🔒 Minji',''],
+  ['M','Reads seats → 1',1,'🔒 Minji',''],
+  ['J','Requests a lock → must WAIT (Minji holds it)',1,'🔒 Minji','wait'],
+  ['M','Writes seats = 0, commits, releases the lock',0,'','good'],
+  ['J','Gets the lock. Reads seats → 0',0,'🔒 Joon',''],
+  ['J','Sold out. Releases the lock. No ticket.',0,'','good']],
+  verdict:['good','✓ One ticket sold. Correct. The cost: Joon had to wait.']},
+ ts:{steps:[
+  ['X','Minji starts with timestamp 101. Joon starts with timestamp 102.',1,'',''],
+  ['J','(TS 102) Reads seats → 1',1,'last read: 102',''],
+  ['M','(TS 101) Reads seats → 1',1,'last read: 102',''],
+  ['J','(TS 102) Writes seats = 0 and commits',0,'last write: 102','good'],
+  ['M','(TS 101) Tries to write. A newer transaction (102) already used this data → Minji is ABORTED and rolled back',0,'last write: 102','bad'],
+  ['M','Restarts with TS 103. Reads seats → 0. Sold out.',0,'last read: 103','good']],
+  verdict:['good','✓ One ticket sold. Correct. No one waited, but Minji’s first attempt was thrown away and restarted.']}
+};
+const C={m:'none',i:0};
+function renderCC(){
+  segSet('#ccSeg','c',C.m);
+  const S=CC[C.m].steps;
+  const cur=S[Math.max(0,C.i-1)];
+  const seats=C.i?cur[2]:1,lock=C.i?cur[3]:'';
+  let h=`<div class="lane-h">👤 Minji · Seoul</div><div class="lane-h">Database</div><div class="lane-h">👤 Joon · Busan</div>`;
+  S.slice(0,C.i).forEach((s,k)=>{
+    const card=`<div class="ev ${s[4]} ${k===C.i-1?'new':''}"><span class="n">Step ${k+1}</span><br>${s[1]}</div>`;
+    const dbcell=k===0?`<div class="db" style="grid-row:span ${Math.max(1,C.i)}"><span class="lab">seats</span><b>${seats}</b><span class="lock">${lock}</span></div>`:'';
+    if(s[0]==='X')h+=`<div style="grid-column:1 / span 3;${k===0?'':''}">${card}</div>`+dbcell;
+    else if(s[0]==='M')h+=card+dbcell+(k===0?'':'')+'<div></div>';
+    else h+='<div></div>'+dbcell+card;
+  });
+  // rebuild simpler: DB shown once at top
+  let rows=`<div class="lane-h">👤 Minji · Seoul</div><div class="db"><span class="lab">seats in DB</span><b>${seats}</b><span class="lock">${esc(lock)||'no lock'}</span></div><div class="lane-h">👤 Joon · Busan</div>`;
+  S.slice(0,C.i).forEach((s,k)=>{
+    const card=`<div class="ev ${s[4]} ${k===C.i-1?'new':''}"><span class="n">Step ${k+1}</span><br>${s[1]}</div>`;
+    if(s[0]==='X')rows+=`<div style="grid-column:1 / -1">${card}</div>`;
+    else if(s[0]==='M')rows+=card+'<div></div><div></div>';
+    else rows+='<div></div><div></div>'+card;
+  });
+  if(!C.i)rows+=`<div style="grid-column:1 / -1" class="note">Seats left: 1. Press <b>Next step</b>.</div>`;
+  $('#lanes').innerHTML=rows;
+  const v=CC[C.m].verdict;
+  $('#ccVerdict').innerHTML=C.i===S.length?`<div class="verdict ${v[0]}">${v[1]}</div>`:'';
+  $('#ccNext').disabled=C.i===S.length;$('#ccBack').disabled=C.i===0;
+}
+$('#ccSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;C.m=b.dataset.c;C.i=0;renderCC()});
+$('#ccNext').onclick=()=>{C.i=Math.min(C.i+1,CC[C.m].steps.length);renderCC()};
+$('#ccBack').onclick=()=>{C.i=Math.max(0,C.i-1);renderCC()};
+$('#ccAll').onclick=()=>{C.i=CC[C.m].steps.length;renderCC()};
+renderCC();
+
+/* ---------- ACID transfer ---------- */
+const A={a:200000,b:50000};
+const won=n=>'₩'+fmt(n);
+function alog(m,c=''){const d=document.createElement('div');d.className=c;d.innerHTML=m;$('#acidLog').append(d)}
+function renderAcc(state){
+  $('#balA').textContent=won(A.a);$('#balB').textContent=won(A.b);
+  const tot=A.a+A.b;
+  $('#acA').className='acct'+(state?' '+state:'');$('#acB').className='acct'+(state?' '+state:'');
+  $('#totalChk').innerHTML=`Money in the system: <b>${won(tot)}</b> ${tot===250000?'<span class="pill ok">✓ valid state (should be ₩250,000)</span>':'<span class="pill bad">✕ ₩'+fmt(250000-tot)+' has vanished</span>'}`;
+}
+function acidReset(){A.a=200000;A.b=50000;$('#acidLog').innerHTML='<div class="t">Ready. Choose whether Jeju crashes, then run the transfer.</div>';renderAcc()}
+$('#acidReset').onclick=acidReset;
+$('#runRaw').onclick=()=>{
+  acidReset();$('#acidLog').innerHTML='';const crash=$('#crash').checked;
+  A.a-=30000;alog('1. Seoul: Minji − ₩30,000 ✓');
+  if(crash){alog('2. Jeju: + ₩30,000 … ✕ node crashed','w');alog('Nothing undoes step 1. Minji lost the money and the café never got it.','w');renderAcc('bad')}
+  else{A.b+=30000;alog('2. Jeju: café + ₩30,000 ✓','g');alog('It worked this time, but only because nothing failed.');renderAcc('good')}
+};
+$('#runAcid').onclick=()=>{
+  acidReset();$('#acidLog').innerHTML='';const crash=$('#crash').checked;
+  alog('BEGIN TRANSACTION');
+  alog('Phase 1 · prepare: coordinator asks Seoul and Jeju "can you commit?"');
+  alog('Seoul: YES (−₩30,000 ready, not yet final)');
+  if(crash){alog('Jeju: no reply (crashed)','w');alog('Phase 2 · ROLLBACK: one node did not agree, so NO changes are made anywhere.','w');alog('Atomicity: all or nothing. Minji keeps her money and can try again.','g');renderAcc('good')}
+  else{alog('Jeju: YES (+₩30,000 ready)');alog('Phase 2 · COMMIT: both nodes make the change permanent.','g');A.a-=30000;A.b+=30000;alog('Durability: the new balances survive even if a node crashes later.','g');renderAcc('good')}
+};
+acidReset();
+
+const ACID=[
+ ['A','Atomicity','원자성','A transaction is either fully completed (all changes made) or fully aborted (no changes made).','A bank transfer: money leaves Minji’s account AND arrives at the café, or neither happens.','The simulation above: when Jeju crashes, the Seoul debit is rolled back too.'],
+ ['C','Consistency','일관성','A transaction takes the database from one valid state to another. All rules and constraints stay true.','The total money is always ₩250,000. A rule like "seats left can never be below 0" is never broken.','Without control, the total dropped to ₩220,000: an invalid state.'],
+ ['I','Isolation','고립성','Concurrent transactions appear to run one at a time. The half-finished state of one is not visible to others.','Joon cannot see seats = 0 until Minji’s purchase is committed.','Locking and timestamps in the concurrency simulation provide isolation.'],
+ ['D','Durability','지속성','Once a transaction is committed, its changes are permanent and survive system failures.','After "payment successful", a power cut does not undo the payment.','Committed changes are written to disk and to logs, often replicated on other nodes.']];
+function showAcid(k){
+  document.querySelectorAll('#acidCards button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));
+  const a=ACID.find(x=>x[0]===k);
+  $('#acidDetail').innerHTML=`<h3>${a[1]} <span class="ko-in">${a[2]}</span></h3><p style="margin-top:6px">${a[3]}</p><p style="margin-top:8px"><b>Example:</b> ${a[4]}</p><p class="note" style="margin-top:6px">Link: ${a[5]}</p>`;
+}
+$('#acidCards').innerHTML=ACID.map(a=>`<button type="button" data-k="${a[0]}"><b>${a[0]}</b><span>${a[1]}</span></button>`).join('');
+$('#acidCards').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showAcid(b.dataset.k)});
+showAcid('A');
+
+/* ---------- transparency / query ---------- */
+const Q={q:'jeju',pl:'ship'};
+const QDEF={jeju:{sql:`<span class="k">SELECT</span> name, phone\n<span class="k">FROM</span> Members\n<span class="k">WHERE</span> city = <span class="s">'Jeju'</span>;`,f:m=>m[2]==='Jeju',label:'Jeju members'},
+            gold:{sql:`<span class="k">SELECT</span> name, points\n<span class="k">FROM</span> Members\n<span class="k">WHERE</span> points >= 3000;`,f:m=>m[4]>=3000,label:'3,000+ points'}};
+const ROWMS=12; // scaled ms per row transferred over a remote link
+function renderQ(){
+  segSet('#qSeg','q',Q.q);segSet('#planSeg','pl',Q.pl);
+  const d=QDEF[Q.q];$('#sql').innerHTML=d.sql;
+  const nodes=['Seoul','Busan','Jeju'],user='Seoul';
+  // horizontal partition by city; the Jeju query can be routed only to Jeju when filtering at node
+  const per=nodes.map(n=>{
+    const rows=MEM.filter(m=>m[2]===n),match=rows.filter(d.f).length;
+    let sent,contacted=true;
+    if(Q.pl==='ship')sent=n===user?0:rows.length;
+    else{
+      if(Q.q==='jeju'&&n!=='Jeju'){contacted=false;sent=0}
+      else sent=n===user?0:match;
+    }
+    return {n,rows:rows.length,match,sent,contacted,ms:n===user?0:(contacted?LAT[user][n]+sent*ROWMS:0)};
+  });
+  const total=per.reduce((a,b)=>a+b.sent,0),resp=Math.max(...per.map(p=>p.ms)),results=MEM.filter(d.f).length;
+  const maxSent=3;
+  $('#planOut').innerHTML=`<div class="flow">${per.map(p=>`<div><span><b>${p.n}</b>${p.n===user?' <span class="note">(local)</span>':''}</span><span class="track"><span class="fill ${Q.pl==='ship'&&p.sent?'heavy':''}" style="width:${p.sent/maxSent*100}%"></span></span><span class="v">${!p.contacted?'not contacted':p.n===user?'0 sent':p.sent+' rows sent'}</span></div>`).join('')}</div>
+   <div class="meter"><div><b>${total}</b><span>rows over the network</span></div><div><b>${resp} ms</b><span>response time (scaled)</span></div><div><b>${results}</b><span>rows in the answer</span></div></div>
+   <p class="note" style="color:var(--ink)">${Q.pl==='ship'?'Plan A moves every remote row to Seoul, including rows that are thrown away. Wasteful.':Q.q==='jeju'?'Plan B knows (from the partitioning rules) that only the Jeju node holds Jeju rows, so it only asks Jeju. Least traffic.':'Plan B runs the filter on each node in parallel and sends back only matching rows.'} The user gets the same answer either way: that is transparency.</p>`;
+}
+$('#qSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){Q.q=b.dataset.q;renderQ()}});
+$('#planSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){Q.pl=b.dataset.pl;renderQ()}});
+renderQ();
+
+/* ---------- scalability ---------- */
+const SC={n:2,v:0};const PER=2000,VSIZES=[['Small',2000,'₩'],['Medium',4000,'₩₩'],['Large',6500,'₩₩₩₩'],['Maximum',8000,'₩₩₩₩₩₩₩₩']];
+function bar(id,txt,load,cap){const p=Math.min(100,load/cap*100),o=load>cap;const el=$(id);el.style.width=p+'%';el.className=o?'over':'';$(txt).textContent=o?`Overloaded: ${fmt(load)} / ${fmt(cap)} → ${fmt(load-cap)} fans get errors`:`${Math.round(load/cap*100)}% of capacity (${fmt(cap)})`;return o}
+function renderScale(){
+  const load=+$('#load').value;$('#loadV').textContent=fmt(load);
+  const hcap=SC.n*PER,v=VSIZES[SC.v],vcap=v[1];
+  $('#hRacks').innerHTML=Array.from({length:SC.n},()=>`<div class="rack ${load>hcap?'hot':''}">${'<i></i>'.repeat(4)}</div>`).join('');
+  $('#vRacks').innerHTML=`<div class="rack ${load>vcap?'hot':''}" style="width:${54+SC.v*16}px">${'<i></i>'.repeat(4+SC.v*2)}</div>`;
+  $('#hInfo').textContent=`${SC.n} node${SC.n>1?'s':''} × ${fmt(PER)}`;$('#vInfo').textContent=`${v[0]} server · cost ${v[2]}`;
+  const ho=bar('#hBar','#hTxt',load,hcap),vo=bar('#vBar','#vTxt',load,vcap);
+  $('#vPlus').disabled=SC.v===VSIZES.length-1;$('#vMinus').disabled=SC.v===0;$('#hMinus').disabled=SC.n===1;$('#hPlus').disabled=SC.n===8;
+  let m='';
+  if(vo&&SC.v===VSIZES.length-1)m='<b>Vertical scaling has hit its limit.</b> There is no bigger machine to buy, and the cost rose much faster than the capacity. Horizontal scaling can keep going.';
+  else if(!ho&&!vo)m='Both setups cope with this load. Push the slider higher.';
+  else m='Add capacity until neither bar is red.';
+  m+=` If the vertical server fails, <b>everything stops</b>. With ${SC.n} nodes, losing one leaves ${fmt((SC.n-1)*PER)} capacity.`;
+  $('#scaleMsg').innerHTML=m;
+}
+$('#load').oninput=renderScale;
+$('#hPlus').onclick=()=>{SC.n=Math.min(8,SC.n+1);renderScale()};$('#hMinus').onclick=()=>{SC.n=Math.max(1,SC.n-1);renderScale()};
+$('#vPlus').onclick=()=>{SC.v=Math.min(VSIZES.length-1,SC.v+1);renderScale()};$('#vMinus').onclick=()=>{SC.v=Math.max(0,SC.v-1);renderScale()};
+renderScale();
+
+/* ---------- security ---------- */
+function renderPkt(){const e=$('#enc').checked;const p=$('#packet');p.className='packet '+(e?'enc':'clear');
+  p.innerHTML=e?'🔒 7f3a9c02e41b8d55c0a1f6e9d2… (TLS encrypted: an attacker on the link sees only this)':'⚠ {"member_id":106,"name":"Ji-ho Han","phone":"010-6640-5512","points":5100} (readable by anyone watching the link)'}
+$('#enc').onchange=renderPkt;renderPkt();
+
+/* ---------- practice ---------- */
+const FN=['Partitioning','Replication','Concurrency control','Transparency','Fault tolerance','Scalability','Query processing','Security'];
+const SETS={
+ feat:{title:'Which feature is this?',opts:FN,qs:[
+  ['A global shop stores Korean customers’ rows on a Seoul node and Japanese customers’ rows on a Tokyo node.','Partitioning','The table is split by rows (horizontal partitioning) and fragments are stored on different nodes.','Is the data split up, or copied?'],
+  ['The same product catalogue is stored on servers in Seoul, London and New York so pages load quickly everywhere.','Replication','Multiple copies of the same data on different nodes. Reads go to the nearest copy.','Is the data split up, or copied?'],
+  ['Two travel agents try to book the last hotel room. The database makes the second agent wait until the first finishes.','Concurrency control','Locking manages simultaneous access so the room is not double-booked.','Is it about two users at the same time?'],
+  ['A student app runs SELECT * FROM Grades without knowing the data is stored in three countries.','Transparency','Location transparency: users do not need to know where the data physically is.','Does the user see the nodes?'],
+  ['A data centre floods, but the website keeps running using copies on another continent.','Fault tolerance','The system keeps working despite a failure, using replicas and failover.','Is something broken but still working?'],
+  ['Before a big sale, an online shop adds 20 more database servers to handle the extra customers.','Scalability','Horizontal scaling: more nodes to handle a bigger workload.','Is it about growing?'],
+  ['The database decides to filter rows on each node and send only the matches, instead of sending whole tables.','Query processing','Global query processing chooses the plan that cuts network traffic and response time.','Is it about how a query is run?'],
+  ['Every node checks users’ passwords and permissions, and data moving between nodes is encrypted.','Security','Authentication, authorisation and encryption in transit at each node.','Is it about protecting data?']]},
+ acid:{title:'Which ACID property?',opts:['Atomicity','Consistency','Isolation','Durability'],qs:[
+  ['An online order fails halfway through. The payment is refunded and the stock level goes back to what it was.','Atomicity','All or nothing: the partly completed transaction is rolled back.','All or nothing?'],
+  ['A rule says a student cannot be enrolled in more than 8 courses. A transaction that would make it 9 is rejected.','Consistency','The database moves only from one valid state to another; rules are never broken.','Are rules being protected?'],
+  ['While a teacher is updating marks, a student viewing the report does not see a mix of old and new marks.','Isolation','The half-finished state of one transaction is hidden from other transactions.','Can others see half-finished work?'],
+  ['A "Payment successful" message appears, then the server loses power. After restarting, the payment is still recorded.','Durability','Committed changes are permanent and survive failures.','Does it survive a crash?'],
+  ['A money transfer between a Busan node and a Jeju node either updates both accounts or neither.','Atomicity','The transaction is one unit across both nodes: all or nothing.','All or nothing?']]},
+ stretch:{title:'Trade-offs and methods · Stretch',opts:['Synchronous replication','Asynchronous replication','Locking','Timestamps','Quorum','Vertical partitioning'],qs:[
+  ['A bank must never show a customer an out-of-date balance, even if updates are slower.','Synchronous replication','Consistency matters more than latency, so every copy is updated before the write is confirmed.',''],
+  ['A video site’s view counter can be a few seconds out of date, but must respond instantly.','Asynchronous replication','Low latency matters more; temporary inconsistency is acceptable.',''],
+  ['Five replicas exist. A write is accepted once three of them confirm it.','Quorum','A majority (3 of 5) agreeing lets the system continue even if two nodes are down.',''],
+  ['Transactions never wait. When two conflict, the one that is out of order is aborted and restarted.','Timestamps','Timestamp ordering avoids waiting (and deadlock) but causes restarts.',''],
+  ['Two transactions each hold a resource the other needs, so both wait forever.','Locking','This is deadlock, a risk of lock-based concurrency control.',''],
+  ['Medical details go on a highly secured node; contact details go on a general node. Both keep patient_id.','Vertical partitioning','The table is split by columns, and the primary key is kept in each fragment so rows can be rebuilt.','']]}
+};
+function buildSet(key){
+  const s=SETS[key],box=$('#set-'+key);let right=0,done=0;
+  box.innerHTML=`<div class="pset-head"><h3>${s.title}</h3><span class="score" id="sc-${key}">0 / ${s.qs.length} answered</span></div>`;
+  s.qs.forEach((q,i)=>{
+    const d=document.createElement('div');d.className='q';
+    d.innerHTML=`<p class="q-text"><span class="n">${i+1}.</span>${q[0]}</p>${q[3]?`<p class="lv support hint">Hint: ${q[3]}</p>`:''}<div class="opts">${s.opts.map(o=>`<button type="button" class="opt">${o}</button>`).join('')}</div><div class="fbw"></div>`;
+    let first=true;
+    d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      const ok=b.textContent===q[1];
+      if(first){first=false;done++;if(ok)right++;$('#sc-'+key).textContent=`${right} correct · ${done} / ${s.qs.length} answered`}
+      d.querySelectorAll('.opt').forEach(x=>x.classList.remove('wrong'));
+      if(ok)d.querySelectorAll('.opt').forEach(x=>x.classList.toggle('right',x===b));else b.classList.add('wrong');
+      d.querySelector('.fbw').innerHTML=ok?`<p class="fb good">✓ Correct. ${q[2]}</p>`:`<p class="fb bad">✗ Not ${esc(b.textContent)}. Try again.</p>`;
+    });
+    box.appendChild(d);
+  });
+}
+['feat','acid','stretch'].forEach(buildSet);
+
+/* ---------- glossary ---------- */
+const GL=[['Distributed database','분산 데이터베이스','Data spread across several computers (nodes) in a network'],
+ ['Centralised database','중앙 집중식 데이터베이스','All data stored on a single server'],['Node','노드','One computer in the network that stores data'],
+ ['Partitioning / fragment','분할 / 단편','Dividing data into parts stored on different nodes'],['Horizontal partitioning','수평 분할','Splitting a table by rows'],
+ ['Vertical partitioning','수직 분할','Splitting a table by columns (each keeps the primary key)'],['Replication / replica','복제 / 복제본','Keeping copies of data on several nodes'],
+ ['Synchronous','동기식','All copies updated before the write is confirmed'],['Asynchronous','비동기식','Write confirmed first; copies updated later'],
+ ['Latency','지연 시간','Time delay before a response'],['Stale data','오래된 데이터','A copy that is out of date'],
+ ['Consistency','일관성','All copies agree; the database stays in a valid state'],['Consensus','합의','Nodes agreeing on the state of the data'],
+ ['Quorum','정족수','A majority of nodes must agree for an operation'],['Concurrency control','동시성 제어','Managing many users changing data at the same time'],
+ ['Lock','잠금','Stops others using data until it is released'],['Timestamp','타임스탬프','Time label that sets the order of transactions'],
+ ['Transaction','트랜잭션','A sequence of operations treated as one unit of work'],['Commit / rollback','커밋 / 롤백','Make changes permanent / undo them'],
+ ['Atomicity','원자성','All or nothing'],['Isolation','고립성','Half-finished transactions are hidden from others'],['Durability','지속성','Committed changes survive failures'],
+ ['Transparency','투명성','Hiding the distributed nature from users'],['Global query processing','전역 질의 처리','Planning how to run a query across nodes'],
+ ['Fault tolerance','결함 허용','Keeps working despite failures'],['Failover','장애 조치','Another node automatically takes over'],
+ ['Scalability','확장성','Handling more work by adding resources'],['Encryption in transit / at rest','전송 중 / 저장 시 암호화','Scrambling data while moving / while stored']];
+$('#glossary').innerHTML=GL.map(g=>`<tr><td><b>${g[0]}</b></td><td>${g[1]}</td><td>${g[2]}</td></tr>`).join('');
+})();
+</script>
+
+</body></html>
