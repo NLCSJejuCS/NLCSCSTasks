@@ -21,6 +21,7 @@
       --igcse: #f472b6;
       --ib: #38bdf8;
       --tools: #c084fc;
+      --lessons: #2dd4bf;
     }
 
     * {
@@ -139,6 +140,7 @@
     }
 
     .section-tools   { --section-colour: var(--tools); }
+    .section-lessons { --section-colour: var(--lessons); }
     .section-primary { --section-colour: var(--primary); }
     .section-ks3     { --section-colour: var(--ks3); }
     .section-igcse   { --section-colour: var(--igcse); }
@@ -173,11 +175,75 @@
       color: var(--text);
     }
 
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .card-head .card-title { margin-bottom: 0; }
+
+    .card-icon {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: var(--section-colour);
+      background: color-mix(in srgb, var(--section-colour) 15%, transparent);
+    }
+
+    .card-icon svg { width: 24px; height: 24px; }
+
     .card-description {
       color: var(--text-muted);
       font-size: 0.95rem;
       margin-bottom: 1rem;
       flex-grow: 1;
+    }
+
+    .lesson-list {
+      list-style: none;
+      margin: 0 0 1rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .lesson-list li {
+      padding: 0.35rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .lesson-list strong {
+      color: var(--text);
+      font-weight: 600;
+      margin-right: 0.35rem;
+    }
+
+    .card-wide { grid-column: 1 / -1; }
+
+    .notice {
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      background: color-mix(in srgb, var(--section-colour) 15%, transparent);
+      border: 1px solid var(--section-colour);
+      border-radius: 8px;
+      padding: 0.7rem 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (min-width: 700px) {
+      .card-wide .card-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 2rem;
+      }
     }
 
     .tags {
@@ -258,6 +324,7 @@
     <nav class="filters" id="filters" aria-label="Filter by year group">
       <button class="chip active" data-filter="all">All</button>
       <button class="chip" data-filter="tools" style="--chip-colour: var(--tools)">Tools</button>
+      <button class="chip" data-filter="lessons" style="--chip-colour: var(--lessons)">Interactive Lessons</button>
       <button class="chip" data-filter="primary" style="--chip-colour: var(--primary)">Year 5–6</button>
       <button class="chip" data-filter="ks3" style="--chip-colour: var(--ks3)">Year 7–9</button>
       <button class="chip" data-filter="igcse" style="--chip-colour: var(--igcse)">IGCSE (Y10–11)</button>
@@ -277,7 +344,10 @@
         <!-- Python Coding Workspace (external Google Apps Script app) -->
         <div class="card" data-tags="python coding programming workspace assignments ide code editor">
           <div>
-            <h3 class="card-title">Python Coding Workspace</h3>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="8 7 3 12 8 17"/><polyline points="16 7 21 12 16 17"/><line x1="14" y1="4" x2="10" y2="20"/></svg></span>
+              <h3 class="card-title">Python Coding Workspace</h3>
+            </div>
             <p class="card-description">Online Python coding workspace where assignments are set. Open it to find your current task, write and run your code, and submit your work.</p>
             <div class="tags">
               <span class="tag">Python</span>
@@ -286,6 +356,44 @@
             </div>
           </div>
           <a href="https://script.google.com/a/macros/nlcsjeju.kr/s/AKfycbybpmoLZUVRSLOjZP1zgMqa2mn4DIL9IxAmBwLKezHLWSlKj4eLqnqKJH0z8_JrIVSsVA/exec?view=teacher" class="btn" target="_blank" rel="noopener">Open Workspace</a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== INTERACTIVE LESSONS (separate repo) =====================
+         Lives in its own repository (nscarlettnlcs/InteractiveLessons).
+         data-also makes this section appear under the Year 7–9 and IGCSE filters too. -->
+    <section class="section section-lessons" data-section="lessons" data-also="ks3 igcse" id="lessons">
+      <div class="section-header">
+        <h2>Interactive Lessons</h2>
+        <span class="section-sub">Teacher-led lessons for Year 7, Year 9 and IGCSE</span>
+      </div>
+      <div class="grid">
+
+        <div class="card card-wide" data-tags="interactive lessons live room code vote python for loops while loops functions year 7 year 9 year 10 igcse 0478 ks3 support core stretch primm">
+          <div class="card-body">
+            <div>
+              <div class="card-head">
+                <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="12" rx="1.5"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="8" y1="21" x2="12" y2="19"/><line x1="16" y1="21" x2="12" y2="19"/><polyline points="7 11 10 8 13 10 17 6"/></svg></span>
+                <h3 class="card-title">Computer Science Lessons</h3>
+              </div>
+              <p class="card-description">Live lessons your teacher presents from the front of the room. Join with the room code on the board to answer questions and vote. Tasks come in Support, Core and Stretch levels.</p>
+              <div class="tags">
+                <span class="tag">Year 7</span>
+                <span class="tag">Year 9</span>
+                <span class="tag">IGCSE</span>
+                <span class="tag">Python</span>
+              </div>
+            </div>
+            <ul class="lesson-list">
+              <li><strong>Year 7</strong>Python For Loops</li>
+              <li><strong>Year 7</strong>Python While Loops</li>
+              <li><strong>Year 9</strong>Python Functions</li>
+              <li><strong>Year 10</strong>While Loops (IGCSE 0478)</li>
+            </ul>
+          </div>
+          <a href="https://nscarlettnlcs.github.io/InteractiveLessons/" class="btn" target="_blank" rel="noopener">Open Lessons</a>
         </div>
 
       </div>
@@ -302,7 +410,10 @@
         <!-- Yr5 ESafety Matching -->
         <div class="card" data-tags="esafety e-safety online safety year 5 matching primary">
           <div>
-            <h3 class="card-title">E-Safety Matching</h3>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><polyline points="8.5 12 11 14.5 15.5 9.5"/></svg></span>
+              <h3 class="card-title">E-Safety Matching</h3>
+            </div>
             <p class="card-description">Learn key online safety ideas by matching terms, situations and safe choices.</p>
             <div class="tags">
               <span class="tag">Year 5</span>
@@ -326,7 +437,10 @@
         <!-- Spot the Pattern -->
         <div class="card" data-tags="year 7 ks3 python pattern recognition computational thinking logic">
           <div>
-            <h3 class="card-title">Spot the Pattern</h3>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><rect x="15.5" y="3.5" width="5" height="5" rx="0.5"/><polygon points="6 15 8.8 20 3.2 20"/><circle cx="18" cy="17.5" r="2.5"/><line x1="10" y1="6" x2="13.5" y2="6" stroke-dasharray="1 2.5"/><line x1="10.5" y1="18" x2="13.5" y2="18" stroke-dasharray="1 2.5"/></svg></span>
+              <h3 class="card-title">Spot the Pattern</h3>
+            </div>
             <p class="card-description">Practise pattern recognition, a core computational thinking skill, and use the patterns you find in Python.</p>
             <div class="tags">
               <span class="tag">Year 7</span>
@@ -335,6 +449,24 @@
             </div>
           </div>
           <a href="./Spot_the_Pattern.html" class="btn">Open Task</a>
+        </div>
+
+        <!-- Year 7 Python Practice Workbook (separate repo: nscarlettnlcs/NLCS_Y7_Python) -->
+        <div class="card" data-tags="year 7 ks3 python practice workbook coding exercises programming beginner tests check answer">
+          <div>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="8 7 3 12 8 17"/><polyline points="16 7 21 12 16 17"/><line x1="14" y1="4" x2="10" y2="20"/></svg></span>
+              <h3 class="card-title">Year 7 Python Practice</h3>
+            </div>
+            <p class="card-description">Python coding practice for Year 7. Work through the tasks in the built-in editor, run your code, check your answer against the tests and track your progress.</p>
+            <div class="tags">
+              <span class="tag">Year 7</span>
+              <span class="tag">Python</span>
+              <span class="tag">Practice</span>
+            </div>
+            <p class="notice">TO SAVE YOUR PROGRESS SO YOUR TEACHER CAN SEE IT, YOU MUST ASK YOUR TEACHER FOR YOUR PERSONAL LINK. YOU CAN STILL USE THIS SITE ON YOUR OWN FOR PRACTICE.</p>
+          </div>
+          <a href="https://nscarlettnlcs.github.io/NLCS_Y7_Python/" class="btn" target="_blank" rel="noopener">Open Workbook</a>
         </div>
 
       </div>
@@ -348,7 +480,23 @@
       </div>
       <div class="grid">
 
-        <div class="empty">IGCSE tasks coming soon.</div>
+        <!-- IGCSE Python Practice Workbook (separate repo: nscarlettnlcs/PythonCode) -->
+        <div class="card" data-tags="igcse 0478 year 10 year 11 python practice workbook coding exercises programming tests check answer">
+          <div>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="8 7 3 12 8 17"/><polyline points="16 7 21 12 16 17"/><line x1="14" y1="4" x2="10" y2="20"/></svg></span>
+              <h3 class="card-title">IGCSE Python Practice</h3>
+            </div>
+            <p class="card-description">Extra Python practice for IGCSE. Work through the tasks in the built-in editor, run your code, check your answer against the tests and track your progress.</p>
+            <div class="tags">
+              <span class="tag">IGCSE</span>
+              <span class="tag">Python</span>
+              <span class="tag">Practice</span>
+            </div>
+            <p class="notice">TO SAVE YOUR PROGRESS SO YOUR TEACHER CAN SEE IT, YOU MUST ASK YOUR TEACHER FOR YOUR PERSONAL LINK. YOU CAN STILL USE THIS SITE ON YOUR OWN FOR PRACTICE.</p>
+          </div>
+          <a href="https://nscarlettnlcs.github.io/PythonCode/" class="btn" target="_blank" rel="noopener">Open Workbook</a>
+        </div>
 
       </div>
     </section>
@@ -364,7 +512,10 @@
         <!-- Control Systems Questions (IB Topic 1) -->
         <div class="card" data-tags="ib cs dp topic 1 control systems sensors actuators feedback questions hardware">
           <div>
-            <h3 class="card-title">Control Systems Questions</h3>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0"/><line x1="12" y1="17" x2="16" y2="11"/><circle cx="12" cy="17" r="1.2"/><line x1="4" y1="21" x2="20" y2="21"/></svg></span>
+              <h3 class="card-title">Control Systems Questions</h3>
+            </div>
             <p class="card-description">Question set on control systems: inputs, sensors, processing, outputs and feedback.</p>
             <div class="tags">
               <span class="tag">IB CS</span>
@@ -378,7 +529,10 @@
         <!-- OLAP and Data Mining Lab (IB Topic 3) -->
         <div class="card" data-tags="ib cs dp topic 3 databases a3.4.3 olap data mining data warehouse">
           <div>
-            <h3 class="card-title">OLAP and Data Mining Lab</h3>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="21" x2="21" y2="21"/><rect x="5" y="12" width="3" height="6"/><rect x="10.5" y="7" width="3" height="11"/><rect x="16" y="3" width="3" height="15"/></svg></span>
+              <h3 class="card-title">OLAP and Data Mining Lab</h3>
+            </div>
             <p class="card-description">Explore online analytical processing (OLAP), data warehouses and data mining through interactive activities.</p>
             <div class="tags">
               <span class="tag">IB CS</span>
@@ -392,7 +546,10 @@
         <!-- Distributed Database Lab (IB Topic 3) -->
         <div class="card" data-tags="ib cs dp topic 3 databases distributed database partitioning fragmentation replication concurrency locking acid transparency scalability security">
           <div>
-            <h3 class="card-title">Distributed Database Lab</h3>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="5" ry="2"/><path d="M7 5v5c0 1.1 2.2 2 5 2s5-.9 5-2V5"/><line x1="12" y1="12" x2="12" y2="15"/><line x1="5" y1="18" x2="19" y2="18"/><line x1="5" y1="15.5" x2="5" y2="18"/><line x1="19" y1="15.5" x2="19" y2="18"/><circle cx="5" cy="20" r="1.6"/><circle cx="12" cy="20" r="1.6"/><circle cx="19" cy="20" r="1.6"/></svg></span>
+              <h3 class="card-title">Distributed Database Lab</h3>
+            </div>
             <p class="card-description">Interactive simulations of partitioning, replication, concurrency, ACID transactions, transparency, scalability and security.</p>
             <div class="tags">
               <span class="tag">IB CS</span>
@@ -424,12 +581,19 @@
     const noResults = document.getElementById('noResults');
     let activeFilter = 'all';
 
+    // A section belongs to a filter if it is that section, or lists it in data-also
+    function inSection(section, filter) {
+      const also = (section.dataset.also || '').split(' ');
+      return section.dataset.section === filter || also.includes(filter);
+    }
+
     // Show the number of tasks on each chip
     chips.forEach(chip => {
       const f = chip.dataset.filter;
       const count = f === 'all'
         ? document.querySelectorAll('.card').length
-        : document.querySelectorAll(`.section[data-section="${f}"] .card`).length;
+        : [...sections].filter(sec => inSection(sec, f))
+            .reduce((n, sec) => n + sec.querySelectorAll('.card').length, 0);
       const span = document.createElement('span');
       span.className = 'count';
       span.textContent = count;
@@ -441,7 +605,7 @@
       let anyVisible = false;
 
       sections.forEach(section => {
-        const inFilter = activeFilter === 'all' || section.dataset.section === activeFilter;
+        const inFilter = activeFilter === 'all' || inSection(section, activeFilter);
         const cards = section.querySelectorAll('.card');
         const empty = section.querySelector('.empty');
         let visibleCards = 0;
