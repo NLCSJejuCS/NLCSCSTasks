@@ -14,6 +14,13 @@
       --accent: #38bdf8;
       --accent-hover: #0284c7;
       --border: #334155;
+
+      /* Section colours */
+      --primary: #a3e635;
+      --ks3: #fbbf24;
+      --igcse: #f472b6;
+      --ib: #38bdf8;
+      --tools: #c084fc;
     }
 
     * {
@@ -22,12 +29,14 @@
       padding: 0;
     }
 
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.6;
-      padding: 2rem;
+      padding: 2rem 1rem;
     }
 
     .container {
@@ -36,12 +45,12 @@
     }
 
     header {
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
       text-align: center;
     }
 
     header h1 {
-      font-size: 2.5rem;
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
       color: var(--text);
       margin-bottom: 0.5rem;
     }
@@ -49,6 +58,42 @@
     header p {
       color: var(--text-muted);
       font-size: 1.1rem;
+    }
+
+    /* Filter chips */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .chip {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      font-family: inherit;
+    }
+
+    .chip:hover { color: var(--text); }
+
+    .chip.active {
+      color: var(--bg);
+      background: var(--chip-colour, var(--accent));
+      border-color: var(--chip-colour, var(--accent));
+    }
+
+    .chip .count {
+      opacity: 0.7;
+      margin-left: 0.25rem;
+      font-size: 0.8rem;
     }
 
     .search-input {
@@ -60,7 +105,7 @@
       color: var(--text);
       font-size: 1rem;
       outline: none;
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
       transition: border-color 0.2s;
     }
 
@@ -68,15 +113,47 @@
       border-color: var(--accent);
     }
 
+    /* Sections */
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.75rem;
+      border-left: 4px solid var(--section-colour);
+      padding-left: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-header h2 {
+      font-size: 1.5rem;
+      color: var(--text);
+    }
+
+    .section-header .section-sub {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .section-tools   { --section-colour: var(--tools); }
+    .section-primary { --section-colour: var(--primary); }
+    .section-ks3     { --section-colour: var(--ks3); }
+    .section-igcse   { --section-colour: var(--igcse); }
+    .section-ib      { --section-colour: var(--ib); }
+
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1.5rem;
     }
 
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
+      border-top: 3px solid var(--section-colour);
       border-radius: 12px;
       padding: 1.5rem;
       display: flex;
@@ -111,8 +188,8 @@
     }
 
     .tag {
-      background: rgba(56, 189, 248, 0.1);
-      color: var(--accent);
+      background: color-mix(in srgb, var(--section-colour) 12%, transparent);
+      color: var(--section-colour);
       padding: 0.2rem 0.6rem;
       border-radius: 4px;
       font-size: 0.8rem;
@@ -126,15 +203,30 @@
       font-size: 0.9rem;
       font-weight: 500;
       text-align: center;
-      background: var(--accent);
+      background: var(--section-colour);
       color: #000;
       display: block;
-      transition: background 0.2s, color 0.2s;
+      transition: filter 0.2s;
     }
 
     .btn:hover {
-      background: var(--accent-hover);
-      color: #fff;
+      filter: brightness(0.85);
+    }
+
+    .empty {
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .no-results {
+      display: none;
+      text-align: center;
+      color: var(--text-muted);
+      padding: 2rem 0;
     }
 
     footer {
@@ -144,10 +236,14 @@
       font-size: 0.9rem;
     }
 
+    footer p + p { margin-top: 0.35rem; }
+
     footer a {
       color: var(--accent);
       text-decoration: none;
     }
+
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -155,125 +251,233 @@
   <div class="container">
     <header>
       <h1>NLCS Computer Science Tasks</h1>
-      <p>Interactive tasks and educational resources directory</p>
+      <p>Interactive tasks and resources, organised by year group</p>
     </header>
 
-    <input type="text" id="searchInput" class="search-input" placeholder="Search tasks or keywords...">
+    <!-- Filter chips: counts are filled in by the script -->
+    <nav class="filters" id="filters" aria-label="Filter by year group">
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="tools" style="--chip-colour: var(--tools)">Tools</button>
+      <button class="chip" data-filter="primary" style="--chip-colour: var(--primary)">Year 5–6</button>
+      <button class="chip" data-filter="ks3" style="--chip-colour: var(--ks3)">Year 7–9</button>
+      <button class="chip" data-filter="igcse" style="--chip-colour: var(--igcse)">IGCSE (Y10–11)</button>
+      <button class="chip" data-filter="ib" style="--chip-colour: var(--ib)">IB (Y12–13)</button>
+    </nav>
 
-    <div class="grid" id="taskGrid">
+    <input type="text" id="searchInput" class="search-input" placeholder="Search tasks, topics or keywords...">
 
-      <!-- Card 1: Spot the Pattern -->
-      <div class="card" data-tags="pattern recognition logic task">
-        <div>
-          <h2 class="card-title">Spot the Pattern</h2>
-          <p class="card-description">Interactive exercise focused on identifying patterns and computational logic.</p>
-          <div class="tags">
-            <span class="tag">Patterns</span>
-            <span class="tag">Logic</span>
-          </div>
-        </div>
-        <a href="./Spot_the_Pattern.html" class="btn">Open Task</a>
+    <!-- ===================== TOOLS (all year groups) ===================== -->
+    <section class="section section-tools" data-section="tools" id="tools">
+      <div class="section-header">
+        <h2>Tools</h2>
+        <span class="section-sub">For all year groups</span>
       </div>
+      <div class="grid">
 
-      <!-- Card 2: Yr5 ESafety Matching -->
-      <div class="card" data-tags="esafety year 5 matching primary safety">
-        <div>
-          <h2 class="card-title">Yr5 ESafety Matching</h2>
-          <p class="card-description">Year 5 activity for learning online safety concepts through matching games.</p>
-          <div class="tags">
-            <span class="tag">Year 5</span>
-            <span class="tag">E-Safety</span>
+        <!-- Python Coding Workspace (external Google Apps Script app) -->
+        <div class="card" data-tags="python coding programming workspace assignments ide code editor">
+          <div>
+            <h3 class="card-title">Python Coding Workspace</h3>
+            <p class="card-description">Online Python coding workspace where assignments are set. Open it to find your current task, write and run your code, and submit your work.</p>
+            <div class="tags">
+              <span class="tag">Python</span>
+              <span class="tag">Coding</span>
+              <span class="tag">Assignments</span>
+            </div>
           </div>
+          <a href="https://script.google.com/a/macros/nlcsjeju.kr/s/AKfycbybpmoLZUVRSLOjZP1zgMqa2mn4DIL9IxAmBwLKezHLWSlKj4eLqnqKJH0z8_JrIVSsVA/exec?view=teacher" class="btn" target="_blank" rel="noopener">Open Workspace</a>
         </div>
-        <a href="./Yr5_ESafety_Matching.html" class="btn">Open Task</a>
-      </div>
 
-      <!-- Card 3: Control Systems Questions -->
-      <div class="card" data-tags="control systems sensors questions hardware">
-        <div>
-          <h2 class="card-title">Control Systems Questions</h2>
-          <p class="card-description">Question set and activities related to control systems, inputs, and outputs.</p>
-          <div class="tags">
-            <span class="tag">Control Systems</span>
-            <span class="tag">Quiz</span>
+      </div>
+    </section>
+
+    <!-- ===================== YEAR 5–6 (Primary) ===================== -->
+    <section class="section section-primary" data-section="primary" id="primary">
+      <div class="section-header">
+        <h2>Year 5–6</h2>
+        <span class="section-sub">Primary</span>
+      </div>
+      <div class="grid">
+
+        <!-- Yr5 ESafety Matching -->
+        <div class="card" data-tags="esafety e-safety online safety year 5 matching primary">
+          <div>
+            <h3 class="card-title">E-Safety Matching</h3>
+            <p class="card-description">Learn key online safety ideas by matching terms, situations and safe choices.</p>
+            <div class="tags">
+              <span class="tag">Year 5</span>
+              <span class="tag">E-Safety</span>
+            </div>
           </div>
+          <a href="./Yr5_ESafety_Matching.html" class="btn">Open Task</a>
         </div>
-        <a href="./control_systems_questions.html" class="btn">Open Task</a>
-      </div>
 
-      <!-- Card 4: OLAP and Data Mining Lab (IB CS A3.4.3) -->
-      <div class="card" data-tags="ib cs databases a3.4.3 olap data mining data warehouse dp">
-        <div>
-          <h2 class="card-title">OLAP and Data Mining Lab</h2>
-          <p class="card-description">IB Computer Science Databases topic A3.4.3: explore online analytical processing (OLAP) and data mining through interactive activities.</p>
-          <div class="tags">
-            <span class="tag">IB CS</span>
-            <span class="tag">Databases</span>
-            <span class="tag">A3.4.3</span>
+      </div>
+    </section>
+
+    <!-- ===================== YEAR 7–9 (KS3) ===================== -->
+    <section class="section section-ks3" data-section="ks3" id="ks3">
+      <div class="section-header">
+        <h2>Year 7–9</h2>
+        <span class="section-sub">Key Stage 3</span>
+      </div>
+      <div class="grid">
+
+        <!-- Spot the Pattern -->
+        <div class="card" data-tags="year 7 ks3 python pattern recognition computational thinking logic">
+          <div>
+            <h3 class="card-title">Spot the Pattern</h3>
+            <p class="card-description">Practise pattern recognition, a core computational thinking skill, and use the patterns you find in Python.</p>
+            <div class="tags">
+              <span class="tag">Year 7</span>
+              <span class="tag">Python</span>
+              <span class="tag">Computational Thinking</span>
+            </div>
           </div>
+          <a href="./Spot_the_Pattern.html" class="btn">Open Task</a>
         </div>
-        <a href="./OLAP%20and%20Data%20Mining%20Lab.html" class="btn">Open Task</a>
-      </div>
 
-      <!-- Card 5: Distributed Database Lab -->
-      <div class="card" data-tags="ib cs databases distributed database partitioning fragmentation replication concurrency locking acid transparency scalability security dp">
-        <div>
-          <h2 class="card-title">Distributed Database Lab</h2>
-          <p class="card-description">IB Computer Science Databases: explore distributed databases through interactive simulations of partitioning, replication, concurrency, ACID transactions, transparency, scalability and security.</p>
-          <div class="tags">
-            <span class="tag">IB CS</span>
-            <span class="tag">Databases</span>
-            <span class="tag">Distributed DB</span>
+      </div>
+    </section>
+
+    <!-- ===================== YEAR 10–11 (IGCSE) ===================== -->
+    <section class="section section-igcse" data-section="igcse" id="igcse">
+      <div class="section-header">
+        <h2>Year 10–11</h2>
+        <span class="section-sub">IGCSE Computer Science</span>
+      </div>
+      <div class="grid">
+
+        <div class="empty">IGCSE tasks coming soon.</div>
+
+      </div>
+    </section>
+
+    <!-- ===================== YEAR 12–13 (IB) ===================== -->
+    <section class="section section-ib" data-section="ib" id="ib">
+      <div class="section-header">
+        <h2>Year 12–13</h2>
+        <span class="section-sub">IB Diploma Computer Science</span>
+      </div>
+      <div class="grid">
+
+        <!-- Control Systems Questions (IB Topic 1) -->
+        <div class="card" data-tags="ib cs dp topic 1 control systems sensors actuators feedback questions hardware">
+          <div>
+            <h3 class="card-title">Control Systems Questions</h3>
+            <p class="card-description">Question set on control systems: inputs, sensors, processing, outputs and feedback.</p>
+            <div class="tags">
+              <span class="tag">IB CS</span>
+              <span class="tag">Topic 1</span>
+              <span class="tag">Control Systems</span>
+            </div>
           </div>
+          <a href="./control_systems_questions.html" class="btn">Open Task</a>
         </div>
-        <a href="./distributedDB.html" class="btn">Open Task</a>
-      </div>
 
-      <!-- Card 6: Python Coding Workspace (external Google Apps Script app) -->
-      <div class="card" data-tags="python coding programming workspace assignments ide code editor">
-        <div>
-          <h2 class="card-title">Python Coding Workspace</h2>
-          <p class="card-description">Online Python coding workspace where assignments are set. Open it to find your current task, write and run your code, and submit your work.</p>
-          <div class="tags">
-            <span class="tag">Python</span>
-            <span class="tag">Coding</span>
-            <span class="tag">Assignments</span>
+        <!-- OLAP and Data Mining Lab (IB Topic 3) -->
+        <div class="card" data-tags="ib cs dp topic 3 databases a3.4.3 olap data mining data warehouse">
+          <div>
+            <h3 class="card-title">OLAP and Data Mining Lab</h3>
+            <p class="card-description">Explore online analytical processing (OLAP), data warehouses and data mining through interactive activities.</p>
+            <div class="tags">
+              <span class="tag">IB CS</span>
+              <span class="tag">Topic 3</span>
+              <span class="tag">Databases</span>
+            </div>
           </div>
+          <a href="./OLAP%20and%20Data%20Mining%20Lab.html" class="btn">Open Task</a>
         </div>
-        <a href="https://script.google.com/a/macros/nlcsjeju.kr/s/AKfycbybpmoLZUVRSLOjZP1zgMqa2mn4DIL9IxAmBwLKezHLWSlKj4eLqnqKJH0z8_JrIVSsVA/exec?view=teacher" class="btn" target="_blank" rel="noopener">Open Workspace</a>
-      </div>
 
-    </div>
+        <!-- Distributed Database Lab (IB Topic 3) -->
+        <div class="card" data-tags="ib cs dp topic 3 databases distributed database partitioning fragmentation replication concurrency locking acid transparency scalability security">
+          <div>
+            <h3 class="card-title">Distributed Database Lab</h3>
+            <p class="card-description">Interactive simulations of partitioning, replication, concurrency, ACID transactions, transparency, scalability and security.</p>
+            <div class="tags">
+              <span class="tag">IB CS</span>
+              <span class="tag">Topic 3</span>
+              <span class="tag">Databases</span>
+            </div>
+          </div>
+          <a href="./distributedDB.html" class="btn">Open Task</a>
+        </div>
+
+      </div>
+    </section>
+
+    <p class="no-results" id="noResults">No tasks match your search.</p>
 
     <footer>
       <p>Maintained by the NLCS Jeju Computing Department • Hosted on GitHub Pages</p>
       <p>
-        <a href="https://github.com/nlcs-computing/NLCSCSTasks" target="_blank" rel="noopener">View Repository</a> •
-        <a href="https://github.com/nlcs-computing/NLCSCSTasks/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Staff: add or edit a task</a>
+        <a href="https://github.com/NLCSJejuCS/NLCSCSTasks" target="_blank" rel="noopener">View Repository</a> •
+        <a href="https://github.com/NLCSJejuCS/NLCSCSTasks/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Staff: add or edit a task</a>
       </p>
     </footer>
   </div>
 
   <script>
-    // Search Filter
     const searchInput = document.getElementById('searchInput');
-    const cards = document.querySelectorAll('.card');
+    const chips = document.querySelectorAll('.chip');
+    const sections = document.querySelectorAll('.section');
+    const noResults = document.getElementById('noResults');
+    let activeFilter = 'all';
 
-    searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase();
+    // Show the number of tasks on each chip
+    chips.forEach(chip => {
+      const f = chip.dataset.filter;
+      const count = f === 'all'
+        ? document.querySelectorAll('.card').length
+        : document.querySelectorAll(`.section[data-section="${f}"] .card`).length;
+      const span = document.createElement('span');
+      span.className = 'count';
+      span.textContent = count;
+      chip.appendChild(span);
+    });
 
-      cards.forEach(card => {
-        const title = card.querySelector('.card-title').textContent.toLowerCase();
-        const desc = card.querySelector('.card-description').textContent.toLowerCase();
-        const tags = card.getAttribute('data-tags').toLowerCase();
+    function applyFilters() {
+      const query = searchInput.value.trim().toLowerCase();
+      let anyVisible = false;
 
-        if (title.includes(query) || desc.includes(query) || tags.includes(query)) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
-        }
+      sections.forEach(section => {
+        const inFilter = activeFilter === 'all' || section.dataset.section === activeFilter;
+        const cards = section.querySelectorAll('.card');
+        const empty = section.querySelector('.empty');
+        let visibleCards = 0;
+
+        cards.forEach(card => {
+          const text = (
+            card.querySelector('.card-title').textContent + ' ' +
+            card.querySelector('.card-description').textContent + ' ' +
+            card.dataset.tags
+          ).toLowerCase();
+          const match = inFilter && (query === '' || text.includes(query));
+          card.style.display = match ? 'flex' : 'none';
+          if (match) visibleCards++;
+        });
+
+        // Hide a section when nothing in it matches.
+        // Empty "coming soon" sections only show when not searching.
+        const showEmptySection = empty && inFilter && query === '';
+        const showSection = visibleCards > 0 || showEmptySection;
+        section.style.display = showSection ? 'block' : 'none';
+        if (visibleCards > 0) anyVisible = true;
+      });
+
+      noResults.style.display = (!anyVisible && query !== '') ? 'block' : 'none';
+    }
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeFilter = chip.dataset.filter;
+        applyFilters();
       });
     });
+
+    searchInput.addEventListener('input', applyFilters);
   </script>
 </body>
 </html>
