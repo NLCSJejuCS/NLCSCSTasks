@@ -1,0 +1,44 @@
+# Contributing to NLCS CS Tasks
+
+This repository holds the interactive tasks and resources for NLCS Jeju Computer Science (Years 5–14). It is published to students through GitHub Pages, so anything merged into `main` goes live.
+
+## Who can contribute
+
+Members of the **CS-Staff** team have write access. If you need access, ask a member of **CS-Admins** to invite your GitHub account to the organization.
+
+## How to add a new task
+
+1. **Create a branch.** Don't commit to `main` directly (it is protected). Name the branch after the task, for example `add-yr8-binary-quiz`.
+2. **Add your HTML file** to the repository root. Use a clear file name with no spaces, e.g. `Yr8_Binary_Quiz.html`. File names are case-sensitive on GitHub Pages.
+3. **Keep it self-contained.** Put CSS and JavaScript inside the HTML file where you can. If you need images, put them in an `assets/` folder and link to them with relative paths.
+4. **Add a card to `index.html`.** Copy an existing card inside `<div class="grid">` and change:
+   - the comment (`<!-- Card N: Title -->`)
+   - `data-tags`: lowercase search keywords (year group, topic, syllabus code)
+   - the title and a one-sentence description
+   - two or three tags (e.g. `Year 8`, `Binary`, or a syllabus code such as `A3.4.3`)
+   - the `href`, which must match your file name exactly (`./Yr8_Binary_Quiz.html`)
+5. **Open a pull request** into `main`. A CS-Admin will review it and merge it, and the page updates on the live site within a few minutes.
+
+## Card template
+
+```html
+<!-- Card N: Task Title -->
+<div class="card" data-tags="year 8 binary number systems quiz">
+  <div>
+    <h2 class="card-title">Task Title</h2>
+    <p class="card-description">One sentence describing what students do.</p>
+    <div class="tags">
+      <span class="tag">Year 8</span>
+      <span class="tag">Binary</span>
+    </div>
+  </div>
+  <a href="./Yr8_Binary_Quiz.html" class="btn">Open Task</a>
+</div>
+```
+
+For an external tool (such as the Python Coding Workspace), use the full URL in `href` and add `target="_blank" rel="noopener"` so it opens in a new tab.
+
+## Please don't
+
+- Put mark schemes, assessments or student data in this repository. It is public.
+- Rename or delete another colleague's file without checking with them, as students may already have the link.
