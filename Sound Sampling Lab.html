@@ -1,0 +1,879 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Sound Sampling Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: single study column on "graph paper", each activity a numbered station in lesson order; simulators get full width */
+:root{
+  --bg:#eef4f2; --panel:#ffffff; --panel-2:#f6faf9; --ink:#132228; --muted:#566a6f; --line:#d3e1de; --grid:#e1ebe9;
+  --accent:#0d7a6b; --accent-ink:#ffffff; --accent-soft:#d8efea;
+  --sample:#d3304a; --bar:#f0ae45; --bar-soft:#fbe6c2; --wave:#8aa09c;
+  --good:#1d8a4e; --good-soft:#dcf2e4; --bad:#c23a2e; --bad-soft:#fbe1dd;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e191c; --panel:#152429; --panel-2:#11201f; --ink:#e3eeeb; --muted:#93a9a6; --line:#27393d; --grid:#1d2e32;
+  --accent:#3bc3ac; --accent-ink:#06201b; --accent-soft:#17403a;
+  --sample:#ff6a80; --bar:#e9a94a; --bar-soft:#4a3818; --wave:#5f7a76;
+  --good:#4fd18a; --good-soft:#163a27; --bad:#ff7a6b; --bad-soft:#44201c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e191c; --panel:#152429; --panel-2:#11201f; --ink:#e3eeeb; --muted:#93a9a6; --line:#27393d; --grid:#1d2e32;
+  --accent:#3bc3ac; --accent-ink:#06201b; --accent-soft:#17403a;
+  --sample:#ff6a80; --bar:#e9a94a; --bar-soft:#4a3818; --wave:#5f7a76;
+  --good:#4fd18a; --good-soft:#163a27; --bad:#ff7a6b; --bad-soft:#44201c; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:28px 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,5vw,3.3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.55rem;font-weight:700}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono)}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+
+/* hero */
+.hero{display:grid;gap:18px;padding-block:8px 20px}
+.hero .lede{max-width:62ch;font-size:1.08rem}
+.hero canvas{width:100%;height:90px;display:block}
+.objectives{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:.85rem;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 12px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  margin-inline:-16px;padding:10px 16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin}
+nav.toc a{flex:none;text-decoration:none;color:var(--ink);font-size:.85rem;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent)}
+nav.toc a .n{font-family:var(--f-mono);color:var(--muted);margin-right:4px}
+
+/* stations */
+section.station{margin-top:34px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:16px;scroll-margin-top:64px}
+.st-head{display:grid;gap:6px}
+.st-head .num{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.st-head p{max-width:68ch;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.grid2>*{min-width:0}
+
+button,.btn{font:inherit;font-weight:700;font-size:.92rem;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:8px 14px;cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+button:hover{filter:brightness(1.08)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,.term:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+input[type=number],input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+textarea{width:100%;min-height:80px;resize:vertical}
+.feedback{font-weight:700}
+.feedback.ok{color:var(--good)} .feedback.no{color:var(--bad)}
+
+/* glossary */
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.term{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel-2);cursor:pointer;display:grid;gap:4px;text-align:left;color:var(--ink);font-weight:400}
+.term b{font-family:var(--f-display);font-size:1.05rem}
+.term .def{font-size:.93rem;color:var(--muted)}
+.gloss.test .term .def{filter:blur(6px);user-select:none}
+.gloss.test .term.show .def{filter:none}
+
+/* simulator */
+.sim{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px}
+@media (max-width:760px){.sim{grid-template-columns:minmax(0,1fr)}}
+.canvas-box{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:8px;min-width:0}
+.canvas-box canvas{width:100%;display:block}
+.controls{display:grid;gap:14px;align-content:start}
+.ctrl{display:grid;gap:4px}
+.ctrl label{display:flex;justify-content:space-between;font-weight:700;font-size:.92rem}
+.ctrl label output{font-family:var(--f-mono);color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;border-radius:0;background:transparent;color:var(--ink);font-weight:700;padding:6px 4px;font-size:.85rem}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ro{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel-2)}
+.ro .k{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ro .v{font-family:var(--f-mono);font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums}
+.meter{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.formula{font-family:var(--f-mono);background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:.95rem;overflow-x:auto}
+.strip{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.strip table{border-collapse:collapse;font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums}
+.strip th,.strip td{padding:5px 9px;border-right:1px solid var(--line);text-align:center;white-space:nowrap}
+.strip th{background:var(--panel-2);color:var(--muted);font-weight:600;text-align:left}
+.strip tr+tr td,.strip tr+tr th{border-top:1px solid var(--line)}
+.stream{font-family:var(--f-mono);font-size:.85rem;word-break:break-all;color:var(--muted)}
+.note{border-left:3px solid var(--bar);padding:4px 0 4px 12px;font-size:.95rem}
+
+/* sample it yourself */
+.ws-inputs{display:grid;grid-template-columns:repeat(13,minmax(40px,1fr));gap:4px;overflow-x:auto;min-width:0}
+.ws-inputs label{display:grid;gap:2px;text-align:center;font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
+.ws-inputs input{width:100%;text-align:center;padding:5px 2px}
+input.ok{border-color:var(--good);background:var(--good-soft)}
+input.no{border-color:var(--bad);background:var(--bad-soft)}
+
+/* encode */
+.enc{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,110px));gap:8px}
+.enc label{display:grid;gap:2px;justify-items:center;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--panel-2);text-align:center}
+.enc .d{font-family:var(--f-display);font-size:1.3rem;font-weight:700;line-height:1.1}
+.enc input{width:5.6ch;box-sizing:content-box;padding:4px 6px;font-family:var(--f-mono);font-size:.95rem;text-align:center;letter-spacing:.12em}
+
+/* matching */
+.match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:12px}
+@media (max-width:560px){.match{grid-template-columns:minmax(0,1fr)}}
+.col{display:grid;gap:8px;align-content:start}
+.mitem{text-align:left;font-weight:400;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.mitem.t{font-family:var(--f-display);font-weight:700}
+.mitem.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.mitem.done{background:var(--good-soft);border-color:var(--good);color:var(--ink);cursor:default}
+.mitem.wrong{background:var(--bad-soft);border-color:var(--bad)}
+
+/* fill */
+.cloze{font-size:1.05rem;line-height:2.2;max-width:75ch}
+.cloze select{padding:2px 6px}
+.cloze select.ok{border-color:var(--good);background:var(--good-soft)}
+.cloze select.no{border-color:var(--bad);background:var(--bad-soft)}
+
+/* sort */
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.bin{border:2px dashed var(--line);border-radius:12px;padding:10px;min-height:120px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;background:var(--panel-2)}
+.bin h3{width:100%;font-size:1rem}
+.bin .sub{width:100%;font-size:.8rem;color:var(--muted);margin-top:-4px}
+.card{font:inherit;font-weight:700;font-size:.88rem;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 10px;cursor:grab}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.card.ok{border-color:var(--good);background:var(--good-soft)}
+.card.no{border-color:var(--bad);background:var(--bad-soft)}
+.tray{display:flex;flex-wrap:wrap;gap:6px;min-height:44px;padding:8px;border:1px solid var(--line);border-radius:10px}
+
+/* exam */
+.q{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;background:var(--panel-2)}
+.q .marks{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.ms{border-left:3px solid var(--good);padding-left:12px;display:grid;gap:4px}
+.ms label{display:flex;gap:8px;align-items:flex-start}
+
+/* quiz */
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-weight:400;background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.opt.ok{background:var(--good-soft);border-color:var(--good)}
+.opt.no{background:var(--bad-soft);border-color:var(--bad)}
+.expl{font-size:.93rem;color:var(--muted)}
+
+footer{margin-top:36px;color:var(--muted);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">IGCSE Computer Science 0478 · Unit 1 Data representation</div>
+    <h1>Sound Sampling Lab</h1>
+    <p class="lede">Work through the stations in order. Change the settings, listen to the results and check your answers as you go. By the end you should be able to explain how sound is stored in binary and calculate the size of a sound file.</p>
+    <canvas id="heroWave" aria-hidden="true"></canvas>
+    <div class="objectives" aria-label="Learning objectives">
+      <span class="chip">How sound is sampled and stored</span>
+      <span class="chip">Represent a short sound file in binary</span>
+      <span class="chip">Sample rate and sample resolution</span>
+      <span class="chip">Calculate file size</span>
+      <span class="chip">File size vs accuracy trade-off</span>
+      <span class="chip">Lossy and lossless compression</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Stations">
+    <a href="#keywords"><span class="n">1</span>Keywords</a>
+    <a href="#simulator"><span class="n">2</span>Simulator</a>
+    <a href="#listen"><span class="n">3</span>Listen</a>
+    <a href="#sampleit"><span class="n">4</span>Sample it</a>
+    <a href="#encode"><span class="n">5</span>Binary</a>
+    <a href="#filesize"><span class="n">6</span>File size</a>
+    <a href="#match"><span class="n">7</span>Match</a>
+    <a href="#gaps"><span class="n">8</span>Fill the gaps</a>
+    <a href="#compress"><span class="n">9</span>Compression</a>
+    <a href="#exam"><span class="n">10</span>Exam practice</a>
+    <a href="#quiz"><span class="n">11</span>Quiz</a>
+  </nav>
+
+  <!-- 1 KEYWORDS -->
+  <section class="station" id="keywords">
+    <div class="st-head">
+      <span class="num">Station 1</span>
+      <h2>Keywords</h2>
+      <p>Read each definition. When you are ready, turn on test mode: the definitions blur and you click a card to check yourself.</p>
+    </div>
+    <div class="row"><button class="ghost" id="testToggle" aria-pressed="false">Turn on test mode</button></div>
+    <div class="gloss" id="gloss"></div>
+  </section>
+
+  <!-- 2 SIMULATOR -->
+  <section class="station" id="simulator">
+    <div class="st-head">
+      <span class="num">Station 2</span>
+      <h2>Sampling simulator</h2>
+      <p>The grey line is the analogue sound wave. The red crosses are the samples the ADC takes. The computer only keeps the samples, so the red line (or orange bars) is all it can rebuild. Change the settings and watch the accuracy and the file size.</p>
+    </div>
+    <div class="sim">
+      <div class="canvas-box"><canvas id="simCanvas" height="340" aria-label="Sound wave with samples"></canvas></div>
+      <div class="controls">
+        <div class="ctrl">
+          <label for="rate">Sample rate <output id="rateOut">12 Hz</output></label>
+          <input type="range" id="rate" min="2" max="48" value="12">
+          <span class="muted" style="font-size:.85rem">Samples taken each second</span>
+        </div>
+        <div class="ctrl">
+          <label for="bits">Sample resolution (bit depth) <output id="bitsOut">4 bits</output></label>
+          <input type="range" id="bits" min="1" max="8" value="4">
+          <span class="muted" style="font-size:.85rem" id="levelsNote">16 possible values (0 to 15)</span>
+        </div>
+        <div class="ctrl">
+          <span style="font-weight:700;font-size:.92rem">Wave</span>
+          <div class="seg" id="waveSeg">
+            <button aria-pressed="true" data-w="0">Worksheet</button>
+            <button aria-pressed="false" data-w="1">Smooth</button>
+            <button aria-pressed="false" data-w="2">Busy</button>
+          </div>
+        </div>
+        <div class="ctrl">
+          <span style="font-weight:700;font-size:.92rem">Show rebuilt sound as</span>
+          <div class="seg" id="viewSeg">
+            <button aria-pressed="true" data-v="steps">Steps</button>
+            <button aria-pressed="false" data-v="bars">Bars</button>
+          </div>
+        </div>
+        <label class="row" style="gap:8px;font-size:.92rem"><input type="checkbox" id="showErr" checked> Shade the error</label>
+      </div>
+    </div>
+    <div class="readouts">
+      <div class="ro"><div class="k">Samples in 1 s</div><div class="v" id="roSamples">12</div></div>
+      <div class="ro"><div class="k">Values available</div><div class="v" id="roLevels">16</div></div>
+      <div class="ro"><div class="k">File size (1 s)</div><div class="v" id="roSize">48 bits</div></div>
+      <div class="ro"><div class="k">Match to original</div><div class="v" id="roAcc">0%</div><div class="meter"><i id="accBar"></i></div></div>
+    </div>
+    <div class="formula" id="simFormula"></div>
+    <div class="strip"><table id="simTable"></table></div>
+    <div><div style="font-weight:700;margin-bottom:4px">What actually gets saved in the file</div><div class="stream" id="simStream"></div></div>
+    <p class="note"><b>Try this:</b> set bit depth to 1. How many values can each sample be? Then set the sample rate to 4 Hz on the Busy wave. Which setting loses the peaks and troughs? Which one rounds every sample badly?</p>
+  </section>
+
+  <!-- 3 LISTEN -->
+  <section class="station" id="listen">
+    <div class="st-head">
+      <span class="num">Station 3</span>
+      <h2>Listen to the difference</h2>
+      <p>The same short tune is sampled and stored with your settings, then played back through the DAC. Use headphones and keep the volume low. Start at CD quality, then lower one setting at a time.</p>
+    </div>
+    <div class="grid2">
+      <div class="controls">
+        <div class="ctrl">
+          <label for="lRate">Sample rate <output id="lRateOut">44,100 Hz</output></label>
+          <input type="range" id="lRate" min="0" max="6" value="6" step="1">
+        </div>
+        <div class="ctrl">
+          <label for="lBits">Bit depth <output id="lBitsOut">16 bits</output></label>
+          <input type="range" id="lBits" min="1" max="16" value="16">
+        </div>
+        <div class="row">
+          <button id="playTune">Play the tune</button>
+          <button class="ghost" id="cdPreset">Reset to CD quality</button>
+        </div>
+        <div class="readouts">
+          <div class="ro"><div class="k">1 minute (mono)</div><div class="v" id="lSize">5.05 MiB</div></div>
+          <div class="ro"><div class="k">Values per sample</div><div class="v" id="lLevels">65,536</div></div>
+        </div>
+      </div>
+      <div class="canvas-box"><canvas id="lCanvas" height="220" aria-label="Zoomed view of the stored sound"></canvas>
+        <p class="muted" style="font-size:.82rem;padding:4px 4px 0">Zoomed in on 5 milliseconds of the tune. Grey: original. Red: what is stored.</p></div>
+    </div>
+    <div class="grid2">
+      <div class="q">
+        <h3>How high can you hear?</h3>
+        <p class="muted" style="font-size:.93rem">Humans hear roughly 20 Hz to 20,000 Hz, and younger people hear higher. This slider changes the <b>pitch of the sound</b>, which is a different thing from the sample rate.</p>
+        <div class="ctrl"><label for="tone">Tone <output id="toneOut">440 Hz</output></label><input type="range" id="tone" min="0" max="1000" value="435"></div>
+        <div class="row"><button id="toneBtn" aria-pressed="false">Play tone</button></div>
+      </div>
+      <div class="q">
+        <h3>Going further: why 44,100 Hz?</h3>
+        <p style="font-size:.95rem">To record a sound accurately you need at least two samples for every wave cycle. The highest sound we hear is about 20,000 Hz, so we need more than 40,000 samples a second. CDs use 44,100 Hz. Try the tune at 4,000 Hz: the higher notes sound wrong because there are too few samples per cycle.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 SAMPLE IT YOURSELF -->
+  <section class="station" id="sampleit">
+    <div class="st-head">
+      <span class="num">Station 4</span>
+      <h2>Sample it yourself</h2>
+      <p>You are the ADC. At each time point, read the height of the wave and round it to the nearest whole number (0 to 15). You can only record a value on a grid line. Answers within 1 of the true value count as correct.</p>
+    </div>
+    <div class="canvas-box"><canvas id="wsCanvas" height="320" aria-label="Wave to sample"></canvas></div>
+    <div class="ws-inputs" id="wsInputs"></div>
+    <div class="row">
+      <button id="wsCheck">Check and draw my bars</button>
+      <button class="ghost" id="wsReveal">Show answers</button>
+      <button class="ghost" id="wsNew">New wave</button>
+      <span class="feedback" id="wsFb"></span>
+    </div>
+  </section>
+
+  <!-- 5 ENCODE -->
+  <section class="station" id="encode">
+    <div class="st-head">
+      <span class="num">Station 5</span>
+      <h2>Store the samples in binary</h2>
+      <p>With a 4-bit resolution there are 2<sup>4</sup> = 16 values (0 to 15), so every sample is written as exactly 4 bits. Convert each sample to 4-bit binary. Place values: 8 4 2 1.</p>
+    </div>
+    <div class="enc" id="encGrid"></div>
+    <div class="row">
+      <button id="encCheck">Check</button>
+      <button class="ghost" id="encNew">New samples</button>
+      <span class="feedback" id="encFb"></span>
+    </div>
+    <div class="q">
+      <h3>Now the file size</h3>
+      <p>These 8 samples use 4 bits each. How many bytes is the file?</p>
+      <div class="row"><input type="number" id="encBytes" style="width:110px" aria-label="Bytes"> <span>bytes</span> <button id="encBytesCheck">Check</button><span class="feedback" id="encBytesFb"></span></div>
+    </div>
+  </section>
+
+  <!-- 6 FILE SIZE -->
+  <section class="station" id="filesize">
+    <div class="st-head">
+      <span class="num">Station 6</span>
+      <h2>Calculate the file size</h2>
+      <p>Use the formula, then convert units if the question asks. In the 0478 syllabus, 1 KiB = 1024 bytes and 1 MiB = 1024 KiB.</p>
+    </div>
+    <div class="formula">file size (bits) = sample rate (Hz) × resolution (bits) × duration (s)<br>bytes = bits ÷ 8 &nbsp;·&nbsp; KiB = bytes ÷ 1024 &nbsp;·&nbsp; MiB = KiB ÷ 1024</div>
+    <div class="row">
+      <div class="seg" id="fsLevel" style="min-width:240px">
+        <button aria-pressed="true" data-l="easy">Warm-up</button>
+        <button aria-pressed="false" data-l="exam">Exam style</button>
+      </div>
+      <span class="muted" id="fsScore">Score: 0 / 0</span>
+    </div>
+    <div class="q">
+      <p id="fsQ" style="font-size:1.08rem"></p>
+      <div class="row"><input type="number" step="any" id="fsA" style="width:160px" aria-label="Your answer"> <span id="fsUnit" class="mono"></span>
+        <button id="fsCheck">Check</button><button class="ghost" id="fsNext">Next question</button></div>
+      <span class="feedback" id="fsFb"></span>
+      <div id="fsWork" class="formula" hidden></div>
+    </div>
+  </section>
+
+  <!-- 7 MATCH -->
+  <section class="station" id="match">
+    <div class="st-head">
+      <span class="num">Station 7</span>
+      <h2>Match the terms</h2>
+      <p>Click a term, then click its definition.</p>
+    </div>
+    <div class="row"><span class="feedback" id="mFb">0 of 8 matched</span><button class="ghost" id="mReset">Shuffle and restart</button></div>
+    <div class="match"><div class="col" id="mTerms"></div><div class="col" id="mDefs"></div></div>
+  </section>
+
+  <!-- 8 GAPS -->
+  <section class="station" id="gaps">
+    <div class="st-head">
+      <span class="num">Station 8</span>
+      <h2>Fill the gaps</h2>
+      <p>Choose the correct word for each gap, then check.</p>
+    </div>
+    <div class="cloze" id="cloze"></div>
+    <div class="row"><button id="clozeCheck">Check</button><button class="ghost" id="clozeReset">Clear</button><span class="feedback" id="clozeFb"></span></div>
+  </section>
+
+  <!-- 9 COMPRESSION -->
+  <section class="station" id="compress">
+    <div class="st-head">
+      <span class="num">Station 9</span>
+      <h2>Uncompressed, lossless or lossy?</h2>
+      <p>Click a card, then click the box it belongs in. A minute of music is about 10 MB as an uncompressed WAV but about 1 MB as an MP3.</p>
+    </div>
+    <div class="tray" id="sortTray" aria-label="Cards to sort"></div>
+    <div class="bins" id="sortBins"></div>
+    <div class="row"><button id="sortCheck">Check</button><button class="ghost" id="sortReset">Restart</button><span class="feedback" id="sortFb"></span></div>
+  </section>
+
+  <!-- 10 EXAM -->
+  <section class="station" id="exam">
+    <div class="st-head">
+      <span class="num">Station 10</span>
+      <h2>Exam practice</h2>
+      <p>Write your answer first, then open the mark scheme and tick each point you made. Be honest: it is only for you.</p>
+    </div>
+    <div id="examQs" style="display:grid;gap:12px"></div>
+  </section>
+
+  <!-- 11 QUIZ -->
+  <section class="station" id="quiz">
+    <div class="st-head">
+      <span class="num">Station 11</span>
+      <h2>Quick quiz</h2>
+      <p>One attempt per question. The explanation appears after you answer.</p>
+    </div>
+    <div id="quizQs" style="display:grid;gap:12px"></div>
+    <div class="row"><span class="feedback" id="quizScore">Score: 0 / 8</span><button class="ghost" id="quizReset">Try again</button></div>
+  </section>
+
+  <footer>Sound Sampling Lab · IGCSE Computer Science 0478 · NLCS Jeju</footer>
+</div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const fmt = n => n.toLocaleString('en-GB');
+const pick = a => a[Math.floor(Math.random()*a.length)];
+
+function prep(canvas){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (!canvas.dataset.h) canvas.dataset.h = canvas.getAttribute('height') || 240;
+  const w = Math.max(200, canvas.parentElement.clientWidth - 18);
+  const h = Math.round(Math.max(160, Math.min(+canvas.dataset.h, w * 0.55)));
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
+  const ctx = canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx, w, h};
+}
+
+/* ---------- HERO ---------- */
+function drawHero(){
+  const c = $('#heroWave'); const dpr = window.devicePixelRatio||1;
+  const w = c.clientWidth, h = 90; c.width = w*dpr; c.height = h*dpr;
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const f = x => h/2 + (h*0.38)*(Math.sin(x*0.018)*0.7 + Math.sin(x*0.047+1)*0.3);
+  ctx.strokeStyle = css('--wave'); ctx.lineWidth = 2; ctx.beginPath();
+  for (let x=0;x<=w;x+=2){ x? ctx.lineTo(x,f(x)) : ctx.moveTo(x,f(x)); } ctx.stroke();
+  const step = 26; ctx.strokeStyle = css('--sample'); ctx.fillStyle = css('--bar'); ctx.globalAlpha = .55;
+  for (let x=0;x<=w;x+=step){ const y = Math.round((h-f(x))/8)*8; ctx.fillRect(x-7, h-y, 14, y); }
+  ctx.globalAlpha = 1; ctx.lineWidth = 2;
+  for (let x=0;x<=w;x+=step){ const y=f(x); ctx.beginPath(); ctx.moveTo(x-4,y-4); ctx.lineTo(x+4,y+4); ctx.moveTo(x+4,y-4); ctx.lineTo(x-4,y+4); ctx.stroke(); }
+}
+
+/* ---------- 1 GLOSSARY ---------- */
+const GLOSS = [
+  ['Analogue','A continuous signal that can take any value. Real sound waves are analogue.'],
+  ['Digital','A discrete signal made of separate values. Computers store data as binary 1s and 0s.'],
+  ['ADC','Analogue to Digital Converter. Measures the analogue wave and turns it into binary, e.g. in a microphone input.'],
+  ['DAC','Digital to Analogue Converter. Turns the stored binary back into an analogue signal for speakers or headphones.'],
+  ['Sample','A measurement of the amplitude (height) of the sound wave at one point in time.'],
+  ['Amplitude','The height of the sound wave at a given time. This is the value a sample records.'],
+  ['Sample rate','The number of samples taken per second. Measured in hertz (Hz).'],
+  ['Hertz (Hz)','The unit of sample rate. 1 Hz = 1 sample per second. CDs use 44,100 Hz (44.1 kHz).'],
+  ['Sample resolution / bit depth','The number of bits used to store each sample. n bits give 2ⁿ possible values.'],
+  ['File size','Sample rate × resolution × duration gives the size in bits. Divide by 8 for bytes.'],
+  ['Lossy compression','Permanently removes data, such as sounds we can’t easily hear. Much smaller files, e.g. MP3, AAC.'],
+  ['Lossless compression','Reduces file size without losing any data. The original can be rebuilt exactly, e.g. FLAC, ALAC.'],
+];
+function buildGloss(){
+  const g = $('#gloss');
+  g.innerHTML = GLOSS.map(([t,d])=>`<button class="term" type="button"><b>${t}</b><span class="def">${d}</span></button>`).join('');
+  g.querySelectorAll('.term').forEach(el=>el.addEventListener('click',()=>el.classList.toggle('show')));
+  $('#testToggle').addEventListener('click',e=>{
+    const on = g.classList.toggle('test');
+    g.querySelectorAll('.term').forEach(el=>el.classList.remove('show'));
+    e.target.setAttribute('aria-pressed',on); e.target.textContent = on ? 'Turn off test mode' : 'Turn on test mode';
+  });
+}
+
+/* ---------- 2 SIMULATOR ---------- */
+const WAVES = [
+  t => 0.5 + 0.30*Math.sin(2*Math.PI*2*t) + 0.12*Math.sin(2*Math.PI*5*t+1) + 0.05*Math.sin(2*Math.PI*9*t+.4),
+  t => 0.5 + 0.40*Math.sin(2*Math.PI*1.5*t+.3),
+  t => 0.5 + 0.22*Math.sin(2*Math.PI*3*t) + 0.14*Math.sin(2*Math.PI*8*t+1.3) + 0.08*Math.sin(2*Math.PI*14*t+.2),
+];
+const sim = {rate:12, bits:4, wave:0, view:'steps', err:true};
+function simSamples(){
+  const L = 2**sim.bits, f = WAVES[sim.wave], out=[];
+  for (let k=0;k<sim.rate;k++){ const t=k/sim.rate; const y=Math.min(1,Math.max(0,f(t))); out.push({t, y, q:Math.round(y*(L-1))}); }
+  return out;
+}
+function drawSim(){
+  const {ctx,w,h} = prep($('#simCanvas'));
+  const padL=38, padR=10, padT=10, padB=28, W=w-padL-padR, H=h-padT-padB;
+  const X = t => padL + t*W, Y = v => padT + (1-v)*H;
+  const L = 2**sim.bits, f = WAVES[sim.wave], S = simSamples();
+  ctx.clearRect(0,0,w,h);
+  ctx.font = '11px "JetBrains Mono", monospace'; ctx.fillStyle = css('--muted');
+  // horizontal level lines
+  const every = L<=16 ? 1 : L/16;
+  ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+  for (let i=0;i<L;i+=every){ const y=Y(i/(L-1)); ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+W,y); ctx.stroke();
+    if (L<=16 || i%(every*2)===0) ctx.fillText(i, 4, y+4); }
+  if (L>16){ const y=Y(1); ctx.fillText(L-1,4,y+4); }
+  // vertical sample lines
+  S.forEach(s=>{ ctx.beginPath(); ctx.moveTo(X(s.t),padT); ctx.lineTo(X(s.t),padT+H); ctx.stroke(); });
+  // x labels
+  ctx.textAlign='center'; [0,.25,.5,.75,1].forEach(t=>ctx.fillText(t+' s', X(t), h-8)); ctx.textAlign='left';
+  // reconstructed
+  const rec = t => { const k=Math.min(S.length-1,Math.floor(t*sim.rate+1e-9)); return S[k].q/(L-1); };
+  if (sim.err){
+    ctx.fillStyle = css('--sample'); ctx.globalAlpha = .13; ctx.beginPath();
+    for (let px=0;px<=W;px++){ const t=px/W; ctx.lineTo(X(t),Y(f(t))); }
+    for (let px=W;px>=0;px--){ const t=px/W; ctx.lineTo(X(t),Y(rec(t))); }
+    ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+  }
+  const bw = Math.min(W/sim.rate*0.6, 26);
+  if (sim.view==='bars'){
+    ctx.fillStyle = css('--bar'); ctx.globalAlpha=.8;
+    S.forEach(s=>{ const y=Y(s.q/(L-1)); ctx.fillRect(X(s.t)-bw/2, y, bw, padT+H-y); }); ctx.globalAlpha=1;
+  } else {
+    ctx.strokeStyle = css('--sample'); ctx.lineWidth = 2.2; ctx.beginPath();
+    S.forEach((s,i)=>{ const x0=X(s.t), x1=X((i+1)/sim.rate), y=Y(s.q/(L-1)); if(i===0) ctx.moveTo(x0,y); else ctx.lineTo(x0,y); ctx.lineTo(x1,y); });
+    ctx.stroke();
+  }
+  // original wave
+  ctx.strokeStyle = css('--wave'); ctx.lineWidth = 2; ctx.beginPath();
+  for (let px=0;px<=W;px++){ const t=px/W; px? ctx.lineTo(X(t),Y(f(t))):ctx.moveTo(X(t),Y(f(t))); } ctx.stroke();
+  // crosses at quantised values
+  ctx.strokeStyle = css('--sample'); ctx.lineWidth = 2.2;
+  S.forEach(s=>{ const x=X(s.t), y=Y(s.q/(L-1)); ctx.beginPath(); ctx.moveTo(x-5,y-5); ctx.lineTo(x+5,y+5); ctx.moveTo(x+5,y-5); ctx.lineTo(x-5,y+5); ctx.stroke(); });
+  // accuracy
+  let e=0; const N=600; for(let i=0;i<N;i++){ const t=i/N; e+=Math.abs(f(t)-rec(t)); } e/=N;
+  const acc = Math.max(0, 100*(1-e/0.25));
+  $('#roAcc').textContent = acc.toFixed(0)+'%'; $('#accBar').style.width = acc+'%';
+  return S;
+}
+function updateSim(){
+  const L=2**sim.bits, bits=sim.rate*sim.bits;
+  $('#rateOut').textContent = sim.rate+' Hz';
+  $('#bitsOut').textContent = sim.bits+(sim.bits===1?' bit':' bits');
+  $('#levelsNote').textContent = `${L} possible values (0 to ${L-1})`;
+  $('#roSamples').textContent = sim.rate;
+  $('#roLevels').textContent = L;
+  $('#roSize').textContent = bits%8===0 ? `${bits} bits = ${bits/8} B` : `${bits} bits`;
+  $('#simFormula').textContent = `${sim.rate} Hz × ${sim.bits} bits × 1 s = ${bits} bits  =  ${(bits/8).toFixed(bits%8?2:0)} bytes`;
+  const S = drawSim();
+  const show = S.slice(0,24);
+  $('#simTable').innerHTML =
+    `<tr><th>Sample</th>${show.map((s,i)=>`<td>${i}</td>`).join('')}</tr>`+
+    `<tr><th>Value</th>${show.map(s=>`<td>${s.q}</td>`).join('')}</tr>`+
+    `<tr><th>Binary</th>${show.map(s=>`<td>${s.q.toString(2).padStart(sim.bits,'0')}</td>`).join('')}</tr>`;
+  $('#simStream').textContent = S.map(s=>s.q.toString(2).padStart(sim.bits,'0')).join(' ');
+}
+function segBind(id, attr, cb){
+  const seg = $(id);
+  seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b)); cb(b.dataset[attr]);
+  }));
+}
+function bindSim(){
+  $('#rate').addEventListener('input',e=>{sim.rate=+e.target.value;updateSim();});
+  $('#bits').addEventListener('input',e=>{sim.bits=+e.target.value;updateSim();});
+  $('#showErr').addEventListener('change',e=>{sim.err=e.target.checked;updateSim();});
+  segBind('#waveSeg','w',v=>{sim.wave=+v;updateSim();});
+  segBind('#viewSeg','v',v=>{sim.view=v;updateSim();});
+}
+
+/* ---------- 3 LISTEN ---------- */
+const RATES = [2000,4000,8000,11025,16000,22050,44100];
+let actx=null, tune=null, tuneSrc=null, osc=null, oscGain=null;
+const lis = {rate:44100, bits:16};
+function getCtx(){ if(!actx){ const C = window.AudioContext||window.webkitAudioContext; if(!C) return null; actx = new C(); } if (actx.state==='suspended') actx.resume(); return actx; }
+function makeTune(sr){
+  const notes=[262,330,392,523,659,523,392,440,587,784], dur=0.24, n=Math.floor(sr*dur*notes.length+sr*0.3);
+  const a=new Float32Array(n);
+  notes.forEach((fr,i)=>{ const s0=Math.floor(i*dur*sr), len=Math.floor(dur*1.4*sr);
+    for(let j=0;j<len&&s0+j<n;j++){ const t=j/sr, env=Math.min(1,t*80)*Math.exp(-t*6);
+      let v=0; for(let hN=1;hN<=5;hN++) v+=Math.sin(2*Math.PI*fr*hN*t)/hN; a[s0+j]+=v*env; } });
+  let m=0; a.forEach(v=>m=Math.max(m,Math.abs(v))); for(let i=0;i<n;i++) a[i]=a[i]/m*0.9;
+  return a;
+}
+function quant(v,bits){ const L=2**bits; const q=Math.round((v+1)/2*(L-1)); return q/(L-1)*2-1; }
+function processTune(src, sr){
+  const out=new Float32Array(src.length), step=sr/lis.rate;
+  for(let i=0;i<src.length;i++){ const idx=Math.floor(Math.floor(i/step)*step); out[i]=quant(src[idx],lis.bits); }
+  return out;
+}
+const tuneCache={};
+function tuneBase(sr){ return tuneCache[sr] || (tuneCache[sr]=makeTune(sr)); }
+function playTune(){
+  const c=getCtx(); if(!c){ $('#playTune').textContent='Audio not supported here'; return; }
+  const sr=c.sampleRate, out=processTune(tuneBase(sr),sr);
+  const buf=c.createBuffer(1,out.length,sr); buf.copyToChannel(out,0);
+  if(tuneSrc) try{tuneSrc.stop();}catch(e){}
+  const g=c.createGain(); g.gain.value=0.25;
+  tuneSrc=c.createBufferSource(); tuneSrc.buffer=buf; tuneSrc.connect(g).connect(c.destination); tuneSrc.start();
+}
+function drawListen(){
+  const {ctx,w,h}=prep($('#lCanvas'));
+  const sr=44100, base = tuneBase(sr);
+  const start=Math.floor(sr*0.24*4+sr*0.05), len=Math.floor(sr*0.005);
+  const step=sr/lis.rate, pad=10, W=w-2*pad, H=h-2*pad;
+  const X=i=>pad+i/len*W, Y=v=>pad+(1-(v+1)/2)*H;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle=css('--line'); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(pad,Y(0)); ctx.lineTo(pad+W,Y(0)); ctx.stroke();
+  ctx.strokeStyle=css('--wave'); ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<len;i++){ const v=base[start+i]; i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)); } ctx.stroke();
+  ctx.strokeStyle=css('--sample'); ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<len;i++){ const g=start+i, idx=Math.floor(Math.floor(g/step)*step); const v=quant(base[idx],lis.bits); i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)); }
+  ctx.stroke();
+}
+function updateListen(){
+  $('#lRateOut').textContent = fmt(lis.rate)+' Hz';
+  $('#lBitsOut').textContent = lis.bits+(lis.bits===1?' bit':' bits');
+  $('#lLevels').textContent = fmt(2**lis.bits);
+  const mib = lis.rate*lis.bits*60/8/1048576;
+  $('#lSize').textContent = mib>=1 ? mib.toFixed(2)+' MiB' : (mib*1024).toFixed(1)+' KiB';
+  drawListen();
+}
+function toneFreq(){ const v=+$('#tone').value/1000; return Math.round(20*Math.pow(1000,v)); }
+function bindListen(){
+  $('#lRate').addEventListener('input',e=>{lis.rate=RATES[+e.target.value];updateListen();});
+  $('#lBits').addEventListener('input',e=>{lis.bits=+e.target.value;updateListen();});
+  $('#playTune').addEventListener('click',playTune);
+  $('#cdPreset').addEventListener('click',()=>{ $('#lRate').value=6; $('#lBits').value=16; lis.rate=44100; lis.bits=16; updateListen(); });
+  $('#tone').addEventListener('input',()=>{ const f=toneFreq(); $('#toneOut').textContent=fmt(f)+' Hz'; if(osc) osc.frequency.setTargetAtTime(f,actx.currentTime,0.02); });
+  $('#toneBtn').addEventListener('click',e=>{
+    const c=getCtx(); if(!c) return;
+    if(osc){ oscGain.gain.setTargetAtTime(0,c.currentTime,0.03); const o=osc; setTimeout(()=>{try{o.stop();}catch(x){}},150); osc=null;
+      e.target.textContent='Play tone'; e.target.setAttribute('aria-pressed','false'); return; }
+    osc=c.createOscillator(); oscGain=c.createGain(); oscGain.gain.value=0; osc.frequency.value=toneFreq();
+    osc.connect(oscGain).connect(c.destination); osc.start(); oscGain.gain.setTargetAtTime(0.06,c.currentTime,0.03);
+    e.target.textContent='Stop tone'; e.target.setAttribute('aria-pressed','true');
+  });
+}
+
+/* ---------- 4 SAMPLE IT YOURSELF ---------- */
+let ws = {a:0,b:0,c:0,user:null,reveal:false};
+const wsF = x => 7.5 + 5.2*Math.sin(x*ws.a+ws.c) + 1.8*Math.sin(x*ws.b+0.5);
+function newWs(){
+  ws.a = 0.6+Math.random()*0.6; ws.b = 1.6+Math.random()*1.2; ws.c = Math.random()*6; ws.user=null; ws.reveal=false;
+  $('#wsInputs').innerHTML = Array.from({length:13},(_,i)=>`<label>t=${i}<input type="text" inputmode="numeric" id="ws${i}" aria-label="Sample at time ${i}"></label>`).join('');
+  $('#wsFb').textContent=''; drawWs();
+}
+const wsTrue = i => Math.max(0,Math.min(15,Math.round(wsF(i))));
+function drawWs(){
+  const {ctx,w,h}=prep($('#wsCanvas'));
+  const padL=30,padR=10,padT=10,padB=26,W=w-padL-padR,H=h-padT-padB;
+  const X=x=>padL+x/12*W, Y=v=>padT+(1-v/15)*H;
+  ctx.clearRect(0,0,w,h); ctx.font='11px "JetBrains Mono", monospace'; ctx.fillStyle=css('--muted');
+  ctx.strokeStyle=css('--line'); ctx.lineWidth=1;
+  for(let v=0;v<=15;v++){ ctx.beginPath(); ctx.moveTo(padL,Y(v)); ctx.lineTo(padL+W,Y(v)); ctx.stroke(); ctx.fillText(v,4,Y(v)+4); }
+  ctx.textAlign='center';
+  for(let x=0;x<=12;x++){ ctx.beginPath(); ctx.moveTo(X(x),padT); ctx.lineTo(X(x),padT+H); ctx.stroke(); ctx.fillText(x,X(x),h-8); }
+  ctx.textAlign='left';
+  const bw=Math.min(W/12*0.5,28);
+  if(ws.user){ ctx.fillStyle=css('--bar'); ctx.globalAlpha=.8;
+    ws.user.forEach((v,i)=>{ if(v==null) return; ctx.fillRect(X(i)-bw/2,Y(v),bw,Y(0)-Y(v)); }); ctx.globalAlpha=1; }
+  ctx.strokeStyle=css('--wave'); ctx.lineWidth=2.4; ctx.beginPath();
+  for(let px=0;px<=W;px++){ const x=px/W*12, y=Math.max(0,Math.min(15,wsF(x))); px?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y)); } ctx.stroke();
+  if(ws.reveal){ ctx.strokeStyle=css('--sample'); ctx.lineWidth=2.2;
+    for(let i=0;i<=12;i++){ const x=X(i),y=Y(wsTrue(i)); ctx.beginPath(); ctx.moveTo(x-5,y-5); ctx.lineTo(x+5,y+5); ctx.moveTo(x+5,y-5); ctx.lineTo(x-5,y+5); ctx.stroke(); } }
+}
+function bindWs(){
+  $('#wsCheck').addEventListener('click',()=>{
+    let right=0, filled=0; ws.user=[];
+    for(let i=0;i<=12;i++){ const el=$('#ws'+i), raw=el.value.trim(); el.classList.remove('ok','no');
+      if(raw===''){ ws.user.push(null); continue; } const v=+raw; filled++;
+      if(!Number.isInteger(v)||v<0||v>15){ el.classList.add('no'); ws.user.push(null); continue; }
+      ws.user.push(v); if(Math.abs(v-wsTrue(i))<=1){ right++; el.classList.add('ok'); } else el.classList.add('no'); }
+    drawWs();
+    const fb=$('#wsFb'); fb.className='feedback '+(right===13?'ok':'no');
+    fb.textContent = right===13 ? 'All 13 correct. Look how your bars follow the wave but miss the exact peaks.' : `${right} of 13 correct${filled<13?' (some boxes are empty)':''}. Values must be whole numbers from 0 to 15.`;
+  });
+  $('#wsReveal').addEventListener('click',()=>{ ws.reveal=true; for(let i=0;i<=12;i++){ const el=$('#ws'+i); if(el.value.trim()==='') el.placeholder=wsTrue(i); } drawWs(); $('#wsFb').className='feedback'; $('#wsFb').textContent='Red crosses show the rounded sample values (shown faintly in empty boxes).'; });
+  $('#wsNew').addEventListener('click',newWs);
+}
+
+/* ---------- 5 ENCODE ---------- */
+let encVals=[];
+function newEnc(){
+  encVals = Array.from({length:8},()=>Math.floor(Math.random()*16));
+  $('#encGrid').innerHTML = encVals.map((v,i)=>`<label><span class="muted" style="font-size:.8rem">Sample ${i}</span><span class="d">${v}</span><input type="text" maxlength="4" id="enc${i}" aria-label="Binary for ${v}" autocomplete="off"></label>`).join('');
+  $('#encFb').textContent='';
+}
+function bindEnc(){
+  $('#encCheck').addEventListener('click',()=>{ let r=0;
+    encVals.forEach((v,i)=>{ const el=$('#enc'+i), ans=v.toString(2).padStart(4,'0'); el.classList.remove('ok','no');
+      if(el.value.trim()===ans){ r++; el.classList.add('ok'); } else el.classList.add('no'); });
+    const fb=$('#encFb'); fb.className='feedback '+(r===8?'ok':'no');
+    fb.textContent = r===8 ? 'All correct.' : `${r} of 8 correct. Every answer needs exactly 4 digits, e.g. 3 is 0011.`;
+  });
+  $('#encNew').addEventListener('click',newEnc);
+  $('#encBytesCheck').addEventListener('click',()=>{ const v=+$('#encBytes').value, fb=$('#encBytesFb');
+    if(v===4){ fb.className='feedback ok'; fb.textContent='Correct: 8 × 4 = 32 bits, 32 ÷ 8 = 4 bytes.'; }
+    else { fb.className='feedback no'; fb.textContent='Not quite. Work out the total bits first (samples × bits per sample), then divide by 8.'; } });
+}
+
+/* ---------- 6 FILE SIZE ---------- */
+let fs = {level:'easy', q:null, right:0, total:0, answered:false};
+function newFs(){
+  let r,b,d,unit,ans;
+  if(fs.level==='easy'){
+    r=pick([4,5,6,8,10,12,16]); b=pick([2,3,4,8]); d=pick([2,3,4,5,10]);
+    const bits=r*b*d; if(bits%8===0 && Math.random()<.65){ unit='bytes'; ans=bits/8; } else { unit='bits'; ans=bits; }
+    fs.q={r,b,d,unit,ans,bits};
+    $('#fsQ').innerHTML = `A sound is sampled at <b>${r} Hz</b> with a sample resolution of <b>${b} bits</b>. It lasts <b>${d} seconds</b>. What is the file size in <b>${unit}</b>?`;
+  } else {
+    r=pick([8000,11025,16000,22050,44100,48000]); b=pick([8,16,24]); d=pick([10,30,45,60,90,120,180]);
+    const bits=r*b*d; unit=pick(['KiB','MiB','MiB']); ans = unit==='KiB'? bits/8/1024 : bits/8/1048576;
+    fs.q={r,b,d,unit,ans,bits};
+    $('#fsQ').innerHTML = `A ${d}-second recording uses a sample rate of <b>${fmt(r)} Hz</b> and a sample resolution of <b>${b} bits</b>. Calculate the file size in <b>${unit}</b>. Give your answer to 2 decimal places.`;
+  }
+  $('#fsUnit').textContent = unit; $('#fsA').value=''; $('#fsFb').textContent=''; $('#fsWork').hidden=true; fs.answered=false;
+}
+function fsWorking(){
+  const {r,b,d,bits,unit,ans}=fs.q; const bytes=bits/8;
+  let s = `${fmt(r)} × ${b} × ${d} = ${fmt(bits)} bits`;
+  if(unit!=='bits') s += `<br>${fmt(bits)} ÷ 8 = ${fmt(bytes)} bytes`;
+  if(unit==='KiB'||unit==='MiB') s += `<br>${fmt(bytes)} ÷ 1024 = ${fmt(+(bytes/1024).toFixed(4))} KiB`;
+  if(unit==='MiB') s += `<br>${fmt(+(bytes/1024).toFixed(4))} ÷ 1024 = ${ans.toFixed(2)} MiB`;
+  return s;
+}
+function bindFs(){
+  segBind('#fsLevel','l',v=>{fs.level=v;newFs();});
+  $('#fsCheck').addEventListener('click',()=>{
+    const raw=$('#fsA').value; if(raw===''){ $('#fsFb').className='feedback no'; $('#fsFb').textContent='Type an answer first.'; return; }
+    const v=+raw, a=fs.q.ans, ok = fs.level==='easy' ? v===a : Math.abs(v-a)<=Math.max(0.011, a*0.002);
+    if(!fs.answered){ fs.total++; if(ok) fs.right++; fs.answered=true; }
+    $('#fsScore').textContent=`Score: ${fs.right} / ${fs.total}`;
+    const fb=$('#fsFb'); fb.className='feedback '+(ok?'ok':'no');
+    fb.textContent = ok ? 'Correct.' : `Not quite. The answer is ${fs.level==='easy'?fmt(a):a.toFixed(2)} ${fs.q.unit}.`;
+    $('#fsWork').innerHTML=fsWorking(); $('#fsWork').hidden=false;
+  });
+  $('#fsNext').addEventListener('click',newFs);
+  $('#fsA').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#fsCheck').click(); });
+}
+
+/* ---------- 7 MATCH ---------- */
+const PAIRS = [
+  ['Sample','A measurement of the amplitude of a sound wave at a point in time'],
+  ['Sample rate','The number of samples taken per second'],
+  ['Hertz (Hz)','The unit for sample rate: one sample per second'],
+  ['Bit depth','The number of bits used to store each sample'],
+  ['ADC','Converts an analogue signal into digital data'],
+  ['DAC','Converts digital data back into an analogue signal'],
+  ['Lossy','Compression that permanently removes some of the data'],
+  ['Lossless','Compression where the original file can be rebuilt exactly'],
+];
+let mSel=null, mDone=0;
+function buildMatch(){
+  mSel=null; mDone=0; $('#mFb').textContent='0 of 8 matched'; $('#mFb').className='feedback';
+  $('#mTerms').innerHTML = shuffle(PAIRS.map((p,i)=>i)).map(i=>`<button class="mitem t" data-i="${i}">${PAIRS[i][0]}</button>`).join('');
+  $('#mDefs').innerHTML = shuffle(PAIRS.map((p,i)=>i)).map(i=>`<button class="mitem d" data-i="${i}">${PAIRS[i][1]}</button>`).join('');
+  document.querySelectorAll('#mTerms .mitem').forEach(b=>b.addEventListener('click',()=>{
+    if(b.classList.contains('done')) return; document.querySelectorAll('#mTerms .mitem').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); mSel=b; }));
+  document.querySelectorAll('#mDefs .mitem').forEach(b=>b.addEventListener('click',()=>{
+    if(!mSel||b.classList.contains('done')) return;
+    if(mSel.dataset.i===b.dataset.i){ mSel.classList.remove('sel'); mSel.classList.add('done'); b.classList.add('done'); mSel.disabled=b.disabled=true; mSel=null; mDone++;
+      $('#mFb').textContent = mDone===8 ? 'All 8 matched. Well done.' : `${mDone} of 8 matched`; if(mDone===8) $('#mFb').className='feedback ok'; }
+    else { b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),600); }
+  }));
+}
+
+/* ---------- 8 CLOZE ---------- */
+const CLOZE = [
+  'Sound in the real world is analogue, which means it is ',['continuous'],'. A computer can only store ',['discrete'],' binary values, so an ',['ADC'],
+  ' measures the ',['amplitude'],' of the wave at regular intervals. Each measurement is called a ',['sample'],'. The number of these taken each second is the ',
+  ['sample rate'],', which is measured in ',['hertz'],'. The number of bits used to store each measurement is the ',['bit depth'],'. With 3 bits there are ',['8'],
+  ' possible values. Increasing the sample rate or the bit depth makes the recording more accurate, but the file becomes ',['larger'],'. To play the sound, a ',['DAC'],
+  ' converts the binary back into an analogue signal. MP3 uses ',['lossy'],' compression, which permanently removes sounds we can’t easily hear. FLAC uses ',['lossless'],' compression, so the original can be rebuilt exactly.'
+];
+const BANK = ['continuous','discrete','ADC','DAC','amplitude','sample','sample rate','hertz','bit depth','8','16','larger','smaller','lossy','lossless','bytes'];
+function buildCloze(){
+  let k=0;
+  $('#cloze').innerHTML = CLOZE.map(p=>{
+    if(typeof p==='string') return p;
+    const id='cz'+(k++); return `<select id="${id}" data-a="${p[0]}" aria-label="Gap ${k}"><option value="">…</option>${BANK.slice().sort().map(w=>`<option>${w}</option>`).join('')}</select>`;
+  }).join('');
+}
+function bindCloze(){
+  $('#clozeCheck').addEventListener('click',()=>{ let r=0,n=0;
+    document.querySelectorAll('#cloze select').forEach(s=>{ n++; s.classList.remove('ok','no'); if(s.value===s.dataset.a){ r++; s.classList.add('ok'); } else s.classList.add('no'); });
+    const fb=$('#clozeFb'); fb.className='feedback '+(r===n?'ok':'no'); fb.textContent = r===n ? `All ${n} correct.` : `${r} of ${n} correct. Red gaps need another look.`;
+  });
+  $('#clozeReset').addEventListener('click',()=>{ document.querySelectorAll('#cloze select').forEach(s=>{s.value='';s.classList.remove('ok','no');}); $('#clozeFb').textContent=''; });
+}
+
+/* ---------- 9 SORT ---------- */
+const BINS = [['unc','Uncompressed','Every sample stored'],['lossless','Lossless','Smaller, nothing lost'],['lossy','Lossy','Smallest, data removed']];
+const CARDS = [
+  ['WAV','unc'],['AIFF','unc'],['FLAC','lossless'],['ALAC','lossless'],['WMA Lossless','lossless'],['MP3','lossy'],['AAC','lossy'],
+  ['Original can be rebuilt exactly','lossless'],['Removes sounds we can’t easily hear','lossy'],['About 10 MB for a minute of music','unc'],['Best for streaming on a slow connection','lossy'],
+];
+let sortSel=null;
+function buildSort(){
+  sortSel=null; $('#sortFb').textContent='';
+  $('#sortBins').innerHTML = BINS.map(([k,t,s])=>`<div class="bin" data-bin="${k}" role="button" tabindex="0" aria-label="${t} box"><h3>${t}</h3><span class="sub">${s}</span></div>`).join('');
+  $('#sortTray').innerHTML = shuffle(CARDS.map((c,i)=>i)).map(i=>`<button class="card" data-i="${i}">${CARDS[i][0]}</button>`).join('');
+  document.querySelectorAll('.card').forEach(c=>c.addEventListener('click',e=>{
+    e.stopPropagation(); if(sortSel===c){ c.classList.remove('sel'); sortSel=null; return; }
+    document.querySelectorAll('.card').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); sortSel=c; }));
+  const drop = bin => { if(!sortSel) return; sortSel.classList.remove('sel','ok','no'); bin.appendChild(sortSel); sortSel=null; };
+  document.querySelectorAll('.bin').forEach(b=>{ b.addEventListener('click',()=>drop(b)); b.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); drop(b);} }); });
+  $('#sortTray').onclick = ()=>{ if(sortSel){ sortSel.classList.remove('sel'); $('#sortTray').appendChild(sortSel); sortSel=null; } };
+}
+function bindSort(){
+  $('#sortCheck').addEventListener('click',()=>{ let r=0;
+    document.querySelectorAll('.bin .card').forEach(c=>{ const ok = CARDS[c.dataset.i][1]===c.parentElement.dataset.bin; c.classList.toggle('ok',ok); c.classList.toggle('no',!ok); if(ok) r++; });
+    const left=$('#sortTray').children.length, fb=$('#sortFb'); fb.className='feedback '+(r===CARDS.length?'ok':'no');
+    fb.textContent = r===CARDS.length ? 'All sorted correctly.' : `${r} of ${CARDS.length} correct${left?`, ${left} still to place`:''}. Move the red cards.`;
+  });
+  $('#sortReset').addEventListener('click',buildSort);
+}
+
+/* ---------- 10 EXAM ---------- */
+const EXAM = [
+  {q:'A sound wave is sampled and the samples are used to rebuild the wave. Explain why the rebuilt wave is not identical to the original.', m:2,
+   ms:['The wave is only measured at intervals, so changes between samples (such as peaks and troughs) are lost','Each sample is rounded to the nearest available value, so the stored height is not exact']},
+  {q:'State two ways the accuracy of a sound recording could be improved.', m:2,
+   ms:['Increase the sample rate (take samples more often)','Increase the sample resolution / bit depth (more values available for each sample)']},
+  {q:'10 samples are stored with a sample resolution that allows 256 different values. Calculate the file size in bytes. Show your working.', m:2, num:10,
+   ms:['256 values need 8 bits (2⁸ = 256)','8 × 10 = 80 bits; 80 ÷ 8 = 10 bytes']},
+  {q:'Explain how increasing the sample rate affects the quality of a recording.', m:2,
+   ms:['More samples are taken each second','Changes in the wave are captured more accurately, so the playback is closer to the original sound']},
+  {q:'Explain the relationship between the quality of playback and the size of a sound file.', m:2,
+   ms:['Higher quality needs a higher sample rate and/or bit depth','This means more data (more bits) is stored, so the file size increases']},
+  {q:'A music streaming service stores songs as MP3 files. Explain one advantage and one disadvantage of using lossy compression.', m:2,
+   ms:['Advantage: much smaller file, so it downloads/streams faster and uses less storage','Disadvantage: data is permanently removed, so quality may be lower and the original cannot be recovered']},
+];
+function buildExam(){
+  $('#examQs').innerHTML = EXAM.map((e,i)=>`<div class="q"><div class="row" style="justify-content:space-between"><h3>Question ${i+1}</h3><span class="marks">[${e.m} marks]</span></div>
+    <p>${e.q}</p>
+    ${e.num? `<div class="row"><input type="number" id="exN${i}" style="width:110px" aria-label="Answer in bytes"> <span>bytes</span></div>`:''}
+    <textarea id="exA${i}" placeholder="Write your answer here" aria-label="Your answer to question ${i+1}"></textarea>
+    <div><button class="ghost" data-ms="${i}">Show mark scheme</button></div>
+    <div class="ms" id="ms${i}" hidden>${e.ms.map((p,j)=>`<label><input type="checkbox" id="ms${i}_${j}"> <span>${p}</span></label>`).join('')}<span class="muted" id="msS${i}" style="font-size:.88rem"></span></div>
+  </div>`).join('');
+  document.querySelectorAll('[data-ms]').forEach(b=>b.addEventListener('click',()=>{ const i=+b.dataset.ms, box=$('#ms'+i); box.hidden=!box.hidden; b.textContent = box.hidden?'Show mark scheme':'Hide mark scheme';
+    if(EXAM[i].num){ const v=$('#exN'+i).value; $('#msS'+i).textContent = v===''?'':(+v===EXAM[i].num?'Your number is correct.':`Your number was ${v}; the answer is ${EXAM[i].num} bytes.`); } }));
+  EXAM.forEach((e,i)=>e.ms.forEach((_,j)=>$(`#ms${i}_${j}`).addEventListener('change',()=>{ const n=e.ms.filter((_,k)=>$(`#ms${i}_${k}`).checked).length; $('#msS'+i).textContent=`You gave yourself ${n} / ${e.m}`; })));
+}
+
+/* ---------- 11 QUIZ ---------- */
+const QUIZ = [
+  {q:'What unit is sample rate measured in?', o:['Bits','Hertz (Hz)','Bytes','Decibels'], a:1, e:'1 Hz means one sample per second.'},
+  {q:'How many different values can a 4-bit sample store?', o:['4','8','15','16'], a:3, e:'2⁴ = 16 values, from 0 (0000) to 15 (1111).'},
+  {q:'How many bits are needed for 256 different sample values?', o:['6','7','8','256'], a:2, e:'2⁸ = 256, so 8 bits are needed.'},
+  {q:'The bit depth of a recording is doubled from 8 to 16 bits. What happens to the file size?', o:['It halves','It stays the same','It doubles','It is multiplied by 256'], a:2, e:'File size = rate × bits × duration, so doubling the bits doubles the size.'},
+  {q:'Track1.wav uses 20 kHz and Track2.wav uses 10 kHz. Everything else is the same. Which is true?', o:['Track1 is higher quality and a larger file','Track2 is higher quality and a larger file','Track1 is higher quality and a smaller file','They are the same size'], a:0, e:'More samples per second gives more accuracy and more data.'},
+  {q:'What is the sample rate commonly used for CDs?', o:['8,000 Hz','20,000 Hz','44,100 Hz','96,000 Hz'], a:2, e:'44,100 Hz (44.1 kHz): more than twice the 20,000 Hz limit of human hearing.'},
+  {q:'Which of these is a lossless audio format?', o:['MP3','AAC','FLAC','None of these'], a:2, e:'FLAC (Free Lossless Audio Codec) reduces size without losing any data.'},
+  {q:'A 6 Hz, 4-bit recording lasts 3 seconds. What is its size?', o:['9 bytes','12 bytes','72 bytes','18 bits'], a:0, e:'6 × 4 × 3 = 72 bits; 72 ÷ 8 = 9 bytes.'},
+];
+let qScore=0;
+function buildQuiz(){
+  qScore=0; $('#quizScore').textContent=`Score: 0 / ${QUIZ.length}`; $('#quizScore').className='feedback';
+  $('#quizQs').innerHTML = QUIZ.map((q,i)=>`<div class="q" data-q="${i}"><h3>${i+1}. ${q.q}</h3><div class="opts">${q.o.map((o,j)=>`<button class="opt" data-j="${j}">${o}</button>`).join('')}</div><p class="expl" hidden></p></div>`).join('');
+  document.querySelectorAll('#quizQs .q').forEach(box=>{ const i=+box.dataset.q;
+    box.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+      if(box.dataset.done) return; box.dataset.done=1; const j=+b.dataset.j, ok=j===QUIZ[i].a;
+      box.querySelectorAll('.opt').forEach(x=>{ x.disabled=true; if(+x.dataset.j===QUIZ[i].a) x.classList.add('ok'); }); if(!ok) b.classList.add('no');
+      const ex=box.querySelector('.expl'); ex.hidden=false; ex.textContent=(ok?'Correct. ':'Not quite. ')+QUIZ[i].e;
+      if(ok) qScore++; $('#quizScore').textContent=`Score: ${qScore} / ${QUIZ.length}`;
+    })); });
+}
+
+/* ---------- init ---------- */
+function drawAll(){ [drawHero,drawSim,drawListen,drawWs].forEach(f=>{ try{ f(); }catch(e){ console.warn(e); } }); }
+buildGloss(); bindSim(); updateSim(); bindListen(); updateListen(); newWs(); bindWs(); newEnc(); bindEnc();
+bindFs(); newFs(); buildMatch(); $('#mReset').addEventListener('click',buildMatch);
+buildCloze(); bindCloze(); buildSort(); bindSort(); buildExam(); buildQuiz(); $('#quizReset').addEventListener('click',buildQuiz);
+drawHero();
+let rt, lastW=window.innerWidth; window.addEventListener('resize',()=>{ if(window.innerWidth===lastW) return; lastW=window.innerWidth; clearTimeout(rt); rt=setTimeout(drawAll,120); });
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawAll); }catch(e){}
+new MutationObserver(drawAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+})();
+</script>
+
+</body></html>
