@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scratch Vocabulary Match (Copy)</title>
+<style>
+  :root{
+    --canvas: #F6F8FC;
+    --canvas-dot: #DEE6F2;
+    --panel: #FFFFFF;
+    --ink: #1E2433;
+    --ink-soft: #5B6478;
+    --line: #D7DEEA;
+    --gold: #FFB100;
+    --gold-ink: #6B4B00;
+    --good: #3FAE5C;
+    --good-bg: #E7F7EC;
+    --bad: #E1435B;
+    --bad-bg: #FDEAEC;
+    --radius: 14px;
+  }
+  [data-theme="dark"], :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --canvas: #14171F;
+      --canvas-dot: #232838;
+      --panel: #1C2030;
+      --ink: #EDEFF5;
+      --ink-soft: #9AA3B8;
+      --line: #323952;
+      --good-bg: #163524;
+      --bad-bg: #3A1D24;
+    }
+  }
+  :root[data-theme="dark"]{
+    --canvas: #14171F;
+    --canvas-dot: #232838;
+    --panel: #1C2030;
+    --ink: #EDEFF5;
+    --ink-soft: #9AA3B8;
+    --line: #323952;
+    --good-bg: #163524;
+    --bad-bg: #3A1D24;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(var(--canvas-dot) 1.6px, transparent 1.6px) 0 0/26px 26px,
+      var(--canvas);
+    min-height: 100vh;
+    padding: 28px 16px 60px;
+  }
+
+  .wrap{ max-width: 920px; margin: 0 auto; }
+
+  header{ text-align:center; margin-bottom: 22px; }
+  .eyebrow-blocks{
+    display:flex; justify-content:center; gap:6px; margin-bottom:10px;
+  }
+  .eyebrow-blocks span{
+    width:22px; height:10px; border-radius:5px; display:inline-block;
+  }
+  h1{
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .sub{
+    color: var(--ink-soft);
+    font-size: 16px;
+    margin: 0;
+    max-width: 46ch;
+    margin-inline: auto;
+  }
+
+  .level-toggle{
+    display:inline-flex;
+    gap: 4px;
+    margin-top: 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px;
+  }
+  .level-btn{
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    padding: 7px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .level-btn.active{
+    background: #2C6EF2;
+    color: white;
+  }
+
+  .status{
+    display:flex; align-items:center; justify-content:center; gap:18px;
+    margin: 22px auto 26px;
+    flex-wrap: wrap;
+  }
+  .score-pill{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+  }
+  .score-pill b{ color:#2C6EF2; font-size: 17px; }
+  .track{
+    width: min(280px, 60vw);
+    height: 10px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .track-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg,#2C6EF2,#3FAE5C);
+    transition: width .45s ease;
+    border-radius: 999px;
+  }
+
+  .board{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 18px;
+  }
+  @media (max-width: 620px){
+    .board{ grid-template-columns: 1fr; }
+    .col-label{ margin-top: 6px; }
+  }
+
+  .col-label{
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    margin: 0 0 6px 4px;
+    text-transform: none;
+  }
+  .col{ display:flex; flex-direction:column; gap: 10px; }
+
+  .card{
+    position: relative;
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px 14px 20px;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1.35;
+    text-align: left;
+    width: 100%;
+    color: var(--ink);
+    transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    min-height: 56px;
+    display:flex;
+    align-items:center;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    left: -2px; top: 14px; bottom: 14px;
+    width: 6px;
+    border-radius: 4px;
+    background: var(--line);
+    transition: background .2s ease;
+  }
+  .card .term-word{ font-weight: 800; }
+
+  .card:hover:not(.matched):not(.locked){
+    transform: translateY(-1px);
+    border-color: #B9C4D9;
+  }
+  .card:focus-visible{
+    outline: 3px solid #2C6EF2;
+    outline-offset: 2px;
+  }
+
+  .card.selected{
+    border-color: #2C6EF2;
+    box-shadow: 0 0 0 3px rgba(44,110,242,0.15);
+  }
+  .card.selected::before{ background:#2C6EF2; }
+
+  .card.correct{
+    border-color: var(--good);
+    background: var(--good-bg);
+    cursor: default;
+  }
+  .card.correct::before{ background: var(--good); }
+
+  .card.wrong{
+    border-color: var(--bad);
+    background: var(--bad-bg);
+    animation: shake .35s ease;
+  }
+  .card.wrong::before{ background: var(--bad); }
+
+  .card.matched{
+    opacity: 0.55;
+    cursor: default;
+    transform: none;
+  }
+  .card.matched:hover{ transform:none; border-color: var(--good); }
+
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-6px); }
+    40%{ transform: translateX(5px); }
+    60%{ transform: translateX(-4px); }
+    80%{ transform: translateX(3px); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .card, .track-fill{ transition: none; }
+    .card.wrong{ animation: none; }
+  }
+
+  .check{
+    margin-left: 8px;
+    font-weight: 800;
+    color: var(--good);
+  }
+
+  .controls{
+    display:flex; justify-content:center; gap:10px; margin-top: 26px;
+  }
+  button.action{
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 10px 18px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  button.action.primary{
+    background: #2C6EF2;
+    border-color: #2C6EF2;
+    color: white;
+  }
+  button.action:hover{ filter: brightness(0.97); }
+
+  .celebrate{
+    display:none;
+    text-align:center;
+    margin: 22px auto 0;
+    padding: 18px 22px;
+    background: var(--good-bg);
+    border: 2px solid var(--good);
+    border-radius: var(--radius);
+    max-width: 520px;
+  }
+  .celebrate.show{ display:block; }
+  .celebrate h2{ margin: 0 0 4px; font-size: 20px; }
+  .celebrate p{ margin: 0; color: var(--ink-soft); font-size: 14px; }
+
+  footer{
+    text-align:center;
+    margin-top: 34px;
+    color: var(--ink-soft);
+    font-size: 12.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow-blocks" id="eyebrowBlocks"></div>
+    <h1>Scratch Vocabulary Match</h1>
+    <p class="sub">Tap a word on the left, then tap the explanation you think fits on the right.</p>
+    <div class="level-toggle" id="levelToggle">
+      <button class="level-btn active" id="starterBtn" type="button">Starter</button>
+      <button class="level-btn" id="challengeBtn" type="button">Challenge</button>
+    </div>
+  </header>
+
+  <div class="status">
+    <div class="score-pill">Matched <b id="scoreNum">0</b> / <span id="scoreTotal">10</span></div>
+    <div class="track"><div class="track-fill" id="trackFill"></div></div>
+    <div class="score-pill" id="mistakePill">Mismatches <b id="mistakeNum" style="color:#E1435B;">0</b></div>
+  </div>
+
+  <div class="board">
+    <div>
+      <p class="col-label">Words</p>
+      <div class="col" id="termCol"></div>
+    </div>
+    <div>
+      <p class="col-label">Explanations</p>
+      <div class="col" id="defCol"></div>
+    </div>
+  </div>
+
+  <div class="celebrate" id="celebrate">
+    <h2 id="celebrateTitle">Nice work!</h2>
+    <p id="celebrateSub">You matched all 10 with 0 mismatches.</p>
+  </div>
+
+  <div class="controls">
+    <button class="action" id="shuffleBtn">Shuffle &amp; restart</button>
+  </div>
+
+  <footer>Made for a Year 6 Scratch lesson — click a word, then its matching explanation.</footer>
+</div>
+
+<script>
+(function(){
+  const pairSets = {
+    starter: [
+      { term: "Sprite", def: "A character or object on the screen that you can program to move, talk and do things." },
+      { term: "Costume", def: "The different looks a sprite can switch between." },
+      { term: "Backdrop", def: "The picture that appears on the Stage, behind the sprites." },
+      { term: "Stage", def: "The area where your sprites move around." },
+      { term: "Script", def: "A group of blocks joined together that tell a sprite what to do." },
+      { term: "Block", def: "One single instruction, like \u201cmove 10 steps\u201d or \u201cplay sound\u201d." },
+      { term: "Event", def: "Something that starts a script running, such as clicking the green flag." },
+      { term: "Loop", def: "A block that repeats a set of instructions over and over." },
+      { term: "Variable", def: "A box that stores information, like a score, that can change." },
+      { term: "Broadcast", def: "A message one sprite sends to tell other sprites to do something." }
+    ],
+    challenge: [
+      { term: "Clone", def: "A copy of a sprite that can do its own thing while the project is running." },
+      { term: "Coordinates", def: "Two numbers, x and y, that tell a sprite exactly where it is on the Stage." },
+      { term: "Condition", def: "A test that is either true or false, used to decide what happens next." },
+      { term: "Operator", def: "A block that works out maths or compares two values, like adding numbers or checking which is bigger." },
+      { term: "Direction", def: "The way a sprite is pointing, shown as a number of degrees." },
+      { term: "Pen", def: "A tool that lets a sprite draw lines and shapes as it moves around the Stage." },
+      { term: "Message", def: "The information sent with a broadcast, telling other sprites what to respond to." },
+      { term: "Boolean", def: "A value that can only ever be true or false." },
+      { term: "Input", def: "Information a block needs from you before it can run, like a number or some text." },
+      { term: "Random", def: "A block that picks a number or choice you can't predict, used to make things different each time." }
+    ]
+  };
+
+  const colors = ["#4C7CF3","#9455E8","#E8820C","#2CB3C7","#4CBB5B","#D95CA0","#C33C6B","#1E9E8C","#E8622C","#7A6DE0"];
+
+  let currentLevel = 'starter';
+  let pairs = pairSets[currentLevel];
+
+  const termCol = document.getElementById('termCol');
+  const defCol = document.getElementById('defCol');
+  const scoreNum = document.getElementById('scoreNum');
+  const scoreTotal = document.getElementById('scoreTotal');
+  const mistakeNum = document.getElementById('mistakeNum');
+  const trackFill = document.getElementById('trackFill');
+  const celebrate = document.getElementById('celebrate');
+  const celebrateSub = document.getElementById('celebrateSub');
+  const shuffleBtn = document.getElementById('shuffleBtn');
+  const eyebrowBlocks = document.getElementById('eyebrowBlocks');
+
+  eyebrowBlocks.innerHTML = colors.slice(0,6).map(c => `<span style="background:${c}"></span>`).join('');
+
+  const starterBtn = document.getElementById('starterBtn');
+  const challengeBtn = document.getElementById('challengeBtn');
+
+  function setLevel(level){
+    currentLevel = level;
+    starterBtn.classList.toggle('active', level === 'starter');
+    challengeBtn.classList.toggle('active', level === 'challenge');
+    buildBoard();
+  }
+
+  starterBtn.addEventListener('click', () => setLevel('starter'));
+  challengeBtn.addEventListener('click', () => setLevel('challenge'));
+
+  let state = {};
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function buildBoard(){
+    pairs = pairSets[currentLevel];
+    scoreTotal.textContent = pairs.length;
+    state = {
+      matched: 0,
+      mistakes: 0,
+      selectedTerm: null,
+      selectedDef: null,
+      busy: false
+    };
+    scoreNum.textContent = 0;
+    mistakeNum.textContent = 0;
+    trackFill.style.width = '0%';
+    celebrate.classList.remove('show');
+
+    const idOrder = pairs.map((_,i) => i);
+    const termOrder = idOrder;
+    const defOrder = shuffle(idOrder);
+
+    termCol.innerHTML = '';
+    defCol.innerHTML = '';
+
+    termOrder.forEach(id => {
+      const btn = document.createElement('button');
+      btn.className = 'card term-card';
+      btn.type = 'button';
+      btn.dataset.id = id;
+      btn.innerHTML = `<span class="term-word">${pairs[id].term}</span>`;
+      btn.addEventListener('click', () => onPick('term', id, btn));
+      termCol.appendChild(btn);
+    });
+
+    defOrder.forEach(id => {
+      const btn = document.createElement('button');
+      btn.className = 'card def-card';
+      btn.type = 'button';
+      btn.dataset.id = id;
+      btn.textContent = pairs[id].def;
+      btn.addEventListener('click', () => onPick('def', id, btn));
+      defCol.appendChild(btn);
+    });
+  }
+
+  function clearSelection(){
+    document.querySelectorAll('.card.selected').forEach(el => el.classList.remove('selected'));
+    state.selectedTerm = null;
+    state.selectedDef = null;
+  }
+
+  function onPick(kind, id, el){
+    if(state.busy) return;
+    if(el.classList.contains('matched')) return;
+
+    if(kind === 'term'){
+      if(state.selectedTerm && state.selectedTerm.el === el){
+        el.classList.remove('selected');
+        state.selectedTerm = null;
+        return;
+      }
+      if(state.selectedTerm) state.selectedTerm.el.classList.remove('selected');
+      state.selectedTerm = { id, el };
+      el.classList.add('selected');
+    } else {
+      if(state.selectedDef && state.selectedDef.el === el){
+        el.classList.remove('selected');
+        state.selectedDef = null;
+        return;
+      }
+      if(state.selectedDef) state.selectedDef.el.classList.remove('selected');
+      state.selectedDef = { id, el };
+      el.classList.add('selected');
+    }
+
+    if(state.selectedTerm && state.selectedDef){
+      checkMatch();
+    }
+  }
+
+  function checkMatch(){
+    state.busy = true;
+    const t = state.selectedTerm;
+    const d = state.selectedDef;
+    const isMatch = t.id === d.id;
+
+    if(isMatch){
+      const color = colors[t.id % colors.length];
+      [t.el, d.el].forEach(el => {
+        el.classList.remove('selected');
+        el.classList.add('correct');
+        el.style.setProperty('--matchColor', color);
+      });
+      t.el.style.setProperty('border-color', color);
+      d.el.style.setProperty('border-color', color);
+      const checkMark = document.createElement('span');
+      checkMark.className = 'check';
+      checkMark.textContent = '\u2713';
+      t.el.appendChild(checkMark);
+
+      setTimeout(() => {
+        [t.el, d.el].forEach(el => {
+          el.classList.remove('correct');
+          el.classList.add('matched');
+          el.disabled = true;
+        });
+        state.matched++;
+        scoreNum.textContent = state.matched;
+        trackFill.style.width = Math.round((state.matched / pairs.length) * 100) + '%';
+        clearSelection();
+        state.busy = false;
+
+        if(state.matched === pairs.length){
+          celebrate.classList.add('show');
+          const perfect = state.mistakes === 0;
+          celebrateSub.textContent = perfect
+            ? `Perfect round \u2014 all ${pairs.length} matched with no mismatches.`
+            : `All ${pairs.length} matched, with ${state.mistakes} mismatch${state.mistakes === 1 ? '' : 'es'} along the way.`;
+        }
+      }, 550);
+    } else {
+      state.mistakes++;
+      mistakeNum.textContent = state.mistakes;
+      [t.el, d.el].forEach(el => el.classList.add('wrong'));
+      setTimeout(() => {
+        [t.el, d.el].forEach(el => el.classList.remove('wrong'));
+        clearSelection();
+        state.busy = false;
+      }, 500);
+    }
+  }
+
+  shuffleBtn.addEventListener('click', buildBoard);
+
+  buildBoard();
+})();
+</script>
+</body>
+</html>
