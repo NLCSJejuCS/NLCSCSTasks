@@ -3,140 +3,303 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b2545">
   <title>NLCS CS Tasks Directory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --card-hover: #334155;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-hover: #0284c7;
-      --border: #334155;
+      /* NLCS Jeju palette */
+      --navy: #0b2545;
+      --navy-2: #13315c;
+      --blue: #3a75bf;          /* school theme colour */
+      --blue-soft: #eaf1fa;
+      --bg: #ffffff;
+      --bg-alt: #f4f6f9;
+      --text: #1d2733;
+      --text-muted: #5b6776;
+      --border: #dde3ea;
 
-      /* Section colours */
-      --primary: #a3e635;
-      --ks3: #fbbf24;
-      --igcse: #f472b6;
-      --ib: #38bdf8;
-      --tools: #c084fc;
-      --lessons: #2dd4bf;
+      /* Section colours (muted, school-house inspired) */
+      --tools: #0b2545;
+      --lessons: #1f7a73;
+      --primary: #4c8a2f;
+      --ks3: #b8860b;
+      --igcse: #a8323e;
+      --ib: #3a75bf;
+
+      --serif: "Libre Baskerville", Georgia, "Times New Roman", serif;
+      --sans: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
+      font-family: var(--sans);
+      background: var(--bg);
       color: var(--text);
-      line-height: 1.6;
-      padding: 2rem 1rem;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
     }
+
+    a { color: inherit; }
 
     .container {
-      max-width: 1100px;
+      max-width: 1180px;
       margin: 0 auto;
+      padding: 0 1.25rem;
     }
 
-    header {
-      margin-bottom: 2rem;
+    /* ---------- Top utility bar ---------- */
+    .utility {
+      background: var(--navy);
+      color: #c9d4e3;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .utility .container {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1.5rem;
+      padding-top: 0.55rem;
+      padding-bottom: 0.55rem;
+    }
+    .utility a { text-decoration: none; font-weight: 700; }
+    .utility a:hover { color: #fff; }
+
+    /* ---------- Masthead ---------- */
+    .masthead {
+      background: var(--navy);
+      color: #fff;
+    }
+    .masthead .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-top: 1.1rem;
+      padding-bottom: 1.1rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+    }
+    .brand img { height: 52px; width: auto; display: block; }
+    .brand-text {
+      border-left: 1px solid rgba(255,255,255,0.3);
+      padding-left: 1rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    .masthead nav {
+      display: flex;
+      gap: 1.75rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .masthead nav a { text-decoration: none; opacity: 0.85; }
+    .masthead nav a:hover { opacity: 1; }
+    @media (max-width: 760px) {
+      .masthead nav { display: none; }
+      .brand img { height: 42px; }
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      background:
+        linear-gradient(90deg, rgba(11,37,69,0.96) 0%, rgba(19,49,92,0.88) 60%, rgba(58,117,191,0.75) 100%);
+      color: #fff;
+      padding: 3.5rem 0 3.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      /* subtle binary watermark */
+      content: "01001110 01001100 01000011 01010011";
+      position: absolute;
+      right: -2rem;
+      bottom: 1rem;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: clamp(1.4rem, 4vw, 3rem);
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.06);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .breadcrumb {
+      font-size: 0.82rem;
+      color: #c9d4e3;
+      margin-bottom: 1.25rem;
+    }
+    .breadcrumb a { text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.5rem; opacity: 0.6; }
+    .hero h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      max-width: 640px;
+      font-size: 1.08rem;
+      color: #dbe4f0;
+    }
+    .hero .tagline {
+      margin-top: 1.5rem;
+      font-family: var(--serif);
+      font-style: italic;
+      color: #fff;
+      font-size: 1.05rem;
+    }
+
+    /* ---------- Overview stats ---------- */
+    .overview {
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--border);
+    }
+    .overview .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0;
+    }
+    .stat {
+      padding: 1.6rem 1rem;
       text-align: center;
+      border-right: 1px solid var(--border);
     }
-
-    header h1 {
-      font-size: clamp(1.8rem, 5vw, 2.5rem);
-      color: var(--text);
-      margin-bottom: 0.5rem;
+    .stat:last-child { border-right: 0; }
+    .stat-num {
+      font-family: var(--serif);
+      font-size: 2.2rem;
+      color: var(--blue);
+      line-height: 1.1;
     }
-
-    header p {
+    .stat-label {
+      font-size: 0.85rem;
       color: var(--text-muted);
-      font-size: 1.1rem;
+      margin-top: 0.35rem;
     }
 
-    /* Filter chips */
+    /* ---------- Toolbar: filters + search ---------- */
+    main { padding: 2.75rem 0 1rem; }
+
+    .eyebrow {
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 0.75rem;
+    }
+
     .filters {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
       gap: 0.5rem;
       margin-bottom: 1.25rem;
     }
 
     .chip {
-      background: var(--card-bg);
+      background: #fff;
       border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 0.45rem 0.9rem;
-      border-radius: 999px;
-      font-size: 0.9rem;
-      font-weight: 500;
+      color: var(--navy);
+      padding: 0.55rem 1rem;
+      border-radius: 2px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
       font-family: inherit;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
     }
-
-    .chip:hover { color: var(--text); }
-
+    .chip:hover { border-color: var(--chip-colour, var(--navy)); }
     .chip.active {
-      color: var(--bg);
-      background: var(--chip-colour, var(--accent));
-      border-color: var(--chip-colour, var(--accent));
+      color: #fff;
+      background: var(--chip-colour, var(--navy));
+      border-color: var(--chip-colour, var(--navy));
     }
-
     .chip .count {
-      opacity: 0.7;
-      margin-left: 0.25rem;
-      font-size: 0.8rem;
+      opacity: 0.65;
+      margin-left: 0.35rem;
+      font-weight: 400;
     }
 
-    .search-input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--card-bg);
-      color: var(--text);
-      font-size: 1rem;
-      outline: none;
-      margin-bottom: 2.5rem;
-      transition: border-color 0.2s;
-    }
-
-    .search-input:focus {
-      border-color: var(--accent);
-    }
-
-    /* Sections */
-    .section {
+    .search-wrap {
+      position: relative;
       margin-bottom: 3rem;
     }
+    .search-wrap svg {
+      position: absolute;
+      left: 0.1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.85rem 0.5rem 0.85rem 2.1rem;
+      border: 0;
+      border-bottom: 2px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 1.05rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input::placeholder { color: #8a95a3; }
+    .search-input:focus { border-bottom-color: var(--blue); }
+
+    /* ---------- Sections ---------- */
+    .section { margin-bottom: 3.5rem; }
 
     .section-header {
       display: flex;
       align-items: baseline;
       flex-wrap: wrap;
-      gap: 0.25rem 0.75rem;
-      border-left: 4px solid var(--section-colour);
-      padding-left: 0.85rem;
-      margin-bottom: 1.25rem;
+      gap: 0.25rem 1rem;
+      padding-bottom: 0.85rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
     }
-
+    .section-header::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -1px;
+      width: 64px;
+      height: 3px;
+      background: var(--section-colour);
+    }
     .section-header h2 {
-      font-size: 1.5rem;
-      color: var(--text);
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 1.75rem;
+      color: var(--navy);
     }
-
     .section-header .section-sub {
-      color: var(--text-muted);
-      font-size: 0.95rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--section-colour);
     }
 
     .section-tools   { --section-colour: var(--tools); }
@@ -148,54 +311,60 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
       gap: 1.5rem;
     }
 
+    /* ---------- Cards ---------- */
     .card {
-      background: var(--card-bg);
+      background: #fff;
       border: 1px solid var(--border);
-      border-top: 3px solid var(--section-colour);
-      border-radius: 12px;
-      padding: 1.5rem;
+      border-radius: 2px;
+      padding: 1.6rem 1.6rem 1.4rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.2s, background 0.2s;
+      position: relative;
+      transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
     }
-
+    .card::before {
+      content: "";
+      position: absolute;
+      left: -1px; right: -1px; top: -1px;
+      height: 4px;
+      background: var(--section-colour);
+    }
     .card:hover {
-      transform: translateY(-4px);
-      background: var(--card-hover);
-    }
-
-    .card-title {
-      font-size: 1.25rem;
-      margin-bottom: 0.5rem;
-      color: var(--text);
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px -18px rgba(11,37,69,0.45);
+      border-color: #c8d2de;
     }
 
     .card-head {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.6rem;
+      gap: 0.85rem;
+      margin-bottom: 0.8rem;
     }
-
-    .card-head .card-title { margin-bottom: 0; }
-
     .card-icon {
       flex: 0 0 auto;
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      border-radius: 2px;
       display: grid;
       place-items: center;
       color: var(--section-colour);
-      background: color-mix(in srgb, var(--section-colour) 15%, transparent);
+      background: color-mix(in srgb, var(--section-colour) 10%, #fff);
     }
-
     .card-icon svg { width: 24px; height: 24px; }
+
+    .card-title {
+      font-family: var(--serif);
+      font-weight: 700;
+      font-size: 1.15rem;
+      line-height: 1.3;
+      color: var(--navy);
+    }
 
     .card-description {
       color: var(--text-muted);
@@ -207,81 +376,96 @@
     .lesson-list {
       list-style: none;
       margin: 0 0 1rem;
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       color: var(--text-muted);
     }
-
     .lesson-list li {
-      padding: 0.35rem 0;
+      padding: 0.45rem 0;
       border-top: 1px solid var(--border);
     }
-
+    .lesson-list li:last-child { border-bottom: 1px solid var(--border); }
     .lesson-list strong {
-      color: var(--text);
-      font-weight: 600;
-      margin-right: 0.35rem;
+      color: var(--section-colour);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: inline-block;
+      min-width: 4.5rem;
     }
 
     .card-wide { grid-column: 1 / -1; }
-
-    .notice {
-      font-weight: 800;
-      text-transform: uppercase;
-      font-size: 0.8rem;
-      line-height: 1.45;
-      letter-spacing: 0.02em;
-      color: var(--text);
-      background: color-mix(in srgb, var(--section-colour) 15%, transparent);
-      border: 1px solid var(--section-colour);
-      border-radius: 8px;
-      padding: 0.7rem 0.8rem;
-      margin-bottom: 1rem;
-    }
-
-    @media (min-width: 700px) {
+    @media (min-width: 760px) {
       .card-wide .card-body {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 0 2rem;
+        gap: 0 2.5rem;
+        align-items: start;
       }
+    }
+
+    .notice {
+      font-weight: 700;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--navy);
+      background: var(--blue-soft);
+      border-left: 3px solid var(--blue);
+      padding: 0.75rem 0.9rem;
+      margin-bottom: 1.1rem;
     }
 
     .tags {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.4rem;
       flex-wrap: wrap;
       margin-bottom: 1.25rem;
     }
-
     .tag {
-      background: color-mix(in srgb, var(--section-colour) 12%, transparent);
-      color: var(--section-colour);
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      background: var(--bg-alt);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.55rem;
+      border-radius: 2px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
     }
 
+    /* "Read more →" style button, as on nlcsjeju.co.kr */
     .btn {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
       text-decoration: none;
-      padding: 0.6rem 1rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      text-align: center;
-      background: var(--section-colour);
-      color: #000;
-      display: block;
-      transition: filter 0.2s;
+      font-size: 0.8rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--navy);
+      padding: 0.7rem 1.1rem;
+      border: 1px solid var(--navy);
+      border-radius: 2px;
+      background: transparent;
+      transition: background 0.2s, color 0.2s;
     }
-
-    .btn:hover {
-      filter: brightness(0.85);
+    .btn::after {
+      content: "\2192";
+      font-size: 1rem;
+      letter-spacing: 0;
+      transition: transform 0.2s;
     }
+    .btn:hover, .btn:focus-visible {
+      background: var(--navy);
+      color: #fff;
+    }
+    .btn:hover::after { transform: translateX(3px); }
 
     .empty {
       border: 1px dashed var(--border);
-      border-radius: 12px;
       padding: 1.5rem;
       color: var(--text-muted);
       font-size: 0.95rem;
@@ -292,33 +476,107 @@
       display: none;
       text-align: center;
       color: var(--text-muted);
-      padding: 2rem 0;
+      padding: 2rem 0 3rem;
+      font-family: var(--serif);
+      font-style: italic;
     }
 
+    /* ---------- Footer ---------- */
     footer {
-      margin-top: 4rem;
-      text-align: center;
-      color: var(--text-muted);
+      background: var(--navy);
+      color: #c9d4e3;
+      margin-top: 3rem;
       font-size: 0.9rem;
     }
-
-    footer p + p { margin-top: 0.35rem; }
-
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
+    .footer-top .container {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      gap: 2rem;
+      padding-top: 3rem;
+      padding-bottom: 2.5rem;
     }
-
-    footer a:hover { text-decoration: underline; }
+    @media (max-width: 760px) {
+      .footer-top .container { grid-template-columns: 1fr; }
+    }
+    .footer-tag {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+    footer h4 {
+      color: #fff;
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    footer ul { list-style: none; }
+    footer li + li { margin-top: 0.4rem; }
+    footer a { text-decoration: none; }
+    footer a:hover { color: #fff; text-decoration: underline; }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.12);
+      font-size: 0.8rem;
+    }
+    .footer-bottom .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding-top: 1.1rem;
+      padding-bottom: 1.1rem;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>NLCS Computer Science Tasks</h1>
-      <p>Interactive tasks and resources, organised by year group</p>
-    </header>
+  <!-- ===================== HEADER ===================== -->
+  <div class="utility">
+    <div class="container">
+      <a href="https://www.nlcsjeju.co.kr/" target="_blank" rel="noopener">NLCS Jeju</a>
+      <a href="https://github.com/NLCSJejuCS/NLCSCSTasks/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Staff</a>
+    </div>
+  </div>
+
+  <header class="masthead">
+    <div class="container">
+      <a class="brand" href="https://www.nlcsjeju.co.kr/" target="_blank" rel="noopener">
+        <img src="https://www.nlcsjeju.co.kr/wp-content/uploads/2023/10/nlcs-jeju-logo-white.svg" alt="NLCS Jeju">
+        <span class="brand-text">Computing<br>Department</span>
+      </a>
+      <nav aria-label="Jump to section">
+        <a href="#tools">Tools</a>
+        <a href="#primary">Junior</a>
+        <a href="#ks3">Senior</a>
+        <a href="#ib">Sixth Form</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="https://www.nlcsjeju.co.kr/" target="_blank" rel="noopener">Home</a><span>|</span>Computing<span>|</span>Tasks
+      </div>
+      <h1>Computer Science Tasks</h1>
+      <p>Interactive tasks, lessons and tools for Computer Science at NLCS Jeju, organised by year group from Year 5 to Year 13.</p>
+      <p class="tagline">Start here. Go anywhere.</p>
+    </div>
+  </section>
+
+  <!-- Overview: numbers are filled in by the script -->
+  <section class="overview" aria-label="Overview">
+    <div class="container">
+      <div class="stat"><div class="stat-num" id="statTasks">0</div><div class="stat-label">Tasks and resources</div></div>
+      <div class="stat"><div class="stat-num" id="statSections">0</div><div class="stat-label">Collections</div></div>
+      <div class="stat"><div class="stat-num">5–13</div><div class="stat-label">Year groups covered</div></div>
+    </div>
+  </section>
+
+  <main class="container">
+
+    <p class="eyebrow">Find a task</p>
 
     <!-- Filter chips: counts are filled in by the script -->
     <nav class="filters" id="filters" aria-label="Filter by year group">
@@ -331,7 +589,10 @@
       <button class="chip" data-filter="ib" style="--chip-colour: var(--ib)">IB (Y12–13)</button>
     </nav>
 
-    <input type="text" id="searchInput" class="search-input" placeholder="Search tasks, topics or keywords...">
+    <div class="search-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search tasks, topics or keywords..." aria-label="Search tasks">
+    </div>
 
     <!-- ===================== TOOLS (all year groups) ===================== -->
     <section class="section section-tools" data-section="tools" id="tools">
@@ -403,7 +664,7 @@
     <section class="section section-primary" data-section="primary" id="primary">
       <div class="section-header">
         <h2>Year 5–6</h2>
-        <span class="section-sub">Primary</span>
+        <span class="section-sub">Junior School</span>
       </div>
       <div class="grid">
 
@@ -582,14 +843,42 @@
 
     <p class="no-results" id="noResults">No tasks match your search.</p>
 
-    <footer>
-      <p>Maintained by the NLCS Jeju Computing Department • Hosted on GitHub Pages</p>
-      <p>
-        <a href="https://github.com/NLCSJejuCS/NLCSCSTasks" target="_blank" rel="noopener">View Repository</a> •
-        <a href="https://github.com/NLCSJejuCS/NLCSCSTasks/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Staff: add or edit a task</a>
-      </p>
-    </footer>
-  </div>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <div class="footer-top">
+      <div class="container">
+        <div>
+          <p class="footer-tag">An exceptional British education</p>
+          <p>Maintained by the NLCS Jeju Computing Department.<br>Hosted on GitHub Pages.</p>
+        </div>
+        <div>
+          <h4>Quick links</h4>
+          <ul>
+            <li><a href="#tools">Tools</a></li>
+            <li><a href="#lessons">Interactive Lessons</a></li>
+            <li><a href="#igcse">IGCSE</a></li>
+            <li><a href="#ib">IB Diploma</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Staff</h4>
+          <ul>
+            <li><a href="https://github.com/NLCSJejuCS/NLCSCSTasks" target="_blank" rel="noopener">View repository</a></li>
+            <li><a href="https://github.com/NLCSJejuCS/NLCSCSTasks/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Add or edit a task</a></li>
+            <li><a href="https://www.nlcsjeju.co.kr/" target="_blank" rel="noopener">NLCS Jeju website</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <span>NLCS Jeju Computing Department</span>
+        <a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Back to top &uarr;</a>
+      </div>
+    </div>
+  </footer>
 
   <script>
     const searchInput = document.getElementById('searchInput');
@@ -597,6 +886,10 @@
     const sections = document.querySelectorAll('.section');
     const noResults = document.getElementById('noResults');
     let activeFilter = 'all';
+
+    // Overview numbers
+    document.getElementById('statTasks').textContent = document.querySelectorAll('.card').length;
+    document.getElementById('statSections').textContent = sections.length;
 
     // A section belongs to a filter if it is that section, or lists it in data-also
     function inSection(section, filter) {
