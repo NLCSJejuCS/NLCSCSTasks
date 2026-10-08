@@ -1,30 +1,43 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Cave Escape</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text Adventure Visualiser</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Silkscreen&family=Nunito:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Silkscreen&family=Nunito:wght@400;700;800&display=swap">
 <style>
-/* Layout: split screen — the game terminal on the left, the Python that runs it on the right, with the active line lit up */
+/* Split screen: the game terminal on the left, the Python that runs it on the right.
+   The explanation sits in a callout directly under the line that is running. */
 :root{
   --bg:#12161c; --panel:#1a2029; --line:#2a3240;
   --fg:#e3e8ef; --muted:#8b97a8;
-  --term:#7ee08a; --amber:#ffc35c; --kw:#ff8fa3; --str:#9fd3ff; --hl:#2c3a2a;
+  --term:#7ee08a; --amber:#ffc35c; --kw:#ff8fa3; --str:#9fd3ff; --num:#c9a7ff; --hl:#2c3a2a; --loop:#7fb2ff; --else:#ffab7a;
   --display:"Silkscreen",ui-monospace,monospace;
   --body:"Nunito",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html,body{background:var(--bg);color:var(--fg)}
-body{font-family:var(--body);font-size:16px;padding-block:24px;padding-inline:16px}
-.wrap{max-width:1100px;margin:0 auto;display:grid;gap:16px}
-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
-h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,5vw,38px);margin:0;color:var(--amber);letter-spacing:.04em}
-header p{margin:0;color:var(--muted);max-width:60ch}
-.grid{display:grid;grid-template-columns:1fr 1.15fr;gap:16px}
-@media (max-width:820px){.grid{grid-template-columns:1fr}}
+html,body{background:var(--bg);color:var(--fg);margin:0}
+body{font-family:var(--body);font-size:16px;padding:24px 16px}
+[hidden]{display:none!important}
+.wrap{max-width:1240px;margin:0 auto;display:grid;gap:16px}
+header{display:grid;gap:12px}
+.titlerow{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+.eyebrow{margin:0;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(24px,4.6vw,36px);margin:0;color:var(--amber);letter-spacing:.04em}
+#intro{margin:0;color:var(--muted);max-width:75ch}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{text-align:left;padding:10px 14px;line-height:1.3}
+.tab small{display:block;color:var(--muted);font-size:12px}
+.tab[aria-selected=true]{background:var(--amber);border-color:var(--amber);color:#1a1405}
+.tab[aria-selected=true] small{color:#4a3a10}
+.grid{display:grid;grid-template-columns:1fr 1.35fr;gap:16px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.term{font-family:var(--mono);font-size:15px;line-height:1.55;padding:14px;min-height:300px;max-height:420px;overflow-y:auto;color:var(--term);white-space:pre-wrap;word-break:break-word}
+.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.term{font-family:var(--mono);font-size:15px;line-height:1.55;padding:14px;min-height:320px;max-height:480px;overflow-y:auto;color:var(--term);white-space:pre-wrap;word-break:break-word}
 .term .you{color:var(--amber)}
 .term .end{color:var(--fg);font-weight:600}
 .term .caret{display:inline-block;width:.6em;height:1.1em;background:var(--term);vertical-align:-3px;animation:blink 1s steps(1) infinite}
@@ -32,187 +45,556 @@ header p{margin:0;color:var(--muted);max-width:60ch}
 .ask{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
 .ask input{flex:1 1 140px;min-width:0;font:inherit;font-family:var(--mono);background:var(--bg);color:var(--amber);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
 .ask input:focus{outline:2px solid var(--amber);outline-offset:1px}
+.ask input:not(:disabled){border-color:var(--str);box-shadow:0 0 0 3px rgba(159,211,255,.18)}
 button{font:inherit;font-family:var(--mono);font-size:14px;cursor:pointer;border-radius:6px;padding:8px 12px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
-button:hover{border-color:var(--amber)}
+button:hover:not(:disabled){border-color:var(--amber)}
+button:disabled{opacity:.45;cursor:default}
 button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 button.go{background:var(--amber);color:#1a1405;border-color:var(--amber);font-weight:600}
 .chips{display:flex;gap:6px;flex-wrap:wrap;width:100%;font-size:13px;color:var(--muted);align-items:center}
 .chips button{padding:4px 10px;font-size:13px}
-.code{font-family:var(--mono);font-size:13.5px;line-height:1.6;overflow-x:auto;padding:8px 0}
-.ln{display:flex;white-space:pre;padding-right:14px;transition:background .2s}
+
+/* speed control */
+.pace{display:flex;flex-wrap:wrap;gap:4px;align-items:center;text-transform:none;letter-spacing:0;font-size:13px}
+.pace label{cursor:pointer}
+.pace input{position:absolute;opacity:0;pointer-events:none}
+.pace span.pill{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--fg)}
+.pace input:checked + span.pill{background:var(--amber);border-color:var(--amber);color:#1a1405;font-weight:600}
+.pace input:focus-visible + span.pill{outline:2px solid var(--amber);outline-offset:2px}
+
+/* variables strip */
+.varbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 12px;border-bottom:1px solid var(--line);background:#161b23}
+.vlabel{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.vars{display:flex;flex-wrap:wrap;gap:6px 10px;font-family:var(--mono);font-size:14px;color:var(--muted)}
+.var{border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+.var b{color:var(--amber);font-weight:600}
+.var.flash{animation:flash 1.2s ease-out}
+@keyframes flash{0%{background:#5a4a1a;border-color:var(--amber)}100%{background:transparent}}
+
+/* code */
+.code{font-family:var(--mono);font-size:13.5px;line-height:1.6;padding:8px 0 14px;max-height:640px;overflow:auto;scroll-behavior:smooth}
+.ln{display:flex;padding-right:14px;transition:background .2s}
 .ln .n{width:3.2em;flex:none;text-align:right;padding-right:12px;color:#55606f;user-select:none}
+.ln .t{white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
 .ln.on{background:var(--hl);box-shadow:inset 3px 0 var(--term)}
 .ln.on .n{color:var(--term)}
-.ln.yes{background:#21352a}.ln.no{background:#3a2228}
-.k{color:var(--kw)}.s{color:var(--str)}.f{color:var(--amber)}.c{color:#6c7a8c}
-.explain{border-top:1px solid var(--line);padding:12px 14px;display:grid;gap:8px}
-.explain .now{margin:0;min-height:3em}
-.explain .now b{color:var(--amber);font-family:var(--mono);font-weight:600}
-.vars{font-family:var(--mono);font-size:13px;color:var(--muted)}
-.vars span{color:var(--amber)}
-.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--muted);font-size:14px}
-.controls label{display:flex;gap:6px;align-items:center}
-.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.ln.yes{background:#21352a;box-shadow:inset 3px 0 var(--term)}
+.ln.no{background:#3a2228;box-shadow:inset 3px 0 var(--kw)}
+.ln.loop{background:#1e2b44;box-shadow:inset 3px 0 var(--loop)}
+.ln.loop .n{color:var(--loop)}
+.ln.on,.ln.yes,.ln.no,.ln.loop{font-weight:600}
+.k{color:var(--kw)}.s{color:var(--str)}.f{color:var(--amber)}.c{color:#6c7a8c}.num{color:var(--num)}
+
+/* explanation callout, placed directly under the running line */
+.callout{--kc:var(--amber);position:relative;margin:10px 14px 12px 3.2em;border:2px solid var(--kc);border-radius:12px;background:#0f141a;padding:12px 16px 14px;font-family:var(--body);font-size:17px;line-height:1.45;white-space:normal}
+.callout::before{content:"";position:absolute;top:-10px;left:22px;border:9px solid transparent;border-top:0;border-bottom-color:var(--kc)}
+.callout[data-kind=print]{--kc:var(--amber)}
+.callout[data-kind=input],.callout[data-kind=wait]{--kc:var(--str)}
+.callout[data-kind=var]{--kc:var(--num)}
+.callout[data-kind=check]{--kc:#a9b6c6}
+.callout[data-kind=yes]{--kc:var(--term)}
+.callout[data-kind=no]{--kc:var(--kw)}
+.callout[data-kind=loop]{--kc:var(--loop)}
+.callout[data-kind=else]{--kc:var(--else)}
+.callout[data-kind=end]{--kc:var(--fg)}
+.callout[data-kind=wait]{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(159,211,255,.15)}}
+.co-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px}
+.co-tag{background:var(--kc);color:#111;font-family:var(--mono);font-weight:600;font-size:12px;letter-spacing:.08em;padding:2px 8px;border-radius:4px}
+.co-line{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.co-head{margin:0;font-size:19px;font-weight:800;line-height:1.35}
+.co-head b,.co-detail b{color:var(--kc);font-family:var(--mono);font-weight:600}
+.co-detail{margin:6px 0 0;color:#cfd7e1}
+.co-eval{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 2px;font-family:var(--mono);font-size:16px}
+.co-eval code{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 9px;color:var(--fg);font-family:var(--mono)}
+.co-eval .arr{color:var(--muted)}
+.res{padding:3px 10px;border-radius:6px;background:#2a3240;color:var(--fg);font-weight:600}
+.res.t{background:#1f3b27;color:var(--term)}
+.res.f{background:#41232a;color:var(--kw)}
+.co-foot{display:none;margin-top:12px;gap:10px;align-items:center;flex-wrap:wrap}
+body.mode-step .co-foot{display:flex}
+.co-next{background:var(--kc);color:#111;border-color:var(--kc);font-weight:600;font-size:15px;padding:6px 14px}
+.co-hint{color:var(--muted);font-size:13px;font-family:var(--mono)}
+.co-timer{height:4px;background:var(--line);border-radius:2px;margin-top:12px;overflow:hidden}
+body.mode-step .co-timer{display:none}
+.co-timer i{display:block;height:100%;background:var(--kc);transform-origin:left;transform:scaleX(0)}
+
+/* room map (Mario) */
+.map{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;align-items:stretch}
+.node{flex:1 1 200px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;transition:border-color .3s,background .3s,box-shadow .3s}
+.node h3{margin:0 0 6px;font-family:var(--mono);font-size:14px;color:var(--fg);font-weight:600}
+.node ul{margin:0;padding-left:18px;color:var(--muted);font-size:13.5px;font-family:var(--mono)}
+.node li{transition:color .3s}
+.node li.took{color:var(--term);font-weight:600}
+.node.been{border-color:#4d6152}
+.node.here{border-color:var(--term);background:#1f2b22;box-shadow:inset 0 0 0 1px var(--term)}
+.node.here h3{color:var(--term)}
+.node.here h3::after{content:"  ◀ Mario is here";font-size:12px;color:var(--term)}
+.arrow{align-self:center;color:var(--muted);font-family:var(--mono);font-size:18px}
+@media (max-width:640px){.arrow{display:none}}
+.mapval{color:var(--amber);font-weight:600}
+
+/* trace table */
+.trace{max-height:300px;overflow:auto}
+.trace table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13.5px}
+.trace th{position:sticky;top:0;background:#161b23;color:var(--muted);text-align:left;font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--line)}
+.trace td{padding:6px 10px;border-bottom:1px solid #222a35;vertical-align:top}
+.trace td.num{color:var(--muted);text-align:right;width:3.5em}
+.trace td.v{color:var(--amber)}
+.trace td.o{color:var(--term);white-space:pre-wrap}
+.trace td.t{color:var(--term)} .trace td.fx{color:var(--kw)}
+.trace tr.new{background:#202a22}
+.trace .empty td{color:var(--muted);font-family:var(--body);font-size:15px;padding:14px 10px}
+
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
 .tip{border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
 .tip h3{margin:0 0 4px;font-family:var(--mono);font-size:14px;color:var(--amber)}
 .tip p{margin:0;color:var(--muted);font-size:14px}
-@media (prefers-reduced-motion:reduce){.term .caret{animation:none}.ln{transition:none}}
+.tip.task{border-style:solid;border-color:var(--amber)}
+@media (prefers-reduced-motion:reduce){.term .caret,.callout[data-kind=wait]{animation:none}.ln,.node,.node li{transition:none}.var.flash{animation:none}.code{scroll-behavior:auto}}
 </style>
-
+</head>
+<body class="mode-normal">
 <div class="wrap">
   <header>
-    <h1>Cave Escape</h1>
-    <p>Play the game on the left. Watch the right side to see which line of Python is running at each moment.</p>
+    <div class="titlerow">
+      <h1 id="title">Cave Escape</h1>
+      <p class="eyebrow">Year 7 · Text adventure project</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Choose a program">
+      <button class="tab" role="tab" data-prog="cave" type="button">1. Cave Escape<small>making choices with if / elif / else</small></button>
+      <button class="tab" role="tab" data-prog="mario" type="button">2. Mario's Adventure<small>your starter code: rooms + a while loop</small></button>
+    </div>
+    <p id="intro"></p>
   </header>
+
+  <section class="panel" id="mapPanel" aria-label="Room map" hidden>
+    <div class="bar"><span>Map: the <b>room</b> variable decides where Mario is</span><span>room = <span class="mapval" id="mapRoom">(not set yet)</span></span></div>
+    <div class="map">
+      <div class="node" data-room="1"><h3>room 1 · dark room</h3><ul>
+        <li data-k="1A">A → room = 2</li><li data-k="1B">B → room = 0 (phone explodes)</li><li data-k="1X">anything else → stay in room 1</li></ul></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="node" data-room="2"><h3>room 2 · treasure chest</h3><ul>
+        <li data-k="2A">A → room = 0 (gold, wins)</li><li data-k="2B">B → room = 0 (falls in hole)</li><li data-k="2X">anything else → stay in room 2</li></ul></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="node" data-room="0"><h3>room 0 · game over</h3><ul>
+        <li>room != 0 is now False</li><li>the loop stops</li><li>print("THE END")</li></ul></div>
+    </div>
+  </section>
 
   <div class="grid">
     <section class="panel" aria-label="Game">
-      <div class="bar"><span>▶ adventure.py — output</span><button id="restart" type="button">Restart</button></div>
+      <div class="bar"><span id="outName">▶ cave.py: output</span><button id="restart" type="button">Restart</button></div>
       <div class="term" id="term" aria-live="polite"></div>
-      <form class="ask" id="ask">
+      <div class="ask" id="ask" role="group" aria-label="Answer">
         <input id="answer" autocomplete="off" placeholder="Type your answer…" disabled aria-label="Your answer">
-        <button class="go" id="send" type="submit" disabled>Enter</button>
+        <button class="go" id="send" type="button" disabled>Enter</button>
         <div class="chips" id="chips"></div>
-      </form>
+      </div>
     </section>
 
     <section class="panel" aria-label="Code">
-      <div class="bar"><span>adventure.py</span>
-        <span class="controls"><label><input type="checkbox" id="slow" checked> slow-mo</label></span>
+      <div class="bar"><span id="codeName">cave.py</span>
+        <div class="pace" role="radiogroup" aria-label="Speed">
+          <label><input type="radio" name="pace" value="step"><span class="pill">Step by step</span></label>
+          <label><input type="radio" name="pace" value="slow"><span class="pill">Slow</span></label>
+          <label><input type="radio" name="pace" value="normal" checked><span class="pill">Normal</span></label>
+          <label><input type="radio" name="pace" value="fast"><span class="pill">Fast</span></label>
+        </div>
       </div>
+      <div class="varbar"><span class="vlabel">Variables</span><div class="vars" id="vars" aria-label="Variables"></div></div>
       <div class="code" id="code"></div>
-      <div class="explain">
-        <p class="now" id="now">Press <b>Restart</b> any time to play again and try a different path.</p>
-        <div class="vars">variable: choice = <span id="var">(not set yet)</span></div>
-      </div>
     </section>
   </div>
 
-  <div class="tips">
-    <div class="tip"><h3>print()</h3><p>Shows text to the player. This is how you tell the story.</p></div>
-    <div class="tip"><h3>input()</h3><p>Pauses the program and waits for the player to type. The answer is stored in a variable.</p></div>
-    <div class="tip"><h3>if / elif / else</h3><p>Checks the answer and picks which part of the story runs next. Only one branch runs.</p></div>
-    <div class="tip"><h3>Indentation</h3><p>The spaces at the start of a line show which code belongs inside each if. Nested ifs make deeper choices.</p></div>
-  </div>
+  <section class="panel" aria-label="Trace table">
+    <div class="bar"><span>Trace table: every step the program has taken</span><span id="stepCount">0 steps</span></div>
+    <div class="trace" id="traceWrap"><table><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table></div>
+  </section>
+
+  <div class="tips" id="tips"></div>
 </div>
 
 <script>
-const SRC = [
-`<span class="f">print</span>(<span class="s">"You wake up in a dark cave."</span>)`,
-`<span class="f">print</span>(<span class="s">"There are two paths: LEFT or RIGHT."</span>)`,
-`choice = <span class="f">input</span>(<span class="s">"Which way? "</span>).lower()`,
-``,
-`<span class="k">if</span> choice == <span class="s">"left"</span>:`,
-`    <span class="f">print</span>(<span class="s">"You find an underground river and a boat."</span>)`,
-`    choice = <span class="f">input</span>(<span class="s">"Take the boat? (yes/no) "</span>).lower()`,
-`    <span class="k">if</span> choice == <span class="s">"yes"</span>:`,
-`        <span class="f">print</span>(<span class="s">"The boat carries you into daylight. YOU ESCAPED!"</span>)`,
-`    <span class="k">else</span>:`,
-`        <span class="f">print</span>(<span class="s">"Your torch goes out... GAME OVER"</span>)`,
-`<span class="k">elif</span> choice == <span class="s">"right"</span>:`,
-`    <span class="f">print</span>(<span class="s">"A dragon is sleeping on a pile of gold."</span>)`,
-`    choice = <span class="f">input</span>(<span class="s">"SNEAK past or GRAB the gold? "</span>).lower()`,
-`    <span class="k">if</span> choice == <span class="s">"sneak"</span>:`,
-`        <span class="f">print</span>(<span class="s">"You tiptoe past and find the exit. YOU ESCAPED!"</span>)`,
-`    <span class="k">else</span>:`,
-`        <span class="f">print</span>(<span class="s">"The dragon wakes up! GAME OVER"</span>)`,
-`<span class="k">else</span>:`,
-`    <span class="f">print</span>(<span class="s">"That's not a path! You trip in the dark. GAME OVER"</span>)`
-];
-const codeEl=document.getElementById('code'), term=document.getElementById('term'),
-      nowEl=document.getElementById('now'), varEl=document.getElementById('var'),
-      form=document.getElementById('ask'), inp=document.getElementById('answer'),
-      send=document.getElementById('send'), chips=document.getElementById('chips'),
-      slow=document.getElementById('slow');
-codeEl.innerHTML=SRC.map((l,i)=>`<div class="ln" id="L${i+1}"><span class="n">${i+1}</span><span>${l||' '}</span></div>`).join('');
+/* ---------- tiny syntax-highlight helpers ---------- */
+const k=w=>`<span class="k">${w}</span>`, s=t=>`<span class="s">"${t}"</span>`,
+      f=w=>`<span class="f">${w}</span>`, n=x=>`<span class="num">${x}</span>`,
+      c=t=>`<span class="c">${t}</span>`, pr=t=>`${f('print')}(${s(t)})`;
+const esc=t=>String(t).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 
-let runId=0;
-const wait=ms=>new Promise(r=>setTimeout(r,slow.checked?ms:ms/4));
-function alive(id){ if(id!==runId) throw 'stop'; }
-function hl(n,cls='on'){
-  codeEl.querySelectorAll('.ln').forEach(e=>e.className='ln');
-  const el=document.getElementById('L'+n); if(!el) return;
-  el.classList.add(cls);
-  const box=codeEl, top=el.offsetTop-box.offsetTop;
-  if(top<box.scrollTop||top>box.scrollTop+box.clientHeight-30) box.scrollTop=top-40;
+const Q1='Mario wakes up in a dark room.\nA - turn on the light\nB - turn on his phone\nPick A or B: ';
+const Q2='Mario goes through the door. He sees a treasure chest.\nA - open the chest\nB - run away\nPick A or B: ';
+const srcStr=q=>q.replace(/\n/g,'\\n');
+
+/* ---------- DOM ---------- */
+const $=id=>document.getElementById(id);
+const codeEl=$('code'), term=$('term'), varsEl=$('vars'), inp=$('answer'), send=$('send'), chips=$('chips'),
+      tbody=$('tbody'), thead=$('thead'), traceWrap=$('traceWrap');
+const callout=document.createElement('div'); callout.className='callout'; callout.setAttribute('aria-live','polite');
+const STOP={};
+let runId=0, prog=null, V={}, stepWake=null, submitAnswer=null, mode='normal', lastWords=0, stepNo=0;
+
+/* Answers are sent with a button click or the Enter key (not a <form>), so it also works inside sandboxed viewers that block form submission */
+send.addEventListener('click',()=>{ if(submitAnswer) submitAnswer(); });
+inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); if(submitAnswer) submitAnswer(); } });
+
+/* ---------- pacing ---------- */
+const PACE={slow:{f:1.6,type:24}, normal:{f:1,type:14}, fast:{f:.3,type:3}, step:{f:1,type:10}};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function alive(id){ if(id!==runId) throw STOP; }
+function coNext(){ return callout.querySelector('.co-next'); }
+function startTimer(ms){
+  const bar=callout.querySelector('.co-timer i'); if(!bar) return;
+  bar.style.transition='none'; bar.style.transform='scaleX(1)'; void bar.offsetWidth;
+  bar.style.transition=`transform ${ms}ms linear`; bar.style.transform='scaleX(0)';
 }
-function say(html){ nowEl.innerHTML=html; }
-async function step(id,n,msg,ms=900){ alive(id); hl(n); say(msg); await wait(ms); alive(id); }
+async function pause(id,minMs){
+  alive(id);
+  if(mode==='step'){
+    let r; const p=new Promise(x=>r=x); stepWake=r;
+    const b=coNext(); if(b) b.disabled=false;
+    await p;
+    if(stepWake===r) stepWake=null;
+  } else {
+    // long enough to read the explanation: about 0.3 s per word
+    const ms=Math.max(minMs, lastWords*300)*PACE[mode].f;
+    startTimer(ms); await sleep(ms);
+  }
+  alive(id);
+}
+function wakeStep(){ if(stepWake){ const w=stepWake; stepWake=null; const b=coNext(); if(b) b.disabled=true; w(); } }
+document.querySelectorAll('input[name=pace]').forEach(r=>r.onchange=()=>{
+  mode=r.value; document.body.className='mode-'+mode;
+  if(mode!=='step') wakeStep();
+});
+document.addEventListener('keydown',e=>{
+  if((e.key==='ArrowRight'||e.key==='n') && stepWake && e.target.tagName!=='INPUT'){ e.preventDefault(); wakeStep(); }
+});
+
+/* ---------- highlight + explain ---------- */
+const LINECLS={yes:'yes',no:'no',loop:'loop'};
+const TAG={print:'PRINT',input:'INPUT',wait:'YOUR TURN',var:'VARIABLE',check:'CHECK',yes:'TRUE',no:'FALSE',loop:'LOOP',else:'ELSE',end:'FINISHED'};
+function hl(line,cls='on'){
+  codeEl.querySelectorAll('.ln').forEach(e=>e.className='ln');
+  const el=$('L'+line);
+  if(el){ el.classList.add(cls); el.after(callout); } else codeEl.appendChild(callout);
+  requestAnimationFrame(()=>{
+    const b=codeEl.getBoundingClientRect(), top=(el||callout).getBoundingClientRect().top, bot=callout.getBoundingClientRect().bottom;
+    if(top<b.top+8 || bot>b.bottom-8){
+      const want=codeEl.scrollTop+(top-b.top)-Math.max(20,(b.height-(bot-top))/3);
+      codeEl.scrollTop=Math.max(0,want);
+    }
+  });
+}
+function say(o){
+  callout.dataset.kind=o.kind;
+  callout.innerHTML=`<div class="co-top"><span class="co-tag">${TAG[o.kind]}</span>${o.line?`<span class="co-line">line ${o.line}</span>`:''}</div>`
+    +`<p class="co-head">${o.head}</p>`
+    +(o.ev?`<div class="co-eval">${o.ev}</div>`:'')
+    +(o.detail?`<p class="co-detail">${o.detail}</p>`:'')
+    +(o.kind==='wait'||o.final?'':`<div class="co-foot"><button type="button" class="co-next" disabled>Next ▶</button><span class="co-hint">or press the → key</span></div><div class="co-timer"><i></i></div>`);
+  const b=coNext(); if(b) b.onclick=wakeStep;
+  lastWords=((o.head||'')+' '+(o.detail||'')).replace(/<[^>]+>/g,'').split(/\s+/).length;
+}
+/* one explained step: light the line, explain it, wait */
+async function step(id,o,ms=900,before=null){
+  alive(id); hl(o.line, LINECLS[o.kind]||'on'); if(before) before(); say(o); await pause(id,ms);
+}
+const ev=(expr,sub,res)=>`<code>${esc(expr)}</code>`+(sub?`<span class="arr">→</span><code>${esc(sub)}</code>`:'')
+  +`<span class="arr">→</span>`+(res===undefined?`<span class="res">?</span>`:`<span class="res ${res?'t':'f'}">${res?'True ✔':'False ✘'}</span>`);
+
+/* ---------- variables, map, trace ---------- */
+function fmt(v){ return v===undefined?'(not set yet)':typeof v==='string'?`"${esc(v)}"`:v; }
+function renderVars(changed){
+  varsEl.innerHTML=prog.vars.map(v=>`<span class="var" data-v="${v}">${v} = <b>${fmt(V[v])}</b></span>`).join('')
+    +(prog.loop?`<span class="var" data-v="pass">loop pass: <b>${V.pass||0}</b></span>`:'');
+  if(changed){ const el=varsEl.querySelector(`[data-v="${changed}"]`); if(el) el.classList.add('flash'); }
+}
+function setVar(name,val){ V[name]=val; renderVars(name); if(name==='room') setRoom(val); }
+function setRoom(r){
+  $('mapRoom').textContent=r===undefined?'(not set yet)':r;
+  document.querySelectorAll('.node').forEach(nd=>{
+    if(nd.classList.contains('here')){ nd.classList.remove('here'); nd.classList.add('been'); }
+    if(+nd.dataset.room===r) nd.classList.add('here');
+  });
+}
+function took(key){ const li=document.querySelector(`li[data-k="${key}"]`); if(li) li.classList.add('took'); }
+function traceHead(){
+  thead.innerHTML='<th>Step</th><th>Line</th><th>What happened</th>'+prog.vars.map(v=>`<th>${v}</th>`).join('')+'<th>On screen</th>';
+  tbody.innerHTML=`<tr class="empty"><td colspan="${4+prog.vars.length}">Each step will be added here as the program runs.</td></tr>`;
+  $('stepCount').textContent='0 steps';
+}
+function trace(line,what,output='',res){
+  const e=tbody.querySelector('.empty'); if(e) e.remove();
+  tbody.querySelectorAll('tr.new').forEach(r=>r.classList.remove('new'));
+  stepNo++;
+  const tr=document.createElement('tr'); tr.className='new';
+  tr.innerHTML=`<td class="num">${stepNo}</td><td class="num">${line}</td><td class="${res===true?'t':res===false?'fx':''}">${what}</td>`
+    +prog.vars.map(v=>`<td class="v">${V[v]===undefined?'':fmt(V[v])}</td>`).join('')
+    +`<td class="o">${esc(output)}</td>`;
+  tbody.appendChild(tr); traceWrap.scrollTop=traceWrap.scrollHeight;
+  $('stepCount').textContent=stepNo+(stepNo===1?' step':' steps');
+}
+
+/* ---------- running the program ---------- */
 async function out(id,text,cls){
   const d=document.createElement('div'); if(cls) d.className=cls; term.appendChild(d);
-  for(const ch of text){ alive(id); d.textContent+=ch; term.scrollTop=term.scrollHeight; await wait(18); }
+  for(const ch of text){ alive(id); d.textContent+=ch; term.scrollTop=term.scrollHeight; await sleep(PACE[mode].type); }
 }
-function ask(id,prompt,options){
-  return new Promise(res=>{
-    const line=document.createElement('div'); line.textContent=prompt;
+/* print(): explain, show the text, then wait so students can read both */
+async function doPrint(id,line,text,head,detail,cls){
+  alive(id); hl(line); say({kind:'print',line,head,detail});
+  await out(id,text,cls); trace(line,'print',text);
+  await pause(id,900);
+}
+async function check(id,line,cond,expr,sub,yes,no,why){
+  alive(id); hl(line);
+  say({kind:'check',line,head:`Python asks a question: is <b>${esc(expr)}</b> True or False?`,ev:ev(expr,sub),
+       detail:why||(sub?'First it swaps in the real values from the variables.':'')});
+  await pause(id,1100);
+  hl(line,cond?'yes':'no');
+  say({kind:cond?'yes':'no',line,head:cond?`It's <b>True</b>.`:`It's <b>False</b>.`,ev:ev(expr,sub,cond),
+       detail:cond?(yes||'So Python runs the indented lines underneath.'):(no||'So Python skips the indented lines underneath.')});
+  trace(line,`${esc(sub||expr)} → ${cond?'True':'False'}`,'',cond);
+  await pause(id,1200);
+}
+function ask(id,prompt,options,xf){
+  return new Promise(async res=>{
+    const lines=prompt.split('\n'), last=lines.pop();
+    for(const l of lines) await out(id,l);
+    alive(id);
+    const line=document.createElement('div'); line.textContent=last;
     const caret=document.createElement('span'); caret.className='caret'; line.appendChild(caret);
     term.appendChild(line); term.scrollTop=term.scrollHeight;
     inp.disabled=send.disabled=false; inp.value=''; inp.focus({preventScroll:true});
-    chips.innerHTML='Try: '+options.map(o=>`<button type="button" data-v="${o}">${o}</button>`).join('');
-    chips.querySelectorAll('button').forEach(b=>b.onclick=()=>{inp.value=b.dataset.v; form.requestSubmit();});
-    form.onsubmit=e=>{
-      e.preventDefault(); if(id!==runId) return;
-      const raw=inp.value.trim(); if(!raw){inp.focus();return;}
+    chips.innerHTML='Try: '+options.map(o=>`<button type="button" data-v="${esc(o)}">${esc(o)}</button>`).join('');
+    chips.querySelectorAll('button').forEach(b=>b.onclick=()=>{inp.value=b.dataset.v; submitAnswer&&submitAnswer();});
+    submitAnswer=()=>{
+      if(id!==runId) return;
+      submitAnswer=null;
+      const raw=inp.value;
       caret.remove(); const y=document.createElement('span'); y.className='you'; y.textContent=raw; line.appendChild(y);
-      inp.disabled=send.disabled=true; chips.innerHTML=''; form.onsubmit=e=>e.preventDefault();
-      res(raw.toLowerCase());
+      inp.disabled=send.disabled=true; chips.innerHTML='';
+      res({raw, val: xf==='upper'?raw.toUpperCase():raw.toLowerCase()});
     };
   });
 }
-async function check(id,n,cond,expr){
-  hl(n); say(`Python checks <b>${expr}</b> …`); await wait(800); alive(id);
-  hl(n,cond?'yes':'no'); say(`<b>${expr}</b> is <b>${cond?'True':'False'}</b> — ${cond?'so it runs the indented code underneath.':'so it skips that block and moves on.'}`);
-  await wait(1100); alive(id);
-}
-async function getInput(id,n,prompt,opts){
-  await step(id,n,`<b>input()</b> prints the question, then <b>pauses</b> and waits for the player to type.`,500);
-  const v=await ask(id,prompt,opts); alive(id);
-  varEl.textContent=`"${v}"`;
-  say(`The answer is saved in the variable <b>choice</b>. <b>.lower()</b> makes it lowercase so "LEFT" and "left" both work.`);
-  await wait(1400); alive(id); return v;
-}
-async function ending(id,n,text){
-  await step(id,n,`<b>print()</b> shows the ending. There is no more code in this branch, so the program finishes.`,600);
-  await out(id,text,'end'); await wait(400);
-  await out(id,'\n>>> Program finished. Press Restart to try another path.');
-  hl(0); say(`Every path ends with a <b>print()</b>. Can you think of a third option to add with another <b>elif</b>?`);
+async function getInput(id,line,prompt,opts,xf){
+  alive(id); hl(line);
+  say({kind:'wait',line,head:'<b>input()</b> shows a question, then the program <b>stops and waits</b>.',
+       detail:'Your turn! Type an answer in the box on the left and press Enter. Nothing else happens until you do.'});
+  const {raw,val}=await ask(id,prompt,opts,xf); alive(id);
+  const fn=xf==='upper'?'.upper()':'.lower()', kind=xf==='upper'?'CAPITAL letters':'lowercase letters';
+  hl(line); setVar('choice',val);
+  trace(line,`choice = "${esc(val)}"`,`(typed ${raw===''?'nothing':raw})`);
+  say({kind:'var',line,head:'Your answer is saved in the variable <b>choice</b>.',
+       ev:`<code>"${esc(raw)}"</code><span class="arr">→ ${fn} →</span><code>"${esc(val)}"</code>`,
+       detail:raw===val?`<b>${fn}</b> changes answers to ${kind}. Yours already was, so it stays the same.`
+                       :`<b>${fn}</b> changed it to ${kind}. That way both ways of typing it work.`});
+  await pause(id,1500); return val;
 }
 
+/* ---------- Program 1: Cave Escape ---------- */
+const CAVE={
+  title:'Cave Escape', file:'cave.py', vars:['choice'], loop:false, map:false,
+  intro:'Play the game on the left. On the right, the line that is running lights up and a box under it explains what Python is doing. Choose "Step by step" to go at your own pace.',
+  src:[
+    pr('You wake up in a dark cave.'),
+    pr('There are two paths: LEFT or RIGHT.'),
+    `choice = ${f('input')}(${s('Which way? ')}).lower()`,
+    ``,
+    `${k('if')} choice == ${s('left')}:`,
+    `    ${pr('You find an underground river and a boat.')}`,
+    `    choice = ${f('input')}(${s('Take the boat? (yes/no) ')}).lower()`,
+    `    ${k('if')} choice == ${s('yes')}:`,
+    `        ${pr('The boat carries you into daylight. YOU ESCAPED!')}`,
+    `    ${k('else')}:`,
+    `        ${pr('Your torch goes out... GAME OVER')}`,
+    `${k('elif')} choice == ${s('right')}:`,
+    `    ${pr('A dragon is sleeping on a pile of gold.')}`,
+    `    choice = ${f('input')}(${s('SNEAK past or GRAB the gold? ')}).lower()`,
+    `    ${k('if')} choice == ${s('sneak')}:`,
+    `        ${pr('You tiptoe past and find the exit. YOU ESCAPED!')}`,
+    `    ${k('else')}:`,
+    `        ${pr('The dragon wakes up! GAME OVER')}`,
+    `${k('else')}:`,
+    `    ${pr("That's not a path! You trip in the dark. GAME OVER")}`
+  ],
+  tips:[
+    ['print()','Shows text to the player. This is how you tell the story.'],
+    ['input()','Pauses the program and waits for the player to type. The answer is stored in a variable.'],
+    ['if / elif / else','Checks the answer and picks which part of the story runs next. Only one branch runs.'],
+    ['Indentation','The spaces at the start of a line show which code belongs inside each if. Nested ifs make deeper choices.']
+  ],
+  async run(id){
+    const eq=(v,w)=>`"${v}" == "${w}"`;
+    async function ending(line,text){
+      await doPrint(id,line,text,'This <b>print()</b> shows the ending.','There are no more lines to run on this path, so the program finishes.','end');
+      await out(id,'\n>>> Program finished. Press Restart to try another path.');
+      hl(0); say({kind:'end',final:true,head:'The program has finished.',
+        detail:'Look at the trace table below to see every step it took. Press <b>Restart</b> to try a different path. Could you add a third path with another <b>elif</b>? Then try tab 2.'});
+    }
+    await doPrint(id,1,'You wake up in a dark cave.','Python starts at <b>line 1</b> and runs one line at a time, top to bottom.','<b>print()</b> shows text on the screen. This is how the story is told.');
+    await doPrint(id,2,'There are two paths: LEFT or RIGHT.','Line 2 is another <b>print()</b>.','It tells the player which choices they have.');
+    let ch=await getInput(id,3,'Which way? ',['left','RIGHT','up'],'lower');
+    await check(id,5,ch==='left','choice == "left"',eq(ch,'left'),
+      'So Python goes <b>into</b> the indented lines under this if.',
+      'So Python <b>skips</b> the indented lines under this if, and jumps down to the next check.',
+      '<b>==</b> means "is equal to". Python swaps in the answer that is stored in <b>choice</b>.');
+    if(ch==='left'){
+      await doPrint(id,6,'You find an underground river and a boat.','We are now <b>inside</b> the if block.','The 4 spaces at the start of the line (the indent) show that this line belongs to the if.');
+      ch=await getInput(id,7,'Take the boat? (yes/no) ',['yes','no'],'lower');
+      await check(id,8,ch==='yes','choice == "yes"',eq(ch,'yes'),'So the line under this if runs.','So Python skips that line and goes to the <b>else</b>.');
+      if(ch==='yes') return ending(9,'The boat carries you into daylight. YOU ESCAPED!');
+      await step(id,{kind:'else',line:10,head:'The if was False, so the <b>else</b> block runs.',detail:'<b>else</b> catches every other answer. It has no question of its own.'},900,()=>trace(10,'else'));
+      return ending(11,'Your torch goes out... GAME OVER');
+    }
+    await check(id,12,ch==='right','choice == "right"',eq(ch,'right'),'So Python goes into the <b>elif</b> block.','So Python skips this block too, and goes to the <b>else</b>.','<b>elif</b> means "else if". Python only checks it because the first if was False.');
+    if(ch==='right'){
+      await doPrint(id,13,'A dragon is sleeping on a pile of gold.','We are now inside the <b>elif</b> block.','All the "left path" lines were skipped. Python never ran them.');
+      ch=await getInput(id,14,'SNEAK past or GRAB the gold? ',['sneak','grab'],'lower');
+      await check(id,15,ch==='sneak','choice == "sneak"',eq(ch,'sneak'),'So the line under this if runs.','So Python skips that line and goes to the <b>else</b>.');
+      if(ch==='sneak') return ending(16,'You tiptoe past and find the exit. YOU ESCAPED!');
+      await step(id,{kind:'else',line:17,head:'The if was False, so the <b>else</b> block runs.',detail:'<b>else</b> catches every other answer, like "grab" or "run".'},900,()=>trace(17,'else'));
+      return ending(18,'The dragon wakes up! GAME OVER');
+    }
+    await step(id,{kind:'else',line:19,head:'Both checks were False, so the <b>else</b> block runs.',detail:'This <b>else</b> catches any answer that is not "left" or "right".'},1200,()=>trace(19,'else'));
+    return ending(20,"That's not a path! You trip in the dark. GAME OVER");
+  }
+};
+
+/* ---------- Program 2: Mario's Adventure (starter code) ---------- */
+const MARIO={
+  title:"Mario's Adventure", file:'mario.py', vars:['room','choice'], loop:true, map:true,
+  intro:'This is the starter code for your project. The room variable remembers where Mario is, and the while loop keeps the game going until room becomes 0. The line that is running lights up, and a box under it explains what Python is doing. Choose "Step by step" to go at your own pace.',
+  src:[
+    pr("Welcome to Mario's adventure!"),
+    ``,
+    `room = ${n(1)}          ${c('# Mario starts in room 1')}`,
+    ``,
+    `${k('while')} room != ${n(0)}:  ${c('# keep playing until room is 0')}`,
+    ``,
+    `    ${c('# ---------- ROOM 1 ----------')}`,
+    `    ${k('if')} room == ${n(1)}:`,
+    `        choice = ${f('input')}(${s(srcStr(Q1))}).upper()`,
+    ``,
+    `        ${k('if')} choice == ${s('A')}:`,
+    `            ${pr('The light comes on. Mario sees a door.')}`,
+    `            room = ${n(2)}          ${c('# go to room 2')}`,
+    `        ${k('elif')} choice == ${s('B')}:`,
+    `            ${pr('The phone explodes! Mario dies.')}`,
+    `            room = ${n(0)}          ${c('# game over')}`,
+    `        ${k('else')}:`,
+    `            ${pr('Please type A or B')}`,
+    ``,
+    `    ${c('# ---------- ROOM 2 ----------')}`,
+    `    ${k('elif')} room == ${n(2)}:`,
+    `        choice = ${f('input')}(${s(srcStr(Q2))}).upper()`,
+    ``,
+    `        ${k('if')} choice == ${s('A')}:`,
+    `            ${pr("It's full of gold! Mario wins!")}`,
+    `            room = ${n(0)}          ${c('# game over')}`,
+    `        ${k('elif')} choice == ${s('B')}:`,
+    `            ${pr('Mario trips and falls in a hole. Mario dies.')}`,
+    `            room = ${n(0)}          ${c('# game over')}`,
+    `        ${k('else')}:`,
+    `            ${pr('Please type A or B')}`,
+    ``,
+    pr('THE END')
+  ],
+  tips:[
+    ['room = 1','A variable that remembers which room Mario is in. Changing it moves Mario. Setting it to 0 means game over.'],
+    ['while room != 0:','Repeats the indented code again and again. Before every pass it checks: is room still not 0?'],
+    ['if room == 1 / elif room == 2','Each room is its own block. Only one room block runs on each pass of the loop.'],
+    ['.upper()','Turns the answer into capitals, so typing a or A both work.'],
+    ['else: "Please type A or B"','A wrong answer does not change room, so the loop goes round and asks the same question again.'],
+    ['Your project','Add a room 3: change a room = … line to send Mario there, then add an elif room == 3: block with its own question and choices.',true]
+  ],
+  async run(id){
+    const eq=(v,w)=>`"${v}" == "${w}"`;
+    async function roomBlock(r){
+      const ch=await getInput(id,r===1?9:22,r===1?Q1:Q2,['A','B','a','x'],'upper');
+      const L=r===1?{a:11,pa:12,ra:13,b:14,pb:15,rb:16,e:17,pe:18}:{a:24,pa:25,ra:26,b:27,pb:28,rb:29,e:30,pe:31};
+      const gameOver={kind:'var',head:'<b>room = 0</b> means game over.',
+        detail:'But the game does not stop straight away! It stops when Python next checks <b>room != 0</b> at the top of the loop.'};
+      await check(id,L.a,ch==='A','choice == "A"',eq(ch,'A'),'So the indented lines under this if run.','So Python skips those lines and checks the next one.');
+      if(ch==='A'){
+        await doPrint(id,L.pa,r===1?'The light comes on. Mario sees a door.':"It's full of gold! Mario wins!",'<b>print()</b> tells the player what happened.','');
+        if(r===1) await step(id,{kind:'var',line:L.ra,head:'<b>room = 2</b> puts a new number in the room variable.',
+            detail:'The old value (1) is replaced by 2. Mario has moved to room 2. Look at the map!'},1600,()=>{setVar('room',2);took('1A');trace(L.ra,'room = 2');});
+        else await step(id,{...gameOver,line:L.ra},1800,()=>{setVar('room',0);took('2A');trace(L.ra,'room = 0');});
+        return;
+      }
+      await check(id,L.b,ch==='B','choice == "B"',eq(ch,'B'),'So the indented lines under this elif run.','So Python skips those lines and goes to the <b>else</b>.');
+      if(ch==='B'){
+        await doPrint(id,L.pb,r===1?'The phone explodes! Mario dies.':'Mario trips and falls in a hole. Mario dies.','<b>print()</b> tells the player what happened.','');
+        await step(id,{...gameOver,line:L.rb},1800,()=>{setVar('room',0);took(r+'B');trace(L.rb,'room = 0');});
+        return;
+      }
+      await step(id,{kind:'else',line:L.e,head:'Neither check was True, so the <b>else</b> block runs.',detail:'<b>else</b> catches any other answer, like "x" or nothing at all.'},1000,()=>{took(r+'X');trace(L.e,'else');});
+      await doPrint(id,L.pe,'Please type A or B','<b>print()</b> tells the player what to type.','Notice there is <b>no room = …</b> line here. So room keeps the same number.');
+    }
+
+    await doPrint(id,1,"Welcome to Mario's adventure!",'Python starts at <b>line 1</b> and runs one line at a time.','<b>print()</b> shows the welcome message on the screen.');
+    await step(id,{kind:'var',line:3,head:'<b>room = 1</b> makes a variable called <b>room</b> and stores <b>1</b> in it.',
+      detail:'A variable is like a labelled box. This box remembers which room Mario is in. Look at the map above.'},1800,()=>{setVar('room',1);trace(3,'room = 1');});
+    let pass=0;
+    while(true){
+      const go=V.room!==0;
+      await check(id,5,go,'room != 0',`${V.room} != 0`,
+        'So the loop runs all the indented code below it.',
+        'So the loop <b>stops</b>. Python jumps past all the indented code to the next line that is not indented.',
+        pass===0?'<b>while</b> keeps repeating while this is True. <b>!=</b> means "is not equal to".':'Python swaps in the number that is in <b>room</b> right now.');
+      if(!go) break;
+      pass++; setVar('pass',pass);
+      const start=V.room;
+      if(V.room===1){
+        await check(id,8,true,'room == 1','1 == 1','So Python goes into the <b>ROOM 1</b> block.');
+      } else {
+        await check(id,8,false,'room == 1',`${V.room} == 1`,null,'So Python skips the whole <b>ROOM 1</b> block and checks the next <b>elif</b>.');
+        await check(id,21,true,'room == 2',`${V.room} == 2`,'So Python goes into the <b>ROOM 2</b> block.');
+      }
+      await roomBlock(start);
+      let note;
+      if(start===1 && V.room===2) note='Room 2 did <b>not</b> run yet, even though room is now 2. Only one room block runs each time round the loop. Room 2 runs on the next pass.';
+      else if(start===V.room) note=`room is still <b>${V.room}</b>, so Mario stays in the same room and gets asked the same question again.`;
+      else note='room is now <b>0</b>, so the check at the top will be False this time.';
+      await step(id,{kind:'loop',line:5,head:'↩ That was the end of the loop. Python jumps <b>back up</b> to the <b>while</b> line.',detail:note},1800,()=>trace(5,'↩ back to the top of the loop'));
+    }
+    await doPrint(id,33,'THE END','<b>print("THE END")</b> is not indented.','So it is <b>outside</b> the loop. It only runs once the loop has stopped.','end');
+    await out(id,'\n>>> Program finished. Press Restart to try another path.');
+    hl(0);
+    say({kind:'end',final:true,head:`The program has finished. The loop ran ${pass} time${pass===1?'':'s'}.`,
+      detail:'Look at the trace table below to see every step. Press <b>Restart</b> and type something that is not A or B to watch the loop repeat. <b>Your project:</b> add a room 3 with an <b>elif room == 3:</b> block.'});
+  }
+};
+
+/* ---------- switching + running ---------- */
+const PROGS={cave:CAVE, mario:MARIO};
+function load(key){
+  prog=PROGS[key];
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.prog===key));
+  $('title').textContent=prog.title; $('intro').textContent=prog.intro;
+  $('codeName').textContent=prog.file; $('outName').textContent='▶ '+prog.file+': output';
+  $('mapPanel').hidden=!prog.map;
+  codeEl.innerHTML=prog.src.map((l,i)=>`<div class="ln" id="L${i+1}"><span class="n">${i+1}</span><span class="t">${l||' '}</span></div>`).join('');
+  codeEl.scrollTop=0;
+  $('tips').innerHTML=prog.tips.map(([h,p,task])=>`<div class="tip${task?' task':''}"><h3>${esc(h)}</h3><p>${esc(p)}</p></div>`).join('');
+  try{ history.replaceState(null,'','#'+key); }catch(e){}
+  run();
+}
 async function run(){
-  const id=++runId; term.innerHTML=''; varEl.textContent='(not set yet)'; chips.innerHTML='';
-  inp.disabled=send.disabled=true;
-  try{
-    await step(id,1,`Python starts at line 1 and runs <b>one line at a time</b>, top to bottom. <b>print()</b> shows text.`,700);
-    await out(id,'You wake up in a dark cave.');
-    await step(id,2,`Another <b>print()</b> sets the scene and tells the player their options.`,500);
-    await out(id,'There are two paths: LEFT or RIGHT.');
-    let c=await getInput(id,3,'Which way? ',['left','right','up']);
-    await check(id,5,c==='left','choice == "left"');
-    if(c==='left'){
-      await step(id,6,`We're now <b>inside</b> the if. Notice the 4-space indent.`,500);
-      await out(id,'You find an underground river and a boat.');
-      c=await getInput(id,7,'Take the boat? (yes/no) ',['yes','no']);
-      await check(id,8,c==='yes','choice == "yes"');
-      if(c==='yes') await ending(id,9,'The boat carries you into daylight. YOU ESCAPED!');
-      else{ await step(id,10,`<b>else</b> catches every other answer.`,900); await ending(id,11,'Your torch goes out... GAME OVER'); }
-      return;
-    }
-    await check(id,12,c==='right','choice == "right"');
-    if(c==='right'){
-      await step(id,13,`Inside the <b>elif</b> branch now. The left-path code was skipped completely.`,500);
-      await out(id,'A dragon is sleeping on a pile of gold.');
-      c=await getInput(id,14,'SNEAK past or GRAB the gold? ',['sneak','grab']);
-      await check(id,15,c==='sneak','choice == "sneak"');
-      if(c==='sneak') await ending(id,16,'You tiptoe past and find the exit. YOU ESCAPED!');
-      else{ await step(id,17,`<b>else</b> catches every other answer.`,900); await ending(id,18,'The dragon wakes up! GAME OVER'); }
-      return;
-    }
-    await step(id,19,`Neither check was True, so Python runs the <b>else</b> block. It catches unexpected answers.`,1200);
-    await ending(id,20,"That's not a path! You trip in the dark. GAME OVER");
-  }catch(e){ if(e!=='stop') throw e; }
+  const id=++runId; wakeStep();
+  submitAnswer=null; term.innerHTML=''; chips.innerHTML=''; V={}; stepNo=0; inp.value=''; inp.disabled=send.disabled=true;
+  document.querySelectorAll('.node').forEach(nd=>nd.classList.remove('here','been'));
+  document.querySelectorAll('li.took').forEach(li=>li.classList.remove('took'));
+  $('mapRoom').textContent='(not set yet)';
+  renderVars(); traceHead();
+  try{ await prog.run(id); }catch(e){ if(e!==STOP) throw e; }
 }
-document.getElementById('restart').onclick=run;
-run();
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>load(t.dataset.prog));
+$('restart').onclick=run;
+load(location.hash==='#mario'?'mario':'cave');
 </script>
-
-</body></html>
+</body>
+</html>
