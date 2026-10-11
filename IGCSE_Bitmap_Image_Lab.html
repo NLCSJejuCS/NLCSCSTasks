@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Bitmap Image Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: single study column on "graph paper", each activity a numbered station in lesson order; pixel grids and pictures get full width */
+:root{
+  --bg:#eef4f2; --panel:#ffffff; --panel-2:#f6faf9; --ink:#132228; --muted:#566a6f; --line:#d3e1de; --grid:#e1ebe9;
+  --accent:#0d7a6b; --accent-ink:#ffffff; --accent-soft:#d8efea;
+  --bar:#f0ae45; --bar-soft:#fbe6c2; --tok-d:#e6e1f8;
+  --good:#1d8a4e; --good-soft:#dcf2e4; --bad:#c23a2e; --bad-soft:#fbe1dd;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e191c; --panel:#152429; --panel-2:#11201f; --ink:#e3eeeb; --muted:#93a9a6; --line:#27393d; --grid:#1d2e32;
+  --accent:#3bc3ac; --accent-ink:#06201b; --accent-soft:#17403a;
+  --bar:#e9a94a; --bar-soft:#4a3818; --tok-d:#302b55;
+  --good:#4fd18a; --good-soft:#163a27; --bad:#ff7a6b; --bad-soft:#44201c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e191c; --panel:#152429; --panel-2:#11201f; --ink:#e3eeeb; --muted:#93a9a6; --line:#27393d; --grid:#1d2e32;
+  --accent:#3bc3ac; --accent-ink:#06201b; --accent-soft:#17403a;
+  --bar:#e9a94a; --bar-soft:#4a3818; --tok-d:#302b55;
+  --good:#4fd18a; --good-soft:#163a27; --bad:#ff7a6b; --bad-soft:#44201c; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:28px 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,5vw,3.3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.55rem;font-weight:700}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono)}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+
+/* hero */
+.hero{display:grid;gap:18px;padding-block:8px 20px}
+.hero .lede{max-width:62ch;font-size:1.08rem}
+.hero-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:640px}
+.hero-strip figure{margin:0;display:grid;gap:4px}
+.hero-strip canvas,.pix-canvas{width:100%;aspect-ratio:4/3;display:block;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px;background:var(--panel-2)}
+.hero-strip figcaption{font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
+.objectives{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:.85rem;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 12px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  margin-inline:-16px;padding:10px 16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin}
+nav.toc a{flex:none;text-decoration:none;color:var(--ink);font-size:.85rem;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent)}
+nav.toc a .n{font-family:var(--f-mono);color:var(--muted);margin-right:4px}
+
+/* stations */
+section.station{margin-top:34px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:16px;scroll-margin-top:64px}
+.st-head{display:grid;gap:6px}
+.st-head .num{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.st-head p{max-width:68ch;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.grid2>*{min-width:0}
+
+button,.btn{font:inherit;font-weight:700;font-size:.92rem;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:8px 14px;cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+button:hover{filter:brightness(1.08)}
+button:disabled{cursor:default}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,.term:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+input[type=number],input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+textarea{width:100%;min-height:80px;resize:vertical}
+.feedback{font-weight:700}
+.feedback.ok{color:var(--good)} .feedback.no{color:var(--bad)}
+.chk{display:inline-flex;gap:6px;align-items:center;font-size:.92rem}
+input.ok{border-color:var(--good);background:var(--good-soft)}
+input.no{border-color:var(--bad);background:var(--bad-soft)}
+
+/* glossary */
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.term{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel-2);cursor:pointer;display:grid;gap:4px;text-align:left;color:var(--ink);font-weight:400}
+.term b{font-family:var(--f-display);font-size:1.05rem}
+.term .def{font-size:.93rem;color:var(--muted)}
+.gloss.test .term .def{filter:blur(6px);user-select:none}
+.gloss.test .term.show .def{filter:none}
+
+/* simulators */
+.sim{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px}
+@media (max-width:760px){.sim{grid-template-columns:minmax(0,1fr)}}
+.canvas-box{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0;display:grid;gap:10px;justify-items:center;align-content:start}
+.controls{display:grid;gap:14px;align-content:start}
+.ctrl{display:grid;gap:4px}
+.ctrl label,.ctrl .lbl{display:flex;justify-content:space-between;font-weight:700;font-size:.92rem}
+.ctrl label output{font-family:var(--f-mono);color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;border-radius:0;background:transparent;color:var(--ink);font-weight:700;padding:6px 4px;font-size:.85rem}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ro{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel-2);min-width:0}
+.ro .k{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ro .v{font-family:var(--f-mono);font-size:1.1rem;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.meter{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.formula{font-family:var(--f-mono);background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:.95rem;overflow-x:auto}
+.strip{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.strip table{border-collapse:collapse;font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;width:100%}
+.strip th,.strip td{padding:6px 10px;border-right:1px solid var(--line);text-align:left;white-space:nowrap}
+.strip th{background:var(--panel-2);color:var(--muted);font-weight:600}
+.strip tr+tr td,.strip tr+tr th{border-top:1px solid var(--line)}
+.strip td.r,.strip th.r{text-align:right}
+.stream{font-family:var(--f-mono);font-size:.88rem;color:var(--ink);margin:0;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;line-height:1.5}
+.note{border-left:3px solid var(--bar);padding:4px 0 4px 12px;font-size:.95rem}
+.sub{font-size:.92rem;color:var(--muted)}
+
+/* pixel grids */
+.pgrid{container-type:inline-size;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);width:100%;max-width:520px;aspect-ratio:1;user-select:none;-webkit-user-select:none;touch-action:none}
+.pgrid.static{touch-action:auto}
+.pcell{font-size:min(16px,calc(100cqw / var(--n,8) / var(--k,1.5)));border:0;padding:0;border-radius:0;background:#fff;color:#111;font-family:var(--f-mono);font-weight:600;cursor:crosshair;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;line-height:1}
+.pcell:hover{filter:none}
+.pcell:focus-visible{outline:3px solid var(--accent);outline-offset:-3px;z-index:1}
+.pcell.no{box-shadow:inset 0 0 0 3px var(--bad)}
+.pcell.ok{box-shadow:inset 0 0 0 2px var(--good)}
+.pcell.ro-cell{cursor:default}
+.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
+.pal button{display:flex;align-items:center;gap:6px;background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:5px 8px;font-weight:600;font-size:.82rem}
+.pal button i{display:block;width:16px;height:16px;border-radius:4px;border:1px solid var(--muted);flex:none}
+.pal button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.keyrow{display:flex;flex-wrap:wrap;gap:8px}
+.keyrow span{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:3px 8px;font-family:var(--f-mono);font-size:.85rem;background:var(--panel)}
+.keyrow i{display:block;width:16px;height:16px;border-radius:4px;border:1px solid var(--muted)}
+
+/* bit rows */
+.bitrows{display:grid;gap:6px}
+.bitrow{display:flex;align-items:center;gap:8px;min-width:0}
+.bitrow .n{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);width:3.4em;flex:none}
+.bitrow input{font-family:var(--f-mono);letter-spacing:.14em;min-width:0;width:100%;max-width:15em}
+.bitrow .mk{font-weight:700;width:1.4em;flex:none}
+.pat{font-family:var(--f-mono);font-size:1.25rem;line-height:1.7;letter-spacing:.14em;margin:0;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 16px;width:fit-content;max-width:100%;overflow-x:auto}
+
+/* rgb */
+.swatch{height:96px;border-radius:10px;border:1px solid var(--line)}
+.rgbrow{display:grid;grid-template-columns:5.2em minmax(0,1fr) 3.4em;gap:10px;align-items:center}
+.rgbrow output{font-family:var(--f-mono);text-align:right}
+.dbl{display:flex;flex-wrap:wrap;gap:6px}
+.dbl span{border:1px solid var(--line);background:var(--panel-2);border-radius:8px;padding:4px 10px;font-family:var(--f-mono);font-size:.85rem}
+.dbl span.on{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+
+/* rgb bytes */
+.bytes3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.bytes3{gap:6px}}
+.byte{border:2px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:4px;justify-items:center;background:var(--panel-2);min-width:0}
+.byte .bn{font-weight:700;font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.byte .bd{font-family:var(--f-mono);font-size:1.5rem;font-weight:600}
+.byte .bb{font-family:var(--f-mono);font-size:.82rem;letter-spacing:.04em;overflow-wrap:anywhere;text-align:center}
+.byte .bx{font-size:.78rem;color:var(--muted)}
+.byte.r{border-color:#d3304a}.byte.g{border-color:#2e9b4a}.byte.b{border-color:#2563d6}
+.byte.r .bn{color:#d3304a}.byte.g .bn{color:#2e9b4a}.byte.b .bn{color:#2563d6}
+.mem{display:flex;flex-wrap:wrap;gap:6px}
+.mem button{display:grid;gap:2px;padding:4px;border:2px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-weight:400;cursor:pointer}
+.mem button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.mem i{display:block;height:8px;border-radius:3px;border:1px solid var(--muted)}
+.mem .tri{display:flex;gap:2px}
+.mem .tri span{font-family:var(--f-mono);font-size:.72rem;min-width:2.3em;text-align:center;padding:1px 2px;border-radius:3px;color:var(--ink)}
+.mem .tri span:nth-child(1){background:rgba(211,48,74,.22)}
+.mem .tri span:nth-child(2){background:rgba(46,155,74,.22)}
+.mem .tri span:nth-child(3){background:rgba(37,99,214,.22)}
+
+/* matching */
+.match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:12px}
+@media (max-width:560px){.match{grid-template-columns:minmax(0,1fr)}}
+.col{display:grid;gap:8px;align-content:start}
+.mitem{text-align:left;font-weight:400;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.mitem.t{font-family:var(--f-display);font-weight:700}
+.mitem.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.mitem.done{background:var(--good-soft);border-color:var(--good);color:var(--ink);cursor:default}
+.mitem.wrong{background:var(--bad-soft);border-color:var(--bad)}
+
+/* fill */
+.cz-sec{display:grid;gap:12px;border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--panel-2)}
+.cz-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.cz-tag{font-family:var(--f-mono);font-size:.78rem;background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:2px 8px}
+.cz-prog{margin-left:auto;font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+.cloze{font-size:1.05rem;line-height:2.5;max-width:75ch}
+.gap{font:inherit;font-size:.98rem;min-width:7ch;height:1.9em;padding:0 10px;border:0;border-bottom:2px solid var(--muted);border-radius:4px 4px 0 0;background:var(--panel);color:var(--ink);cursor:pointer;vertical-align:baseline}
+.gap.active{border-bottom-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.gap.filled{background:var(--accent-soft);font-weight:700;border-bottom-color:var(--accent)}
+.gap.ok{background:var(--good-soft);border-bottom-color:var(--good)}
+.gap.no{background:var(--bad-soft);border-bottom-color:var(--bad)}
+.bank{display:flex;flex-wrap:wrap;gap:8px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:var(--panel)}
+.wchip{font:inherit;font-weight:700;font-size:.92rem;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:4px 14px;cursor:pointer}
+.wchip:disabled{opacity:.3;cursor:default;border-style:dashed}
+
+/* sort */
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.bin{border:2px dashed var(--line);border-radius:12px;padding:10px;min-height:120px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;background:var(--panel-2)}
+.bin h3{width:100%;font-size:1rem}
+.bin .sub{width:100%;font-size:.8rem;margin-top:-4px}
+.card{font:inherit;font-weight:700;font-size:.88rem;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 10px;cursor:grab}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.card.ok{border-color:var(--good);background:var(--good-soft)}
+.card.no{border-color:var(--bad);background:var(--bad-soft)}
+.tray{display:flex;flex-wrap:wrap;gap:6px;min-height:44px;padding:8px;border:1px solid var(--line);border-radius:10px}
+
+/* exam + quiz */
+.q{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;background:var(--panel-2)}
+.q .marks{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.ms{border-left:3px solid var(--good);padding-left:12px;display:grid;gap:4px}
+.ms label{display:flex;gap:8px;align-items:flex-start}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-weight:400;background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.opt.ok{background:var(--good-soft);border-color:var(--good)}
+.opt.no{background:var(--bad-soft);border-color:var(--bad)}
+.expl{font-size:.93rem;color:var(--muted)}
+
+/* file size */
+.fs-block{display:grid;gap:12px;padding-top:16px;border-top:1px solid var(--line)}
+.fs-block>h3{display:flex;align-items:center;gap:10px}
+.fs-block .L{font-family:var(--f-mono);font-size:.8rem;background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:2px 8px}
+.tok{display:inline-block;border-radius:6px;padding:1px 8px;font-family:var(--f-mono);font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.tok.r{background:var(--accent-soft)}
+.tok.b{background:var(--bar-soft)}
+.tok.d{background:var(--tok-d)}
+.ladder{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.ladder .u{border:1px solid var(--line);background:var(--panel-2);border-radius:8px;padding:8px 14px;font-family:var(--f-mono);font-weight:600;font-variant-numeric:tabular-nums;display:grid;gap:0;text-align:center}
+.ladder .u small{font-family:var(--f-body);font-weight:400;color:var(--muted);font-size:.78rem}
+.ladder .ar{font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+.fld{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fld input[type=number]{width:7.5rem}
+.fld input.wide{width:10.5rem}
+.wk{display:grid;gap:8px}
+.wk-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;align-items:baseline;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel-2)}
+.wk-row .n{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.wk-row .w{font-family:var(--f-mono);font-size:.93rem;overflow-wrap:anywhere}
+.mistakes{margin:0;padding-left:1.2em;display:grid;gap:6px}
+.steps{display:grid;gap:10px}
+.step{display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--panel)}
+.step .sn{width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600}
+.step .sb{display:grid;gap:6px;min-width:0}
+.step .st-title{font-family:var(--f-display);font-weight:700}
+.step .st-expr{background:var(--accent-soft);border-radius:8px;padding:6px 10px;overflow-wrap:anywhere;font-family:var(--f-mono);font-size:.92rem}
+.step.locked{opacity:.45}
+.step.done{border-color:var(--good);background:var(--good-soft)}
+.step.done .sn{background:var(--good);color:var(--panel)}
+.hintline{border-left:3px solid var(--bar);padding:2px 0 2px 10px;font-size:.93rem}
+.imgrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel-2)}
+.imgrow input[type=number]{width:5.6rem}
+.imgrow select{max-width:100%}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--panel-2)}
+summary{cursor:pointer;font-weight:700}
+details[open] summary{margin-bottom:10px}
+details>*+*{margin-top:10px}
+footer{margin-top:36px;color:var(--muted);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">IGCSE Computer Science 0478 · Unit 1 Data representation</div>
+    <h1>Bitmap Image Lab</h1>
+    <p class="lede">Work through the stations in order. Paint pixels, change the settings and check your answers as you go. By the end you should be able to explain how an image is stored in binary and calculate the size of an image file.</p>
+    <div class="hero-strip" aria-label="The same picture shown with 12 by 9, 32 by 24 and 160 by 120 pixels">
+      <figure><canvas id="h1" aria-hidden="true"></canvas><figcaption>12 × 9 pixels</figcaption></figure>
+      <figure><canvas id="h2" aria-hidden="true"></canvas><figcaption>32 × 24 pixels</figcaption></figure>
+      <figure><canvas id="h3" aria-hidden="true"></canvas><figcaption>160 × 120 pixels</figcaption></figure>
+    </div>
+    <div class="objectives" aria-label="Learning objectives">
+      <span class="chip">A bitmap is a grid of pixels</span>
+      <span class="chip">Each pixel is stored in binary</span>
+      <span class="chip">Colour depth sets the number of colours</span>
+      <span class="chip">Resolution is the number of pixels</span>
+      <span class="chip">File size, resolution and colour depth</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Stations">
+    <a href="#keywords"><span class="n">1</span>Keywords</a>
+    <a href="#painter"><span class="n">2</span>Pixel painter</a>
+    <a href="#zoom"><span class="n">3</span>Resolution and depth</a>
+    <a href="#tobits"><span class="n">4</span>Bits to picture</a>
+    <a href="#topic"><span class="n">5</span>Picture to bits</a>
+    <a href="#colours"><span class="n">6</span>Colours</a>
+    <a href="#filesize"><span class="n">7</span>File size</a>
+    <a href="#doc"><span class="n">8</span>Document size</a>
+    <a href="#match"><span class="n">9</span>Match</a>
+    <a href="#gaps"><span class="n">10</span>Fill the gaps</a>
+    <a href="#exam"><span class="n">11</span>Exam practice</a>
+    <a href="#quiz"><span class="n">12</span>Quiz</a>
+  </nav>
+
+  <!-- 1 KEYWORDS -->
+  <section class="station" id="keywords">
+    <div class="st-head">
+      <span class="num">Station 1</span>
+      <h2>Keywords</h2>
+      <p>Read each definition. When you are ready, turn on test mode: the definitions blur and you click a card to check yourself.</p>
+    </div>
+    <div class="row"><button class="ghost" id="testToggle" aria-pressed="false">Turn on test mode</button></div>
+    <div class="gloss" id="gloss"></div>
+  </section>
+
+  <!-- 2 PIXEL PAINTER -->
+  <section class="station" id="painter">
+    <div class="st-head">
+      <span class="num">Station 2</span>
+      <h2>Pixel painter</h2>
+      <p>Pick a colour, then click or drag over the grid. Change the bits per pixel and watch how many colours you get, what each colour’s binary code is and how the file size changes.</p>
+    </div>
+    <div class="sim">
+      <div class="canvas-box">
+        <div class="pgrid" id="pp" role="grid" aria-label="Pixel grid. Use the arrow keys to move and Enter to paint."></div>
+      </div>
+      <div class="controls">
+        <div class="ctrl"><span class="lbl">Grid size (width × height)</span>
+          <div class="seg" id="ppSize" role="group" aria-label="Grid size">
+            <button type="button" data-v="4" aria-pressed="false">4×4</button><button type="button" data-v="8" aria-pressed="true">8×8</button><button type="button" data-v="12" aria-pressed="false">12×12</button><button type="button" data-v="16" aria-pressed="false">16×16</button></div></div>
+        <div class="ctrl"><span class="lbl">Bits per pixel (colour depth)</span>
+          <div class="seg" id="ppBitSeg" role="group" aria-label="Bits per pixel">
+            <button type="button" data-v="1" aria-pressed="true">1</button><button type="button" data-v="2" aria-pressed="false">2</button><button type="button" data-v="3" aria-pressed="false">3</button><button type="button" data-v="4" aria-pressed="false">4</button></div></div>
+        <div class="ctrl"><span class="lbl">Paint with (colour and its code)</span><div class="pal" id="ppPal"></div></div>
+        <div class="row"><button class="ghost" type="button" id="ppClear">Clear</button><button class="ghost" type="button" id="ppEx">Load example</button></div>
+        <label class="chk"><input type="checkbox" id="ppCodes" checked> Show each pixel’s code</label>
+      </div>
+    </div>
+    <div class="readouts" id="ppRo"></div>
+    <div class="formula" id="ppFormula"></div>
+    <p class="note">Try it: draw a picture with 1 bit per pixel, then switch to 2 bits. Your picture stays the same, but you can now use two more colours and the file is twice as big. Changing the grid size clears the picture.</p>
+  </section>
+
+  <!-- 3 RESOLUTION AND DEPTH -->
+  <section class="station" id="zoom">
+    <div class="st-head">
+      <span class="num">Station 3</span>
+      <h2>Resolution and colour depth</h2>
+      <p>The same scene is stored at different settings. Lower the resolution to see fewer, bigger pixels. Lower the colour depth to see fewer colours. Watch the file size as you go.</p>
+    </div>
+    <div class="sim">
+      <div class="canvas-box"><canvas id="zCan" class="pix-canvas" style="max-width:560px" aria-label="The scene at the chosen resolution and colour depth"></canvas></div>
+      <div class="controls">
+        <div class="ctrl"><span class="lbl">Resolution (width × height)</span>
+          <div class="seg" id="zRes" role="group" aria-label="Resolution"></div></div>
+        <div class="ctrl"><span class="lbl">Colour depth (bits per pixel)</span>
+          <div class="seg" id="zDep" role="group" aria-label="Colour depth"></div></div>
+        <p class="sub" id="zNote"></p>
+      </div>
+    </div>
+    <div class="readouts" id="zRo"></div>
+  </section>
+
+  <!-- 4 BITS TO PICTURE -->
+  <section class="station" id="tobits">
+    <div class="st-head">
+      <span class="num">Station 4</span>
+      <h2>Bits to picture</h2>
+      <p>The bit pattern shows one row per line. A 1 is a black pixel and a 0 is a white pixel. Click the squares to rebuild the picture, then check it.</p>
+    </div>
+    <div class="grid2">
+      <div class="ctrl"><span class="lbl">Bit pattern (8 × 8, 1 bit per pixel)</span><pre class="pat" id="tbPat"></pre></div>
+      <div class="canvas-box"><div class="pgrid static" id="tbGrid" role="grid" aria-label="Your picture. Use the arrow keys and Enter."></div></div>
+    </div>
+    <div class="row"><button type="button" id="tbCheck">Check</button><button type="button" class="ghost" id="tbShow">Show answer</button><button type="button" class="ghost" id="tbNext">New picture</button><span class="feedback" id="tbFb" aria-live="polite"></span></div>
+  </section>
+
+  <!-- 5 PICTURE TO BITS -->
+  <section class="station" id="topic">
+    <div class="st-head">
+      <span class="num">Station 5</span>
+      <h2>Picture to bits</h2>
+      <p>Now work the other way. Read each row of the picture from left to right and type its bit pattern.</p>
+    </div>
+    <div class="fs-block">
+      <h3><span class="L">A</span> Black and white</h3>
+      <p class="sub">1 bit per pixel: black = 1, white = 0. Type 8 digits for each row.</p>
+      <div class="grid2">
+        <div class="canvas-box"><div class="pgrid static" id="pbGrid" role="img" aria-label="Picture to convert"></div></div>
+        <div class="bitrows" id="pbRows"></div>
+      </div>
+      <div class="row"><label class="fld">How many bits is the whole image? <input type="number" id="pbTotal" class="wide" inputmode="numeric"></label></div>
+      <div class="row"><button type="button" id="pbCheck">Check</button><button type="button" class="ghost" id="pbShow">Show answer</button><button type="button" class="ghost" id="pbNext">New picture</button><span class="feedback" id="pbFb" aria-live="polite"></span></div>
+    </div>
+    <div class="fs-block">
+      <h3><span class="L">B</span> Four colours</h3>
+      <p class="sub">2 bits per pixel. Use the key to find each pixel’s code. Type 8 digits for each row (4 pixels × 2 bits).</p>
+      <div class="keyrow" id="pcKey"></div>
+      <div class="grid2">
+        <div class="canvas-box"><div class="pgrid static" id="pcGrid" role="img" aria-label="Four colour picture to convert" style="max-width:300px"></div></div>
+        <div class="bitrows" id="pcRows"></div>
+      </div>
+      <div class="row"><label class="fld">How many bits is the whole image? <input type="number" id="pcTotal" class="wide" inputmode="numeric"></label></div>
+      <div class="row"><button type="button" id="pcCheck">Check</button><button type="button" class="ghost" id="pcShow">Show answer</button><button type="button" class="ghost" id="pcNext">New picture</button><span class="feedback" id="pcFb" aria-live="polite"></span></div>
+      <p class="note">The file also stores the width, height and colour depth as metadata. Without them the computer would not know where one row ends or how many bits belong to each pixel.</p>
+    </div>
+  </section>
+
+  <!-- 6 COLOURS -->
+  <section class="station" id="colours">
+    <div class="st-head">
+      <span class="num">Station 6</span>
+      <h2>Bits and colours</h2>
+      <p>The number of colours depends on the number of bits per pixel. Each extra bit doubles it.</p>
+    </div>
+    <div class="fs-block">
+      <h3><span class="L">A</span> How many colours?</h3>
+      <div class="ctrl"><label for="cbSlider">Bits per pixel <output id="cbOut">8</output></label><input type="range" id="cbSlider" min="1" max="24" value="8"></div>
+      <div class="formula" id="cbFormula"></div>
+      <div class="dbl" id="cbLadder" aria-label="Number of colours for common colour depths"></div>
+      <div class="fs-block" style="padding-top:12px">
+        <h3>Practice</h3>
+        <p id="cqText"></p>
+        <div class="row"><input type="text" id="cqAns" class="wide" inputmode="numeric" style="width:11rem" aria-label="Your answer"><button type="button" id="cqCheck">Check</button><button type="button" class="ghost" id="cqHint">Hint</button><button type="button" class="ghost" id="cqNew">New question</button><span class="feedback" id="cqFb" aria-live="polite"></span></div>
+        <p class="hintline" id="cqHintText" hidden></p>
+      </div>
+    </div>
+    <div class="fs-block">
+      <h3><span class="L">B</span> Red, green and blue: 3 bytes for every pixel</h3>
+      <p class="sub">A 24-bit colour pixel is stored as three separate bytes, one each for red, green and blue. Each byte holds a level from 0 to 255 (8 bits). Click a pixel in the picture, then change its levels to see how the three bytes make its colour.</p>
+      <div class="grid2">
+        <div class="canvas-box">
+          <div class="pgrid static" id="rgbGrid" role="grid" aria-label="Small picture of 6 by 4 pixels. Use the arrow keys and Enter to choose a pixel." style="max-width:420px;aspect-ratio:3/2"></div>
+          <p class="sub" id="rgbSelLbl" style="text-align:center"></p>
+        </div>
+        <div class="controls">
+          <div class="rgbrow"><label for="rR">Red</label><input type="range" id="rR" min="0" max="255" value="61"><output id="oR">61</output></div>
+          <div class="rgbrow"><label for="rG">Green</label><input type="range" id="rG" min="0" max="255" value="126"><output id="oG">126</output></div>
+          <div class="rgbrow"><label for="rB">Blue</label><input type="range" id="rB" min="0" max="255" value="181"><output id="oB">181</output></div>
+          <div class="ctrl"><span class="lbl">Set this pixel to</span><div class="row" id="rgbPre"></div></div>
+        </div>
+      </div>
+      <div class="bytes3" id="rgbBytes" aria-live="polite"></div>
+      <div class="ctrl"><span class="lbl">How the picture is stored: every pixel takes 3 bytes, one pixel after another, row by row</span><div class="mem" id="rgbMem"></div></div>
+      <div class="formula" id="rgbCalc"></div>
+      <p class="note">Software shows colours in denary or hexadecimal because they are shorter and easier for people to read, write and copy without mistakes. The computer still stores the 3 bytes (24 bits) for each pixel.</p>
+    </div>
+  </section>
+
+  <!-- 7 FILE SIZE -->
+  <section class="station" id="filesize">
+    <div class="st-head">
+      <span class="num">Station 7</span>
+      <h2>Calculate the file size</h2>
+      <p>An uncompressed bitmap stores one value for every pixel, so: <b>file size = width × height × colour depth</b>. That gives bits. Divide by 8 for bytes, then by 1024 for KiB.</p>
+    </div>
+    <div class="fs-block">
+      <h3><span class="L">A</span> Explore</h3>
+      <div class="row" id="xPre"></div>
+      <div class="row">
+        <label class="fld">Width <input type="number" id="xW" min="1" max="20000" value="500" inputmode="numeric"> px</label>
+        <label class="fld">Height <input type="number" id="xH" min="1" max="20000" value="700" inputmode="numeric"> px</label>
+        <label class="fld">Colour depth <select id="xD"></select></label>
+      </div>
+      <div class="ctrl" style="max-width:420px"><span class="lbl">Divide by</span>
+        <div class="seg" id="xBase" role="group" aria-label="Unit size">
+          <button type="button" data-v="1024" aria-pressed="true">1024 (KiB, MiB)</button><button type="button" data-v="1000" aria-pressed="false">1000 (KB, MB)</button></div></div>
+      <div class="formula" id="xFormula"></div>
+      <div class="ladder" id="xLadder"></div>
+      <p class="sub">Cambridge 0478 papers use 1024 (KiB and MiB). Some worksheets use 1000 (KB and MB), so the answers differ slightly. Always use the unit your question asks for.</p>
+    </div>
+    <div class="fs-block">
+      <h3><span class="L">B</span> Guided practice</h3>
+      <p id="fsQ"></p>
+      <div class="steps" id="fsSteps"></div>
+      <div class="wk" id="fsDone" hidden></div>
+      <div class="row"><button type="button" id="fsNew">New question</button></div>
+    </div>
+    <div class="fs-block">
+      <h3><span class="L">C</span> On your own</h3>
+      <p id="exQ"></p>
+      <div class="row"><input type="text" id="exAns" inputmode="decimal" style="width:11rem" aria-label="Your answer"><span id="exUnit" class="mono"></span><button type="button" id="exCheck">Check</button><button type="button" class="ghost" id="exWorking">Show working</button><button type="button" class="ghost" id="exNew">New question</button></div>
+      <div id="exFb" aria-live="polite"></div>
+      <div class="wk" id="exWork" hidden></div>
+    </div>
+  </section>
+
+  <!-- 8 DOCUMENT SIZE -->
+  <section class="station" id="doc">
+    <div class="st-head">
+      <span class="num">Station 8</span>
+      <h2>Estimate a document</h2>
+      <p>A document can hold text and pictures. In ASCII each character, including spaces, takes 1 byte. A colour picture uses 3 bytes per pixel (one each for red, green and blue). A greyscale picture uses 1 byte per pixel. Edit the text and the pictures to see the total.</p>
+    </div>
+    <div class="grid2">
+      <div class="ctrl"><label for="dTxt">Text <output id="dCount">0 characters</output></label><textarea id="dTxt" aria-label="Document text">This is computer science</textarea></div>
+      <div class="ctrl"><span class="lbl">Pictures</span><div class="bitrows" id="dImgs"></div><div><button type="button" class="ghost" id="dAdd">Add a picture</button></div></div>
+    </div>
+    <div class="strip"><table id="dTbl"></table></div>
+    <div class="ctrl" style="max-width:420px"><span class="lbl">Divide by</span>
+      <div class="seg" id="dBase" role="group" aria-label="Unit size">
+        <button type="button" data-v="1024" aria-pressed="true">1024 (KiB, MiB)</button><button type="button" data-v="1000" aria-pressed="false">1000 (KB, MB)</button></div></div>
+    <div class="readouts" id="dRo"></div>
+    <details>
+      <summary>See it as an algorithm with a trace table</summary>
+      <pre class="stream">total ← LENGTH(text)
+FOR each picture
+   pixels ← width * height
+   IF mode = "colour" THEN
+      bytes ← pixels * 3
+   ELSE
+      bytes ← pixels
+   ENDIF
+   total ← total + bytes
+NEXT picture
+OUTPUT total, " bytes"</pre>
+      <div class="strip"><table id="dTrace"></table></div>
+    </details>
+    <p class="note">A real file is a little bigger than this estimate because it also stores formatting, fonts and metadata.</p>
+  </section>
+
+  <!-- 9 MATCH -->
+  <section class="station" id="match">
+    <div class="st-head">
+      <span class="num">Station 9</span>
+      <h2>Match the terms</h2>
+      <p>Click a term, then click its definition.</p>
+    </div>
+    <div class="row"><span class="feedback" id="mFb">0 of 8 matched</span><button class="ghost" id="mReset">Shuffle and restart</button></div>
+    <div class="match"><div class="col" id="mTerms"></div><div class="col" id="mDefs"></div></div>
+  </section>
+
+  <!-- 10 GAPS -->
+  <section class="station" id="gaps">
+    <div class="st-head">
+      <span class="num">Station 10</span>
+      <h2>Fill the gaps</h2>
+      <p>Three short parts. Click a word in the word bank to drop it into the highlighted gap. Click a filled gap to take its word back out. Each word bank has a word or two that does not belong.</p>
+    </div>
+    <div id="cloze" style="display:grid;gap:14px"></div>
+  </section>
+
+  <!-- 12 EXAM -->
+  <section class="station" id="exam">
+    <div class="st-head">
+      <span class="num">Station 11</span>
+      <h2>Exam practice</h2>
+      <p>Write your answer first, then open the mark scheme and tick each point you made. Be honest: it is only for you.</p>
+    </div>
+    <div id="examQs" style="display:grid;gap:12px"></div>
+  </section>
+
+  <!-- 13 QUIZ -->
+  <section class="station" id="quiz">
+    <div class="st-head">
+      <span class="num">Station 12</span>
+      <h2>Quick quiz</h2>
+      <p>One attempt per question. The explanation appears after you answer.</p>
+    </div>
+    <div id="quizQs" style="display:grid;gap:12px"></div>
+    <div class="row"><span class="feedback" id="quizScore">Score: 0 / 10</span><button class="ghost" id="quizReset">Try again</button></div>
+  </section>
+
+  <footer>Bitmap Image Lab · IGCSE Computer Science 0478 · NLCS Jeju</footer>
+</div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const fmt = n => Number(n).toLocaleString('en-GB');
+const fmtN = n => Number.isInteger(n) ? fmt(n) : fmt(+n.toFixed(2));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const numVal = s => { s = String(s).replace(/[,\s]/g,''); return s===''?NaN:Number(s); };
+const lerp = (a,b,t) => a+(b-a)*t;
+const bin = (v,n) => v.toString(2).padStart(n,'0');
+function ink(hex){ const n=parseInt(hex.slice(1),16), r=n>>16, g=(n>>8)&255, b=n&255; return (0.299*r+0.587*g+0.114*b)>150 ? '#111111' : '#ffffff'; }
+function segBind(id, cb){ const box=$(id); box.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||!box.contains(b)) return; box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b)); cb(+b.dataset.v); }); }
+function segSet(id,v){ $(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.v===v)); }
+function rove(box, cols){
+  const cells=[...box.children]; cells.forEach((c,i)=>c.tabIndex=i?-1:0);
+  box.onkeydown=e=>{ const i=cells.indexOf(document.activeElement); if(i<0) return; let j=i;
+    if(e.key==='ArrowRight') j=i%cols<cols-1?i+1:i; else if(e.key==='ArrowLeft') j=i%cols?i-1:i;
+    else if(e.key==='ArrowDown') j=i+cols<cells.length?i+cols:i; else if(e.key==='ArrowUp') j=i-cols>=0?i-cols:i; else return;
+    e.preventDefault(); cells[i].tabIndex=-1; cells[j].tabIndex=0; cells[j].focus(); };
+}
+
+/* ---------- THE SCENE (used by hero and station 3) ---------- */
+function scene(u,v){
+  const t=Math.pow(Math.min(1,Math.max(0,v/0.75)),1.6);
+  let r=lerp(58,255,t), g=lerp(110,196,t), b=lerp(205,128,t);
+  const dx=u-0.72, dy=(v-0.58)*1.15, d=Math.hypot(dx,dy);
+  if(d<0.22){ const k=Math.pow(1-d/0.22,2)*0.55; r=lerp(r,255,k); g=lerp(g,235,k); b=lerp(b,170,k); }
+  if(d<0.075){ r=255; g=240; b=170; }
+  const bx=(u-0.27)/0.085, by=(v-0.30)/0.11;
+  if(bx*bx+by*by<1){ if(Math.abs(u-0.27)<0.016){ r=250; g=205; b=50; } else { r=214; g=48; b=60; } }
+  if(u>0.255&&u<0.285&&v>0.43&&v<0.47){ r=110; g=70; b=40; }
+  const h1=0.72+0.05*Math.sin(u*6+0.8), h2=0.84+0.04*Math.sin(u*4+3);
+  if(v>h1){ const k=(v-h1)*1.5; r=lerp(70,40,k); g=lerp(158,120,k); b=lerp(88,70,k); }
+  if(v>h2){ r=36; g=102; b=66; }
+  return [r,g,b];
+}
+function quant(r,g,b,bits){
+  if(bits===1){ const l=0.3*r+0.59*g+0.11*b; const c=l>110?255:0; return [c,c,c]; }
+  if(bits===2){ const l=0.3*r+0.59*g+0.11*b; const c=Math.round(l/255*3)*85; return [c,c,c]; }
+  const sp = bits===3?[1,1,1] : bits===4?[1,2,1] : bits===8?[3,3,2] : [8,8,8];
+  const q=(c,n)=>{ const L=Math.pow(2,n)-1; return Math.round(c/255*L)/L*255; };
+  return [q(r,sp[0]),q(g,sp[1]),q(b,sp[2])];
+}
+function drawScene(canvas,w,h,bits){
+  canvas.width=w; canvas.height=h; const ctx=canvas.getContext('2d'); const id=ctx.createImageData(w,h);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    let [r,g,b]=scene((x+0.5)/w,(y+0.5)/h); if(bits<24) [r,g,b]=quant(r,g,b,bits);
+    const k=(y*w+x)*4; id.data[k]=r; id.data[k+1]=g; id.data[k+2]=b; id.data[k+3]=255; }
+  ctx.putImageData(id,0,0);
+}
+
+/* ---------- 1 GLOSSARY ---------- */
+const GLOSS = [
+  ['Pixel','Short for picture element. The smallest area of an image that has a single colour.'],
+  ['Bitmap image','An image stored as a grid of pixels, each with its own binary value.'],
+  ['Vector image','An image stored as shapes (lines, curves, fills) described by numbers. It has no pixels.'],
+  ['Resolution','The number of pixels in an image, found by width × height.'],
+  ['Colour depth','The number of bits used to store the colour of each pixel. Also called bit depth.'],
+  ['Bit pattern','The 1s and 0s that stand for the pixels, for example 0111.'],
+  ['2ⁿ colours','With n bits per pixel there are 2ⁿ possible colours. 8 bits gives 256.'],
+  ['RGB','A colour made from red, green and blue, each a level from 0 to 255 (1 byte each), so 3 bytes (24 bits) per pixel.'],
+  ['Hexadecimal','A base 16 number system. Colours are often written in it, for example #3D7EB5.'],
+  ['Metadata','Data about the file, such as an image’s width, height and colour depth.'],
+  ['Compression','Making a file smaller so it uses less storage and is quicker to send.'],
+  ['Lossy','Compression that permanently removes some data. JPEG is an example.'],
+  ['Lossless','Compression that lets the original data be rebuilt exactly. PNG is an example.'],
+];
+function buildGloss(){
+  $('#gloss').innerHTML = GLOSS.map(([t,d])=>`<button type="button" class="term"><b>${t}</b><span class="def">${d}</span></button>`).join('');
+  document.querySelectorAll('.term').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('show')));
+  $('#testToggle').addEventListener('click',e=>{ const on=!$('#gloss').classList.contains('test'); $('#gloss').classList.toggle('test',on);
+    e.target.setAttribute('aria-pressed',on); e.target.textContent = on?'Turn off test mode':'Turn on test mode';
+    if(!on) document.querySelectorAll('.term').forEach(x=>x.classList.remove('show')); });
+}
+
+/* ---------- 2 PIXEL PAINTER ---------- */
+const PAL=[['White','#ffffff'],['Black','#111111'],['Red','#e0312f'],['Blue','#2563d6'],['Green','#2e9b4a'],['Yellow','#f5cf2b'],['Orange','#f28a1f'],['Purple','#8a47c7'],
+  ['Brown','#7a4a21'],['Pink','#f29cc4'],['Cyan','#33c6d8'],['Grey','#8d9498'],['Lime','#9bd23a'],['Navy','#1c2d6b'],['Teal','#16897c'],['Maroon','#7b1d2e']];
+const EXAMPLES=[
+  ['00022000','00222200','02222220','22222222','11111111','13111331','13111331','11111111'],
+  ['00333300','03333330','33133133','33333333','32333323','33222233','03333330','00333300'],
+  ['00000000','02200220','22222222','22222222','22222222','02222220','00222200','00022000'],
+];
+const pp={n:8,bits:1,cur:1,cells:[],ex:0,painting:false};
+function ppCode(v){ return bin(v,pp.bits); }
+function ppBuild(){
+  const g=$('#pp'); g.style.gridTemplateColumns=`repeat(${pp.n},1fr)`;
+  g.innerHTML=Array.from({length:pp.n*pp.n},(_,i)=>`<button type="button" class="pcell" data-i="${i}"></button>`).join('');
+  rove(g,pp.n); ppPaintAll();
+}
+function ppLabel(i){ const v=pp.cells[i]; return `Row ${Math.floor(i/pp.n)+1}, column ${i%pp.n+1}: ${PAL[v][0]}, code ${ppCode(v)}`; }
+function ppStyle(c,i,show){ const v=pp.cells[i], col=PAL[v][1]; c.style.background=col; c.style.color=ink(col); c.textContent=show?ppCode(v):''; c.setAttribute('aria-label',ppLabel(i)); }
+function ppFs(){ const g=$('#pp'); g.style.setProperty('--n',pp.n); g.style.setProperty('--k',(pp.bits*0.62+0.6).toFixed(2)); return {fs:0, show:$('#ppCodes').checked}; }
+function ppPaintAll(){ const {fs,show}=ppFs(); [...$('#pp').children].forEach((c,i)=>ppStyle(c,i,show,fs)); ppInfo(); }
+function ppPaint(i){ if(pp.cells[i]===pp.cur) return; pp.cells[i]=pp.cur; const {fs,show}=ppFs(); ppStyle($('#pp').children[i],i,show,fs); ppInfo(); }
+function ppPalBuild(){
+  const cnt=2**pp.bits; if(pp.cur>=cnt) pp.cur=cnt>1?1:0;
+  $('#ppPal').innerHTML=PAL.slice(0,cnt).map((p,i)=>`<button type="button" data-i="${i}" aria-pressed="${i===pp.cur}" aria-label="${p[0]}, code ${bin(i,pp.bits)}"><i style="background:${p[1]}"></i><span class="mono">${bin(i,pp.bits)}</span></button>`).join('');
+}
+function ppInfo(){
+  const n=pp.n, px=n*n, bits=px*pp.bits, colours=2**pp.bits;
+  $('#ppRo').innerHTML=[['Resolution',`${n} × ${n}`],['Pixels',fmt(px)],['Bits per pixel',pp.bits],['Colours available',`2<sup>${pp.bits}</sup> = ${colours}`],['File size',`${fmt(bits)} bits`]]
+    .map(([k,v])=>`<div class="ro"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+  $('#ppFormula').innerHTML=`${n} × ${n} × ${pp.bits} = <b>${fmt(bits)} bits</b> ÷ 8 = <b>${fmtN(bits/8)} bytes</b>`;
+}
+function ppReset(n){ pp.n=n; pp.cells=new Array(n*n).fill(0); ppBuild(); }
+function bindPainter(){
+  ppReset(8); ppPalBuild();
+  segBind('#ppSize',v=>ppReset(v));
+  segBind('#ppBitSeg',v=>{ pp.bits=v; const c=2**v; pp.cells=pp.cells.map(x=>x%c); ppPalBuild(); ppPaintAll(); });
+  $('#ppPal').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; pp.cur=+b.dataset.i; $('#ppPal').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
+  const g=$('#pp');
+  const cellAt=(x,y)=>{ const el=document.elementFromPoint(x,y); return el&&el.classList&&el.classList.contains('pcell')&&g.contains(el)?el:null; };
+  g.addEventListener('pointerdown',e=>{ const c=e.target.closest('.pcell'); if(!c) return; e.preventDefault(); pp.painting=true; ppPaint(+c.dataset.i); });
+  g.addEventListener('pointermove',e=>{ if(!pp.painting) return; const c=cellAt(e.clientX,e.clientY); if(c) ppPaint(+c.dataset.i); });
+  ['pointerup','pointercancel'].forEach(t=>window.addEventListener(t,()=>{ pp.painting=false; }));
+  g.addEventListener('click',e=>{ if(e.detail!==0) return; const c=e.target.closest('.pcell'); if(c) ppPaint(+c.dataset.i); });
+  $('#ppClear').addEventListener('click',()=>{ pp.cells.fill(0); ppPaintAll(); });
+  $('#ppEx').addEventListener('click',()=>{ const ex=EXAMPLES[pp.ex++%EXAMPLES.length]; pp.bits=2; segSet('#ppBitSeg',2); segSet('#ppSize',8); pp.n=8;
+    pp.cells=ex.join('').split('').map(Number); ppPalBuild(); ppBuild(); });
+  $('#ppCodes').addEventListener('change',ppPaintAll);
+}
+
+/* ---------- 3 RESOLUTION AND DEPTH ---------- */
+const Z_W=[8,16,32,64,128,256], Z_D=[1,2,3,4,8,24];
+const zs={w:64,d:24};
+function zRender(){
+  const w=zs.w,h=w*3/4,bits=zs.d; drawScene($('#zCan'),w,h,bits);
+  const bytes=w*h*bits/8, max=256*192*24/8;
+  const size=bytes<1024?`${fmtN(bytes)} bytes`:`${fmtN(bytes/1024)} KiB`;
+  $('#zRo').innerHTML=[['Resolution',`${w} × ${h}`],['Pixels',fmt(w*h)],['Colours',bits===24?'16,777,216':fmt(2**bits)],['File size (uncompressed)',size]]
+    .map(([k,v])=>`<div class="ro"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')
+    +`<div class="ro"><div class="k">Compared with the largest setting</div><div class="v">${(bytes/max*100<1?(bytes/max*100).toFixed(2):(bytes/max*100).toFixed(1))}%</div><div class="meter"><i style="width:${Math.max(2,bytes/max*100)}%"></i></div></div>`;
+  const a=[];
+  a.push(w<=16?'At this resolution each pixel is a large block, so the shapes are hard to recognise.':w<=64?'Edges look jagged because there are not enough pixels to follow the curves.':'There are plenty of pixels, so curves and edges look smooth.');
+  a.push(bits===1?'With 1 bit there are only 2 colours: black and white.':bits<=4?`With only ${2**bits} colours, smooth changes such as the sky turn into flat bands.`:bits===8?'256 colours is enough for a fair picture, but look closely at the sky.':'24 bits gives over 16 million colours, so the colours look natural.');
+  $('#zNote').textContent=a.join(' ');
+}
+function bindZoom(){
+  $('#zRes').innerHTML=Z_W.map(w=>`<button type="button" data-v="${w}" aria-pressed="${w===zs.w}">${w}×${w*3/4}</button>`).join('');
+  $('#zDep').innerHTML=Z_D.map(d=>`<button type="button" data-v="${d}" aria-pressed="${d===zs.d}">${d}</button>`).join('');
+  segBind('#zRes',v=>{ zs.w=v; zRender(); }); segBind('#zDep',v=>{ zs.d=v; zRender(); });
+  zRender();
+}
+
+/* ---------- 4 + 5 ICONS ---------- */
+const ICONS=[
+  ['Heart',['01100110','11111111','11111111','11111111','01111110','00111100','00011000','00000000']],
+  ['Smiley',['00111100','01000010','10100101','10000001','10100101','10011001','01000010','00111100']],
+  ['House',['00011000','00111100','01111110','11111111','01111110','01011010','01011010','01111110']],
+  ['Arrow',['00011000','00111100','01111110','11111111','00011000','00011000','00011000','00011000']],
+  ['Tree',['00011000','00111100','01111110','00111100','01111110','11111111','00011000','00011000']],
+  ['Invader',['00100100','10100101','10111101','11011011','11111111','01111110','00100100','01000010']],
+];
+function monoGrid(el,rows,editable){
+  const n=rows.length; el.style.gridTemplateColumns=`repeat(${n},1fr)`;
+  el.innerHTML=rows.join('').split('').map((v,i)=>`<${editable?'button type="button"':'div'} class="pcell${editable?'':' ro-cell'}" data-i="${i}" ${editable?'':''} style="background:${editable?'#fff':(v==='1'?'#111':'#fff')}"></${editable?'button':'div'}>`).join('');
+}
+const tb={i:0,user:[]};
+function tbBuild(){
+  const rows=ICONS[tb.i][1]; $('#tbPat').textContent=rows.join('\n'); tb.user=new Array(64).fill(0);
+  const g=$('#tbGrid'); g.style.gridTemplateColumns='repeat(8,1fr)';
+  g.innerHTML=Array.from({length:64},(_,i)=>`<button type="button" class="pcell" data-i="${i}" aria-label="Row ${Math.floor(i/8)+1}, column ${i%8+1}: white" style="background:#fff"></button>`).join('');
+  rove(g,8); $('#tbFb').textContent=''; $('#tbFb').className='feedback';
+}
+function tbSet(i,v){ tb.user[i]=v; const c=$('#tbGrid').children[i]; c.style.background=v?'#111':'#fff'; c.classList.remove('no','ok'); c.setAttribute('aria-label',`Row ${Math.floor(i/8)+1}, column ${i%8+1}: ${v?'black':'white'}`); }
+function bindTb(){
+  tb.i=0; tbBuild();
+  $('#tbGrid').addEventListener('click',e=>{ const c=e.target.closest('.pcell'); if(!c) return; const i=+c.dataset.i; tbSet(i,tb.user[i]?0:1); });
+  $('#tbCheck').addEventListener('click',()=>{ const ans=ICONS[tb.i][1].join('').split('').map(Number); let ok=0;
+    [...$('#tbGrid').children].forEach((c,i)=>{ const good=ans[i]===tb.user[i]; c.classList.toggle('no',!good); c.classList.toggle('ok',good&&ans[i]===1); if(good) ok++; });
+    const fb=$('#tbFb'); fb.className='feedback '+(ok===64?'ok':'no'); fb.textContent=ok===64?'Perfect. All 64 pixels match.':`${ok} of 64 pixels match. Fix the squares outlined in red.`; });
+  $('#tbShow').addEventListener('click',()=>{ ICONS[tb.i][1].join('').split('').forEach((v,i)=>tbSet(i,+v)); $('#tbFb').textContent=''; });
+  $('#tbNext').addEventListener('click',()=>{ let j; do{ j=Math.floor(Math.random()*ICONS.length); }while(j===tb.i); tb.i=j; tbBuild(); });
+}
+
+const pb={i:1};
+function pbBuild(){
+  const rows=ICONS[pb.i][1]; monoGrid($('#pbGrid'),rows,false);
+  $('#pbRows').innerHTML=rows.map((_,r)=>`<div class="bitrow"><span class="n">Row ${r+1}</span><input type="text" inputmode="numeric" maxlength="8" autocomplete="off" aria-label="Bit pattern for row ${r+1}"><span class="mk" aria-hidden="true"></span></div>`).join('');
+  $('#pbTotal').value=''; $('#pbTotal').className=''; $('#pbFb').textContent=''; $('#pbFb').className='feedback';
+}
+function bindPb(){
+  pb.i=1; pbBuild();
+  $('#pbCheck').addEventListener('click',()=>{ const rows=ICONS[pb.i][1]; let ok=0;
+    [...$('#pbRows').querySelectorAll('.bitrow')].forEach((r,i)=>{ const inp=r.querySelector('input'), v=inp.value.replace(/\s/g,''); const good=v===rows[i]; if(good) ok++; inp.classList.toggle('ok',good); inp.classList.toggle('no',!good); r.querySelector('.mk').textContent=good?'✓':'✗'; });
+    const t=numVal($('#pbTotal').value), tg=t===64; $('#pbTotal').className=$('#pbTotal').value===''?'':(tg?'ok':'no');
+    const fb=$('#pbFb'); const all=ok===8&&tg; fb.className='feedback '+(all?'ok':'no');
+    fb.textContent=all?'All correct. 8 × 8 × 1 = 64 bits.':`${ok} of 8 rows correct${tg?'':'. Total bits: width × height × bits per pixel'}.`; });
+  $('#pbShow').addEventListener('click',()=>{ const rows=ICONS[pb.i][1]; [...$('#pbRows').querySelectorAll('.bitrow')].forEach((r,i)=>{ const inp=r.querySelector('input'); inp.value=rows[i]; inp.className='ok'; r.querySelector('.mk').textContent='✓'; }); $('#pbTotal').value=64; $('#pbTotal').className='ok'; });
+  $('#pbNext').addEventListener('click',()=>{ let j; do{ j=Math.floor(Math.random()*ICONS.length); }while(j===pb.i); pb.i=j; pbBuild(); });
+}
+
+const pc={cols:[],pic:[]};
+function pcBuild(){
+  const idx=shuffle(PAL.map((_,i)=>i).filter(i=>i!==0||true)).slice(0,4); pc.cols=idx;
+  const pic=[]; for(let i=0;i<16;i++){ pic.push(i>0&&Math.random()<0.45?pic[i-1]:Math.floor(Math.random()*4)); }
+  if(new Set(pic).size<3) return pcBuild();
+  pc.pic=pic;
+  $('#pcKey').innerHTML=pc.cols.map((c,k)=>`<span><i style="background:${PAL[c][1]}"></i>${bin(k,2)} = ${PAL[c][0]}</span>`).join('');
+  const g=$('#pcGrid'); g.style.gridTemplateColumns='repeat(4,1fr)';
+  g.innerHTML=pic.map((v,i)=>`<div class="pcell ro-cell" style="background:${PAL[pc.cols[v]][1]}" title="${PAL[pc.cols[v]][0]}"></div>`).join('');
+  g.setAttribute('aria-label','Four colour picture. '+[0,1,2,3].map(r=>`Row ${r+1}: `+pic.slice(r*4,r*4+4).map(v=>PAL[pc.cols[v]][0]).join(', ')).join('. '));
+  $('#pcRows').innerHTML=[0,1,2,3].map(r=>`<div class="bitrow"><span class="n">Row ${r+1}</span><input type="text" inputmode="numeric" maxlength="11" autocomplete="off" aria-label="Bit pattern for row ${r+1}"><span class="mk" aria-hidden="true"></span></div>`).join('');
+  $('#pcTotal').value=''; $('#pcTotal').className=''; $('#pcFb').textContent=''; $('#pcFb').className='feedback';
+}
+function pcAns(r){ return pc.pic.slice(r*4,r*4+4).map(v=>bin(v,2)).join(''); }
+function bindPc(){
+  pcBuild();
+  $('#pcCheck').addEventListener('click',()=>{ let ok=0;
+    [...$('#pcRows').querySelectorAll('.bitrow')].forEach((r,i)=>{ const inp=r.querySelector('input'), v=inp.value.replace(/\s/g,''); const good=v===pcAns(i); if(good) ok++; inp.classList.toggle('ok',good); inp.classList.toggle('no',!good); r.querySelector('.mk').textContent=good?'✓':'✗'; });
+    const t=numVal($('#pcTotal').value), tg=t===32; $('#pcTotal').className=$('#pcTotal').value===''?'':(tg?'ok':'no');
+    const fb=$('#pcFb'); const all=ok===4&&tg; fb.className='feedback '+(all?'ok':'no');
+    fb.textContent=all?'All correct. 4 × 4 × 2 = 32 bits.':`${ok} of 4 rows correct${tg?'':'. Total bits: width × height × bits per pixel'}.`; });
+  $('#pcShow').addEventListener('click',()=>{ [...$('#pcRows').querySelectorAll('.bitrow')].forEach((r,i)=>{ const inp=r.querySelector('input'); inp.value=pcAns(i); inp.className='ok'; r.querySelector('.mk').textContent='✓'; }); $('#pcTotal').value=32; $('#pcTotal').className='ok'; });
+  $('#pcNext').addEventListener('click',pcBuild);
+}
+
+/* ---------- 6 COLOURS ---------- */
+function bindColours(){
+  const lad=[1,2,3,4,8,16,24];
+  const upd=()=>{ const n=+$('#cbSlider').value; $('#cbOut').textContent=n;
+    $('#cbFormula').innerHTML=`2<sup>${n}</sup> = <b>${fmt(2**n)}</b> colours`;
+    $('#cbLadder').innerHTML=lad.map(b=>`<span class="${b===n?'on':''}">${b} bit${b>1?'s':''} → ${fmt(2**b)}</span>`).join(''); };
+  $('#cbSlider').addEventListener('input',upd); upd();
+  let cq=null;
+  const newCq=()=>{ const mode=Math.random()<0.5?'colours':'bits'; const bits=pick([2,3,4,5,6,7,8,10,12,16]); cq={mode,bits};
+    $('#cqText').innerHTML = mode==='colours' ? `A pixel uses <b>${bits} bits</b>. How many different colours can it show?` : `An image needs <b>${fmt(2**bits)} different colours</b>. How many bits per pixel are needed?`;
+    $('#cqAns').value=''; $('#cqAns').className='mono'; $('#cqFb').textContent=''; $('#cqHintText').hidden=true; };
+  $('#cqCheck').addEventListener('click',()=>{ const v=numVal($('#cqAns').value), ans=cq.mode==='colours'?2**cq.bits:cq.bits; const ok=v===ans; $('#cqAns').className='mono '+(ok?'ok':'no');
+    const fb=$('#cqFb'); fb.className='feedback '+(ok?'ok':'no');
+    fb.textContent = ok ? (cq.mode==='colours'?`Correct. 2^${cq.bits} = ${fmt(ans)}.`:`Correct. 2^${ans} = ${fmt(2**ans)}.`) : (isNaN(v)?'Type a number first.':(cq.mode==='colours'&&v===cq.bits*2?'Not quite. Each extra bit doubles the number of colours. It is not bits × 2.':'Not quite. Use the hint.')); });
+  $('#cqHint').addEventListener('click',()=>{ const h=$('#cqHintText'); h.hidden=false; h.textContent='Start at 1 bit = 2 colours and keep doubling: '+Array.from({length:Math.min(cq.bits,12)},(_,i)=>fmt(2**(i+1))).join(', ')+'. The number of doublings is the number of bits.'; });
+  $('#cqNew').addEventListener('click',newCq); $('#cqAns').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#cqCheck').click(); }); newCq();
+  const sl=['#rR','#rG','#rB'], hx=v=>v.toString(16).toUpperCase().padStart(2,'0');
+  const GW=6, GH=4, px=[];
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){ const c=scene((x+0.5)/GW,(y+0.5)/GH); px.push(c.map(Math.round)); }
+  let sel=GW*1+2;
+  const grid=$('#rgbGrid'); grid.style.gridTemplateColumns=`repeat(${GW},1fr)`;
+  grid.innerHTML=px.map((_,i)=>`<button type="button" class="pcell" data-i="${i}" style="cursor:pointer"></button>`).join('');
+  rove(grid,GW);
+  const rgbCss=c=>`rgb(${c[0]},${c[1]},${c[2]})`;
+  const paintAll=()=>{ [...grid.children].forEach((c,i)=>{ c.style.background=rgbCss(px[i]); c.style.boxShadow=i===sel?'inset 0 0 0 3px #fff, inset 0 0 0 5px #111':''; c.setAttribute('aria-label',`Pixel ${i+1}, row ${Math.floor(i/GW)+1} column ${i%GW+1}: red ${px[i][0]}, green ${px[i][1]}, blue ${px[i][2]}`); c.setAttribute('aria-pressed',i===sel); }); };
+  const show=()=>{ const v=px[sel]; sl.forEach((s,i)=>{ $(s).value=v[i]; }); ['#oR','#oG','#oB'].forEach((o,i)=>$(o).textContent=v[i]);
+    $('#rgbSelLbl').textContent=`Selected: pixel ${sel+1} (row ${Math.floor(sel/GW)+1}, column ${sel%GW+1})`;
+    const nm=['Red','Green','Blue'], cl=['r','g','b'];
+    $('#rgbBytes').innerHTML=nm.map((n,i)=>`<div class="byte ${cl[i]}"><span class="bn">Byte ${i+1}: ${n}</span><span class="bd">${v[i]}</span><span class="bb">${bin(v[i],8)}</span><span class="bx">hex ${hx(v[i])}</span></div>`).join('');
+    $('#rgbMem').innerHTML=px.map((c,i)=>`<button type="button" data-i="${i}" aria-pressed="${i===sel}" aria-label="Pixel ${i+1}: bytes ${c.join(', ')}"><i style="background:${rgbCss(c)}"></i><span class="tri"><span>${c[0]}</span><span>${c[1]}</span><span>${c[2]}</span></span></button>`).join('');
+    const n=GW*GH;
+    $('#rgbCalc').innerHTML=`This pixel: 3 bytes × 8 = <b>24 bits</b> = #${v.map(hx).join('')}<br>Whole picture: ${GW} × ${GH} = ${n} pixels × <b>3 bytes</b> = <b>${n*3} bytes</b> (${fmt(n*24)} bits)`;
+    paintAll(); };
+  grid.addEventListener('click',e=>{ const c=e.target.closest('.pcell'); if(!c) return; sel=+c.dataset.i; show(); });
+  $('#rgbMem').addEventListener('click',e=>{ const c=e.target.closest('button'); if(!c) return; sel=+c.dataset.i; show(); });
+  sl.forEach((s,i)=>$(s).addEventListener('input',()=>{ px[sel]=sl.map(x=>+$(x).value); ['#oR','#oG','#oB'].forEach((o,k)=>$(o).textContent=px[sel][k]); const f=document.activeElement; show(); if(f&&f.focus) f.focus(); }));
+  const PRE=[['Red',[255,0,0]],['Yellow',[255,255,0]],['Mid blue',[61,126,181]],['White',[255,255,255]],['Black',[0,0,0]]];
+  $('#rgbPre').innerHTML=PRE.map(([n],i)=>`<button type="button" class="ghost" data-i="${i}">${n}</button>`).join('');
+  $('#rgbPre').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; px[sel]=PRE[+b.dataset.i][1].slice(); show(); });
+  show();
+}
+
+/* ---------- 7 FILE SIZE ---------- */
+let base=1024;
+const uK=()=>base===1024?'KiB':'KB', uM=()=>base===1024?'MiB':'MB';
+const DEPTHS=[[1,'1 bit (2 colours)'],[2,'2 bits (4 colours)'],[3,'3 bits (8 colours)'],[4,'4 bits (16 colours)'],[8,'8 bits (256 colours)'],[16,'16 bits (65,536 colours)'],[24,'24 bits (16,777,216 colours)']];
+function setBase(b){ base=b; segSet('#xBase',b); segSet('#dBase',b); renderX(); renderDoc(); }
+function renderX(){
+  const w=Math.min(20000,Math.max(1,Math.round(numVal($('#xW').value)||1))), h=Math.min(20000,Math.max(1,Math.round(numVal($('#xH').value)||1))), d=+$('#xD').value;
+  const px=w*h, bits=px*d, bytes=bits/8, k=bytes/base, m=k/base;
+  $('#xFormula').innerHTML=`<span class="tok r">${fmt(w)}</span> × <span class="tok b">${fmt(h)}</span> × <span class="tok d">${d}</span> = <b>${fmt(bits)} bits</b>`;
+  $('#xLadder').innerHTML=`<div class="u">${fmt(bits)}<small>bits</small></div><span class="ar">÷ 8 →</span><div class="u">${fmtN(bytes)}<small>bytes</small></div><span class="ar">÷ ${base} →</span><div class="u">${fmtN(k)}<small>${uK()}</small></div><span class="ar">÷ ${base} →</span><div class="u">${fmtN(m)}<small>${uM()}</small></div>`;
+}
+function bindX(){
+  $('#xD').innerHTML=DEPTHS.map(([b,t])=>`<option value="${b}" ${b===24?'selected':''}>${t}</option>`).join('');
+  const PRE=[['HD screen',1920,1080,24],['Phone screen',320,480,24],['Photo',500,700,24],['Small icon',32,32,8],['Black and white scan',800,600,1]];
+  $('#xPre').innerHTML=PRE.map(([n,w,h,d],i)=>`<button type="button" class="ghost" data-i="${i}">${n} ${w}×${h}, ${d}-bit</button>`).join('');
+  $('#xPre').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const [,w,h,d]=PRE[+b.dataset.i]; $('#xW').value=w; $('#xH').value=h; $('#xD').value=d; renderX(); });
+  ['#xW','#xH','#xD'].forEach(s=>$(s).addEventListener('input',renderX));
+  segBind('#xBase',setBase); renderX();
+}
+function fsGen(unit){
+  const D=[1,2,3,4,8,16,24];
+  const W=unit==='KiB'?[64,128,256,320,480,512,640,800,1024]:[8,10,12,16,20,24,25,32,40,48,50,64];
+  const H=unit==='KiB'?[32,64,128,240,256,480,600,768]:[8,10,12,16,20,24,25,32,40,48,50,64];
+  for(let t=0;t<2000;t++){
+    const bits=pick(D), w=pick(W), h=pick(H), totalBits=w*h*bits; if(totalBits%8) continue;
+    const bytes=totalBits/8, kib=bytes/1024;
+    if(unit==='bytes'&&(bytes<20||bytes>20000)) continue;
+    if(unit==='KiB'&&(bytes%256||kib<1||kib>4000)) continue;
+    const useColours=bits<=8&&Math.random()<0.5;
+    return {w,h,bits,colours:2**bits,useColours,pixels:w*h,totalBits,bytes,kib,unit,ans:unit==='KiB'?kib:bytes};
+  }
+  return {w:64,h:64,bits:8,colours:256,useColours:true,pixels:4096,totalBits:32768,bytes:4096,kib:4,unit,ans:unit==='KiB'?4:4096};
+}
+const qText=q=>`An image is <b>${fmt(q.w)} pixels</b> wide and <b>${fmt(q.h)} pixels</b> high. ${q.useColours?`Each pixel can be one of <b>${fmt(q.colours)} colours</b>.`:`The colour depth is <b>${q.bits} bit${q.bits>1?'s':''}</b>.`} It is stored uncompressed. Calculate the file size in <b>${q.unit}</b>.`;
+let fs=null;
+function fsSteps(q){
+  const s=[{t:'Find the bits per pixel',expr:q.useColours?`${fmt(q.colours)} colours = 2ⁿ, find n`:'The question gives it',hint:q.useColours?`Keep doubling from 1 bit = 2 colours until you reach ${fmt(q.colours)}. The number of doublings is the number of bits.`:'The colour depth is the bits per pixel. Read it from the question.',ans:q.bits,unit:'bits'},
+    {t:'Find the number of pixels',expr:`${fmt(q.w)} × ${fmt(q.h)}`,hint:'Pixels = width × height.',ans:q.pixels,unit:'pixels'},
+    {t:'Find the total bits',expr:`${fmt(q.pixels)} × ${q.bits}`,hint:'Total bits = pixels × bits per pixel.',ans:q.totalBits,unit:'bits'},
+    {t:'Change bits into bytes',expr:`${fmt(q.totalBits)} ÷ 8`,hint:'There are 8 bits in 1 byte, so divide by 8.',ans:q.bytes,unit:'bytes'},
+    {t:'Change bytes into KiB',expr:`${fmt(q.bytes)} ÷ 1024`,hint:'There are 1024 bytes in 1 KiB, so divide by 1024.',ans:q.kib,unit:'KiB'}];
+  return s;
+}
+function fsMistake(i,v,q){
+  const near=(a,b)=>Math.abs(a-b)<=Math.max(0.011,Math.abs(b)*1e-9);
+  if(i===0){ if(q.useColours&&v===q.colours) return 'That is the number of colours. The question needs the number of bits that gives that many colours.'; return 'Count the doublings: 1 bit = 2, 2 bits = 4, 3 bits = 8 and so on.'; }
+  if(i===1){ if(v===q.w+q.h) return 'You added the width and height. Multiply them.'; return 'Multiply the width by the height.'; }
+  if(i===2){ if(v===q.pixels) return 'That is only the number of pixels. Multiply by the bits per pixel as well.'; if(q.useColours&&v===q.pixels*q.colours) return 'You multiplied by the number of colours. Use the number of bits per pixel.'; return 'Multiply the pixels by the bits per pixel.'; }
+  if(i===3){ if(v===q.totalBits) return 'That is still in bits. Divide by 8 to get bytes.'; return 'Divide the total bits by 8.'; }
+  if(i===4){ if(near(v,q.bytes/1000)) return 'You divided by 1000. For KiB divide by 1024.'; if(v===q.bytes) return 'That is still in bytes. Divide by 1024 for KiB.'; return 'Divide the bytes by 1024.'; }
+  return 'Not quite.';
+}
+function fsNew(){
+  fs={q:fsGen('KiB'),step:0}; fs.steps=fsSteps(fs.q);
+  $('#fsQ').innerHTML=qText(fs.q); $('#fsDone').hidden=true;
+  $('#fsSteps').innerHTML=fs.steps.map((s,i)=>`<div class="step ${i?'locked':''}" id="fss${i}"><div class="sn">${i+1}</div><div class="sb"><div class="st-title">${s.t}</div>
+    <div class="st-expr" hidden>${s.expr}</div>
+    <div class="row"><input type="text" inputmode="decimal" class="fi" style="width:10rem" ${i?'disabled':''} aria-label="Step ${i+1} answer"> <span class="mono">${s.unit}</span>
+      <button type="button" data-chk="${i}" ${i?'disabled':''}>Check</button><button type="button" class="ghost" data-hint="${i}" ${i?'disabled':''}>Hint</button></div>
+    <div class="hintline" hidden>${s.hint}</div><div class="feedback" aria-live="polite"></div></div></div>`).join('');
+}
+function bindFs(){
+  $('#fsSteps').addEventListener('click',e=>{
+    const c=e.target.closest('[data-chk]'), h=e.target.closest('[data-hint]');
+    if(h){ const el=$('#fss'+h.dataset.hint); el.querySelector('.st-expr').hidden=false; el.querySelector('.hintline').hidden=false; return; }
+    if(!c) return; const i=+c.dataset.chk, el=$('#fss'+i), inp=el.querySelector('.fi'), fb=el.querySelector('.feedback'), s=fs.steps[i], v=numVal(inp.value);
+    if(isNaN(v)){ fb.className='feedback no'; fb.textContent='Type a number first.'; return; }
+    if(Math.abs(v-s.ans)<=0.011){ el.classList.add('done'); inp.disabled=true; el.querySelectorAll('button').forEach(b=>b.disabled=true); fb.className='feedback ok'; fb.textContent=`Correct: ${fmtN(s.ans)} ${s.unit}`; el.querySelector('.st-expr').hidden=false;
+      const nx=$('#fss'+(i+1)); if(nx){ nx.classList.remove('locked'); nx.querySelectorAll('input,button').forEach(b=>b.disabled=false); nx.querySelector('.fi').focus(); } else fsFinish(); }
+    else { fb.className='feedback no'; fb.textContent=fsMistake(i,v,fs.q); }
+  });
+  $('#fsSteps').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('fi')) e.target.closest('.step').querySelector('[data-chk]').click(); });
+  $('#fsNew').addEventListener('click',fsNew); fsNew();
+  bindEx();
+}
+function fsFinish(){
+  const q=fs.q; $('#fsDone').hidden=false;
+  $('#fsDone').innerHTML=`<div class="feedback ok">Finished. The image is ${fmtN(q.kib)} KiB.</div>`+fs.steps.map((s,i)=>`<div class="wk-row"><span class="n">Step ${i+1}</span><span class="w">${s.expr} = ${fmtN(s.ans)} ${s.unit}</span></div>`).join('');
+}
+let ex=null;
+function exNew(){ ex=fsGen(Math.random()<0.5?'KiB':'bytes'); $('#exQ').innerHTML=qText(ex); $('#exUnit').textContent=ex.unit; $('#exAns').value=''; $('#exAns').className='mono'; $('#exFb').innerHTML=''; $('#exWork').hidden=true; $('#exWork').innerHTML=''; }
+function exWorkHTML(){ const q=ex;
+  const rows=[[q.useColours?`${fmt(q.colours)} colours → n bits`:'Bits per pixel',`${q.bits} bits`],['Pixels',`${fmt(q.w)} × ${fmt(q.h)} = ${fmt(q.pixels)}`],['Total bits',`${fmt(q.pixels)} × ${q.bits} = ${fmt(q.totalBits)} bits`],['Bytes',`${fmt(q.totalBits)} ÷ 8 = ${fmt(q.bytes)} bytes`]];
+  if(q.unit==='KiB') rows.push(['KiB',`${fmt(q.bytes)} ÷ 1024 = ${fmtN(q.kib)} KiB`]);
+  return rows.map(([n,w],i)=>`<div class="wk-row"><span class="n">Step ${i+1}</span><span class="w">${n}: ${w}</span></div>`).join(''); }
+function diagnose(q,v){
+  const near=(a,b)=>Math.abs(v-b)<=Math.max(0.011,Math.abs(b)*1e-9)&&a;
+  const m=[]; const un=q.unit;
+  if(near(true,q.totalBits)) m.push('That is the size in bits. Divide by 8 to change bits into bytes.');
+  if(un==='KiB'&&near(true,q.bytes)) m.push('That is the size in bytes. Divide by 1024 to change into KiB.');
+  if(un==='KiB'&&near(true,q.bytes/1000)) m.push('You divided by 1000. In 0478, 1 KiB = 1024 bytes.');
+  if(un==='KiB'&&near(true,q.totalBits/1024)) m.push('You divided by 1024 but forgot to divide by 8 first.');
+  if(near(true,q.pixels)||(un==='KiB'&&near(true,q.pixels/8/1024))) m.push('It looks like you used only the number of pixels. Multiply by the bits per pixel too.');
+  if(q.useColours&&(near(true,q.pixels*q.colours/8)||near(true,q.pixels*q.colours/8/1024))) m.push('You used the number of colours instead of the number of bits per pixel.');
+  if(near(true,(q.w+q.h)*q.bits/8)||near(true,(q.w+q.h)*q.bits/8/1024)) m.push('You added the width and height. Multiply them to get the pixels.');
+  return m;
+}
+function bindEx(){
+  $('#exCheck').addEventListener('click',()=>{ const v=numVal($('#exAns').value), fb=$('#exFb'); if(isNaN(v)){ fb.innerHTML='<span class="feedback no">Type a number first.</span>'; return; }
+    if(Math.abs(v-ex.ans)<=0.011){ $('#exAns').className='mono ok'; fb.innerHTML=`<span class="feedback ok">Correct: ${fmtN(ex.ans)} ${ex.unit}.</span>`; $('#exWork').hidden=false; $('#exWork').innerHTML=exWorkHTML(); }
+    else { $('#exAns').className='mono no'; const m=diagnose(ex,v); fb.innerHTML=`<span class="feedback no">Not quite.</span>`+(m.length?`<ul class="mistakes">${m.map(x=>`<li>${x}</li>`).join('')}</ul>`:'<p class="sub">Check each step again, then try once more. You can open the working if you are stuck.</p>'); } });
+  $('#exWorking').addEventListener('click',()=>{ const w=$('#exWork'); w.hidden=!w.hidden; if(!w.hidden) w.innerHTML=exWorkHTML(); $('#exWorking').textContent=w.hidden?'Show working':'Hide working'; });
+  $('#exNew').addEventListener('click',()=>{ exNew(); $('#exWorking').textContent='Show working'; });
+  $('#exAns').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#exCheck').click(); });
+  exNew();
+}
+
+/* ---------- 8 DOCUMENT SIZE ---------- */
+const doc={imgs:[{w:500,h:700,m:3}]};
+function renderDoc(){
+  const len=$('#dTxt').value.length; $('#dCount').textContent=`${fmt(len)} character${len===1?'':'s'}`;
+  let total=len; const rows=[`<tr><td>Text</td><td>${fmt(len)} characters × 1 byte</td><td class="r">${fmt(len)}</td></tr>`];
+  const trace=[`<tr><td>start</td><td class="r">–</td><td class="r">–</td><td class="r">${fmt(len)}</td></tr>`];
+  doc.imgs.forEach((im,i)=>{ const px=im.w*im.h, b=px*im.m; total+=b;
+    rows.push(`<tr><td>Picture ${i+1}</td><td>${fmt(im.w)} × ${fmt(im.h)} = ${fmt(px)} pixels × ${im.m} byte${im.m>1?'s':''}</td><td class="r">${fmt(b)}</td></tr>`);
+    trace.push(`<tr><td>picture ${i+1}</td><td class="r">${fmt(px)}</td><td class="r">${fmt(b)}</td><td class="r">${fmt(total)}</td></tr>`); });
+  $('#dTbl').innerHTML=`<tr><th>Item</th><th>Working</th><th class="r">Bytes</th></tr>`+rows.join('')+`<tr><td><b>Total</b></td><td></td><td class="r"><b>${fmt(total)}</b></td></tr>`;
+  $('#dTrace').innerHTML=`<tr><th>Step</th><th class="r">pixels</th><th class="r">bytes</th><th class="r">total</th></tr>`+trace.join('');
+  $('#dRo').innerHTML=[['Bytes',fmt(total)],[uK(),fmtN(total/base)],[uM(),fmtN(total/base/base)]].map(([k,v])=>`<div class="ro"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+}
+function dImgsBuild(){
+  $('#dImgs').innerHTML=doc.imgs.map((im,i)=>`<div class="imgrow" data-i="${i}"><span class="mono">${i+1}.</span><input type="number" class="dw" min="1" max="20000" value="${im.w}" aria-label="Picture ${i+1} width"> × <input type="number" class="dh" min="1" max="20000" value="${im.h}" aria-label="Picture ${i+1} height">
+    <select class="dm" aria-label="Picture ${i+1} type"><option value="3" ${im.m===3?'selected':''}>Colour (3 bytes per pixel)</option><option value="1" ${im.m===1?'selected':''}>Greyscale (1 byte per pixel)</option></select>
+    <button type="button" class="ghost" data-rm="${i}" aria-label="Remove picture ${i+1}">Remove</button></div>`).join('');
+  $('#dAdd').disabled=doc.imgs.length>=4; $('#dAdd').style.opacity=doc.imgs.length>=4?.4:1;
+}
+function bindDoc(){
+  dImgsBuild(); segBind('#dBase',setBase);
+  $('#dTxt').addEventListener('input',renderDoc);
+  $('#dImgs').addEventListener('input',e=>{ const r=e.target.closest('.imgrow'); if(!r) return; const im=doc.imgs[+r.dataset.i];
+    im.w=Math.min(20000,Math.max(1,Math.round(numVal(r.querySelector('.dw').value)||1))); im.h=Math.min(20000,Math.max(1,Math.round(numVal(r.querySelector('.dh').value)||1))); im.m=+r.querySelector('.dm').value; renderDoc(); });
+  $('#dImgs').addEventListener('click',e=>{ const b=e.target.closest('[data-rm]'); if(!b) return; doc.imgs.splice(+b.dataset.rm,1); dImgsBuild(); renderDoc(); });
+  $('#dAdd').addEventListener('click',()=>{ if(doc.imgs.length<4){ doc.imgs.push({w:320,h:240,m:3}); dImgsBuild(); renderDoc(); } });
+  renderDoc();
+}
+
+/* ---------- 9 MATCH ---------- */
+const PAIRS = [
+  ['Pixel','The smallest area of an image with a single colour'],
+  ['Bitmap','An image stored as a grid of pixels, each with a binary value'],
+  ['Vector','An image stored as shapes described by numbers, with no pixels'],
+  ['Resolution','The number of pixels in an image (width × height)'],
+  ['Colour depth','The number of bits used to store each pixel’s colour'],
+  ['RGB','Red, green and blue levels, each from 0 to 255 (1 byte each), mixed to make a colour'],
+  ['Metadata','Data about the file, such as the image’s width, height and colour depth'],
+  ['Lossless','Compression where the original can be rebuilt exactly'],
+];
+let mSel=null, mDone=0;
+function buildMatch(){
+  mSel=null; mDone=0; $('#mFb').textContent='0 of 8 matched'; $('#mFb').className='feedback';
+  $('#mTerms').innerHTML = shuffle(PAIRS.map((p,i)=>i)).map(i=>`<button class="mitem t" data-i="${i}">${PAIRS[i][0]}</button>`).join('');
+  $('#mDefs').innerHTML = shuffle(PAIRS.map((p,i)=>i)).map(i=>`<button class="mitem d" data-i="${i}">${PAIRS[i][1]}</button>`).join('');
+  document.querySelectorAll('#mTerms .mitem').forEach(b=>b.addEventListener('click',()=>{
+    if(b.classList.contains('done')) return; document.querySelectorAll('#mTerms .mitem').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); mSel=b; }));
+  document.querySelectorAll('#mDefs .mitem').forEach(b=>b.addEventListener('click',()=>{
+    if(!mSel||b.classList.contains('done')) return;
+    if(mSel.dataset.i===b.dataset.i){ mSel.classList.remove('sel'); mSel.classList.add('done'); b.classList.add('done'); mSel.disabled=b.disabled=true; mSel=null; mDone++;
+      $('#mFb').textContent = mDone===8 ? 'All 8 matched. Well done.' : `${mDone} of 8 matched`; if(mDone===8) $('#mFb').className='feedback ok'; }
+    else { b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),600); }
+  }));
+}
+
+/* ---------- 10 CLOZE ---------- */
+const CLOZE_SECTIONS=[
+  {tag:'Part A',title:'Pixels and binary',extra:['hexadecimal','lossy'],parts:[
+    'A bitmap image is made up of a grid of tiny squares called ',{a:'pixels'},'. Each pixel is one ',{a:'colour'},' and is stored as a ',{a:'binary'},
+    ' value made of 1s and 0s. With ',{a:'one'},' bit per pixel there are only ',{a:'two'},' possible values, so the image can only have two colours, such as black and white. To change a pixel’s colour, the computer changes its ',{a:'value'},
+    '. The 1s and 0s for a row of pixels, such as 0111, are called a ',{a:'bit pattern'},'. The computer reads the pattern to ',{a:'rebuild'},' the image.']},
+  {tag:'Part B',title:'Resolution and colour depth',extra:['bits','vector'],parts:[
+    'The ',{a:'resolution'},' of an image is the number of pixels it contains. It is found by multiplying the ',{a:'width'},' by the ',{a:'height'},'. The ',{a:'colour depth'},
+    ' is the number of bits used for each pixel. With n bits there are ',{a:'2ⁿ'},' possible colours, so 8 bits gives ',{a:'256'},' colours and 24 bits gives about ',{a:'16.7 million'},
+    '. A higher colour depth gives a ',{a:'wider'},' range of colours and a better quality image.']},
+  {tag:'Part C',title:'File size and file types',extra:['hexadecimal','pixels'],parts:[
+    'File size = width × height × ',{a:'colour depth'},'. This gives the size in ',{a:'bits'},'. Divide by ',{a:'8'},' to get bytes and by ',{a:'1024'},' to get KiB. Doubling the colour depth ',{a:'doubles'},
+    ' the file size. Data about the image, such as its width, height and colour depth, is stored as ',{a:'metadata'},'. A ',{a:'JPEG'},' file uses ',{a:'lossy'},' compression, so some data is permanently removed, while a ',{a:'PNG'},' file uses ',{a:'lossless'},' compression.']}
+];
+function buildCloze(){
+  $('#cloze').innerHTML=CLOZE_SECTIONS.map(sec=>{
+    let k=0; const answers=[];
+    const text=sec.parts.map(p=>{ if(typeof p==='string') return p; answers.push(p.a); k++; return `<button type="button" class="gap" data-a="${p.a}" aria-label="Gap ${k}">&nbsp;</button>`; }).join('');
+    const bank=shuffle(answers.concat(sec.extra)).map(w=>`<button type="button" class="wchip" data-w="${w}">${w}</button>`).join('');
+    return `<div class="cz-sec"><div class="cz-head"><span class="cz-tag">${sec.tag}</span><h3>${sec.title}</h3><span class="cz-prog"></span></div>
+      <div class="cloze">${text}</div>
+      <div class="bank" aria-label="Word bank">${bank}</div>
+      <div class="row"><button type="button" class="cz-check">Check</button><button type="button" class="ghost cz-clear">Clear</button><span class="feedback" aria-live="polite"></span></div></div>`;
+  }).join('');
+}
+function bindCloze(){
+  document.querySelectorAll('.cz-sec').forEach(sec=>{
+    const gaps=[...sec.querySelectorAll('.gap')], chips=[...sec.querySelectorAll('.wchip')];
+    const fb=sec.querySelector('.feedback'), prog=sec.querySelector('.cz-prog');
+    let active=0;
+    const firstEmpty=()=>gaps.findIndex(g=>!g.dataset.w);
+    const setActive=i=>{ active=i; gaps.forEach((g,j)=>g.classList.toggle('active',j===i)); };
+    const upd=()=>{ prog.textContent=`${gaps.filter(g=>g.dataset.w).length} / ${gaps.length} filled`; };
+    const release=g=>{ if(g._chip) g._chip.disabled=false; g._chip=null; delete g.dataset.w; g.innerHTML='&nbsp;'; g.classList.remove('filled','ok','no'); };
+    chips.forEach(c=>c.addEventListener('click',()=>{
+      if(c.disabled) return;
+      const t=(gaps[active]&&!gaps[active].dataset.w)?active:firstEmpty();
+      if(t<0) return;
+      const g=gaps[t]; g.dataset.w=c.dataset.w; g.textContent=c.dataset.w; g.classList.add('filled'); g.classList.remove('ok','no'); g._chip=c; c.disabled=true;
+      setActive(firstEmpty()); upd(); fb.textContent='';
+    }));
+    gaps.forEach((g,i)=>g.addEventListener('click',()=>{ if(g.dataset.w){ release(g); upd(); fb.textContent=''; } setActive(i); }));
+    sec.querySelector('.cz-check').addEventListener('click',()=>{
+      let r=0; gaps.forEach(g=>{ g.classList.remove('ok','no'); if(g.dataset.w&&g.dataset.w===g.dataset.a){ g.classList.add('ok'); r++; } else g.classList.add('no'); });
+      const left=gaps.filter(g=>!g.dataset.w).length;
+      fb.className='feedback '+(r===gaps.length?'ok':'no');
+      fb.textContent=r===gaps.length?`All ${r} correct.`:`${r} of ${gaps.length} correct${left?`, ${left} still empty`:''}. Click a red gap to send its word back to the bank.`;
+    });
+    sec.querySelector('.cz-clear').addEventListener('click',()=>{ gaps.forEach(release); setActive(0); upd(); fb.textContent=''; });
+    setActive(0); upd();
+  });
+}
+
+/* ---------- 11 EXAM ---------- */
+const EXAM = [
+  {q:'Describe what is meant by (a) the resolution of an image and (b) the colour depth of an image.', m:2,
+   ms:['Resolution: the number of pixels in the image (width × height)','Colour depth: the number of bits used to represent the colour of each pixel']},
+  {q:'A bitmap image has a colour depth of 6 bits. State how many different colours each pixel can show and show how you worked it out.', m:2, num:64, unit:'colours',
+   ms:['64 colours','2⁶ (each of the 6 bits can be 0 or 1, and every extra bit doubles the number of colours)']},
+  {q:'A bitmap image is 40 pixels wide and 25 pixels high. The colour depth is 4 bits. Calculate the file size in bytes. Show your working.', m:3, num:500, unit:'bytes',
+   ms:['40 × 25 = 1000 pixels','1000 × 4 = 4000 bits','4000 ÷ 8 = 500 bytes']},
+  {q:'A bitmap image is 64 pixels wide and 64 pixels high. The colour depth is 8 bits. Calculate the file size in KiB. Show your working.', m:3, num:4, unit:'KiB',
+   ms:['64 × 64 × 8 = 32 768 bits','32 768 ÷ 8 = 4096 bytes','4096 ÷ 1024 = 4 KiB']},
+  {q:'A photograph has its colour depth reduced from 24 bits to 8 bits. Describe two effects of this change.', m:2,
+   ms:['The file size is smaller because fewer bits are stored for each pixel (a third of the size)','Fewer colours are available (256 instead of about 16.7 million), so the image looks less realistic']},
+  {q:'Explain why increasing the resolution of an image increases its file size.', m:2,
+   ms:['There are more pixels in the image','Each pixel needs its own binary value, so more bits are stored in total']},
+  {q:'State two items of metadata that are stored in an image file.', m:2,
+   ms:['Width and height (dimensions or resolution)','Colour depth (bits per pixel). Other acceptable answers: file format, date created']},
+  {q:'A website stores its photographs as JPEG files. Explain one advantage and one disadvantage of lossy compression.', m:2,
+   ms:['Advantage: the files are much smaller, so pages load faster and less storage is used','Disadvantage: data is permanently removed, so the quality is lower and the original cannot be restored']},
+];
+function buildExam(){
+  $('#examQs').innerHTML = EXAM.map((e,i)=>`<div class="q"><div class="row" style="justify-content:space-between"><h3>Question ${i+1}</h3><span class="marks">[${e.m} marks]</span></div>
+    <p>${e.q}</p>
+    ${e.num? `<div class="row"><input type="text" inputmode="decimal" id="exN${i}" style="width:110px" aria-label="Answer in ${e.unit}"> <span>${e.unit}</span></div>`:''}
+    <textarea id="exA${i}" placeholder="Write your answer here" aria-label="Your answer to question ${i+1}"></textarea>
+    <div><button class="ghost" data-ms="${i}">Show mark scheme</button></div>
+    <div class="ms" id="ms${i}" hidden>${e.ms.map((p,j)=>`<label><input type="checkbox" id="ms${i}_${j}"> <span>${p}</span></label>`).join('')}<span class="muted" id="msS${i}" style="font-size:.88rem"></span></div>
+  </div>`).join('');
+  document.querySelectorAll('[data-ms]').forEach(b=>b.addEventListener('click',()=>{ const i=+b.dataset.ms, box=$('#ms'+i); box.hidden=!box.hidden; b.textContent = box.hidden?'Show mark scheme':'Hide mark scheme';
+    if(EXAM[i].num){ const raw=$('#exN'+i).value, v=numVal(raw); $('#msS'+i).textContent = raw===''?'':(v===EXAM[i].num?'Your number is correct.':`Your number was ${raw}; the answer is ${EXAM[i].num} ${EXAM[i].unit}.`); } }));
+  EXAM.forEach((e,i)=>e.ms.forEach((_,j)=>$(`#ms${i}_${j}`).addEventListener('change',()=>{ const n=e.ms.filter((_,k)=>$(`#ms${i}_${k}`).checked).length; $('#msS'+i).textContent=`You gave yourself ${n} / ${e.m}`; })));
+}
+
+/* ---------- 12 QUIZ ---------- */
+const QUIZ = [
+  {q:'What is the smallest identifiable area of a bitmap image called?', o:['Byte','Pixel','Vector','Sample'], a:1, e:'Pixel is short for picture element. Each pixel has a single colour.'},
+  {q:'How many different colours can a 3-bit pixel show?', o:['3','6','8','9'], a:2, e:'2³ = 8 colours.'},
+  {q:'How many bits per pixel are needed for 64 different colours?', o:['4','5','6','8'], a:2, e:'2⁶ = 64, so 6 bits are needed.'},
+  {q:'In a 24-bit image each of red, green and blue uses 8 bits. How many colours is that?', o:['256','65,536','16,777,216','24'], a:2, e:'2²⁴ = 16,777,216 colours.'},
+  {q:'A 16 × 16 image uses 1 bit per pixel. What is its file size?', o:['16 bytes','32 bytes','64 bytes','256 bytes'], a:1, e:'16 × 16 = 256 pixels × 1 bit = 256 bits. 256 ÷ 8 = 32 bytes.'},
+  {q:'An image is saved again with its colour depth doubled. The resolution does not change. What happens to the file size?', o:['It halves','It stays the same','It doubles','It quadruples'], a:2, e:'Size = width × height × colour depth, so doubling the colour depth doubles the size.'},
+  {q:'The width and the height of an image are both doubled. The colour depth stays the same. By what factor does the file size grow?', o:['2','4','8','16'], a:1, e:'There are 2 × 2 = 4 times as many pixels, so the file is 4 times as big.'},
+  {q:'Which file format uses lossy compression?', o:['PNG','BMP','JPEG','None of these'], a:2, e:'JPEG permanently removes some data. PNG is lossless and BMP is usually uncompressed.'},
+  {q:'Why do colour pickers show colours in hexadecimal or denary instead of binary?', o:['Computers cannot store binary','They are shorter and easier for people to read and copy without mistakes','Hexadecimal uses fewer bits when stored','Binary cannot show colours'], a:1, e:'The computer still stores binary. Hexadecimal and denary are for people.'},
+  {q:'What is metadata in an image file?', o:['The colour of each pixel','Data about the image, such as its width, height and colour depth','A compressed copy of the image','The program used to edit it'], a:1, e:'Metadata describes the file so the computer can rebuild the image correctly.'},
+];
+let qScore=0;
+function buildQuiz(){
+  qScore=0; $('#quizScore').textContent=`Score: 0 / ${QUIZ.length}`; $('#quizScore').className='feedback';
+  $('#quizQs').innerHTML = QUIZ.map((q,i)=>`<div class="q" data-q="${i}"><h3>${i+1}. ${q.q}</h3><div class="opts">${q.o.map((o,j)=>`<button class="opt" data-j="${j}">${o}</button>`).join('')}</div><p class="expl" hidden></p></div>`).join('');
+  document.querySelectorAll('#quizQs .q').forEach(box=>{ const i=+box.dataset.q;
+    box.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+      if(box.dataset.done) return; box.dataset.done=1; const j=+b.dataset.j, ok=j===QUIZ[i].a;
+      box.querySelectorAll('.opt').forEach(x=>{ x.disabled=true; if(+x.dataset.j===QUIZ[i].a) x.classList.add('ok'); }); if(!ok) b.classList.add('no');
+      const ex=box.querySelector('.expl'); ex.hidden=false; ex.textContent=(ok?'Correct. ':'Not quite. ')+QUIZ[i].e;
+      if(ok) qScore++; $('#quizScore').textContent=`Score: ${qScore} / ${QUIZ.length}`;
+    })); });
+}
+
+/* ---------- init ---------- */
+function drawHero(){ [['#h1',12,9],['#h2',32,24],['#h3',160,120]].forEach(([s,w,h])=>drawScene($(s),w,h,24)); }
+function boot(f){ try{ f(); }catch(e){ console.error(f.name,e); } }
+[drawHero,buildGloss,bindPainter,bindZoom,bindTb,bindPb,bindPc,bindColours,bindX,bindFs,bindDoc,buildMatch,buildCloze,bindCloze,buildExam,buildQuiz].forEach(boot);
+$('#mReset').addEventListener('click',buildMatch); $('#quizReset').addEventListener('click',buildQuiz);
+let rt, lastW=window.innerWidth; window.addEventListener('resize',()=>{ if(window.innerWidth===lastW) return; lastW=window.innerWidth; clearTimeout(rt); rt=setTimeout(ppPaintAll,120); });
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(ppPaintAll);
+})();
+</script>
+
+</body>
+</html>
