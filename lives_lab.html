@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lives Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#EDF1F7; --panel:#FFFFFF; --ink:#1F2A44; --muted:#5B6782; --line:#D5DCE8;
+  --wall:#2F3E6E; --floor:#F7F9FC; --path:#E6ECF5;
+  --var:#FF8C1A; --event:#FFBF00; --ctrl:#FFAB19; --motion:#4C97FF; --op:#59C059;
+  --coin:#F2B200; --heart:#E5484D; --exit:#2FA46B;
+  --mon:#E9EEF5; --slot:#FFFFFF; --slot-ink:#1F2A44;
+  --shadow:0 1px 0 rgba(31,42,68,.06),0 6px 18px rgba(31,42,68,.07);
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#141A2B; --panel:#1C2439; --ink:#E8EDF7; --muted:#9AA6C2; --line:#2E3953;
+    --wall:#6F86C9; --floor:#232D46; --path:#29344F; --mon:#26304A; --slot:#F4F6FA; --slot-ink:#1F2A44;
+    --shadow:0 1px 0 rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141A2B; --panel:#1C2439; --ink:#E8EDF7; --muted:#9AA6C2; --line:#2E3953;
+  --wall:#6F86C9; --floor:#232D46; --path:#29344F; --mon:#26304A; --slot:#F4F6FA; --slot-ink:#1F2A44;
+  --shadow:0 1px 0 rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:28px 56px;display:flex;flex-direction:column;gap:36px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800}
+h2{font-size:1.6rem;font-weight:800}
+h3{font-size:1.15rem;font-weight:800}
+p{margin:0}
+.eyebrow{font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.75rem;color:var(--var)}
+header{display:flex;flex-direction:column;gap:8px;max-width:66ch}
+header p{color:var(--muted);font-size:1.05rem}
+.mission{margin:8px 0 0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+.mission li::marker{color:var(--var);font-weight:800}
+.big-idea{display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px;font-weight:700}
+
+/* Scratch-style blocks */
+.blk{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:6px;color:#fff;font-weight:800;font-size:.9rem;line-height:1.3;white-space:nowrap;box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
+.blk.var{background:var(--var)} .blk.ev{background:var(--event)} .blk.ctrl{background:var(--ctrl)} .blk.mo{background:var(--motion)} .blk.op{background:var(--op)}
+.blk.hat{border-radius:16px 16px 6px 6px}
+.slot{background:var(--slot);color:var(--slot-ink);border-radius:999px;padding:0 9px;font-weight:800;min-width:1.6em;text-align:center}
+.dd{background:rgba(0,0,0,.14);border-radius:5px;padding:0 7px}
+
+/* Game */
+.game{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.game{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:14px}
+.stage-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:800;border:0;border-radius:10px;padding:8px 14px;cursor:pointer;background:var(--mon);color:var(--ink)}
+.btn:focus-visible,.pad button:focus-visible,.maze:focus-visible,.mon:focus-visible,summary:focus-visible{outline:3px solid var(--motion);outline-offset:2px}
+.btn.go{background:var(--op);color:#fff;display:inline-flex;gap:6px;align-items:center}
+.flag{width:14px;height:14px}
+.maze-wrap{position:relative}
+.maze{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));width:100%;gap:2px;background:var(--line);padding:2px;border-radius:10px;aspect-ratio:11/9;max-width:100%}
+.cell{background:var(--floor);border-radius:3px;position:relative;overflow:hidden;min-width:0;min-height:0;font-size:clamp(12px,3vw,24px)}
+.cell.wall{background:var(--wall)}
+.cell.bump{animation:bump .35s}
+@keyframes bump{0%,100%{background:var(--wall)}40%{background:var(--heart)}}
+.cell .tok{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:62%;height:62%;border-radius:50%;box-sizing:border-box}
+.tok.coin{background:var(--coin);box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+.tok.heart{background:none;width:70%;height:70%}
+.tok.exit{background:var(--exit);border-radius:4px;width:74%;height:74%;color:#fff;display:grid;place-items:center;font-weight:800;font-size:clamp(7px,1.6vw,12px);line-height:1;font-family:var(--display)}
+.tok.sprite{background:var(--motion);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);width:70%;height:70%;z-index:2}
+.overlay{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:rgba(20,26,43,.72);border-radius:10px;color:#fff;text-align:center;padding:16px}
+.overlay div{display:flex;flex-direction:column;gap:10px;align-items:center}
+.overlay strong{font-family:var(--display);font-size:2rem}
+.pad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,44px);gap:6px;justify-content:center}
+.pad button{font:inherit;font-size:1.2rem;border:0;border-radius:10px;background:var(--mon);color:var(--ink);cursor:pointer}
+.pad .up{grid-column:2}
+.hint{color:var(--muted);font-size:.9rem;text-align:center}
+
+/* Variable monitors */
+.mons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:420px){.mons{grid-template-columns:1fr}}
+.mon{background:var(--mon);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;cursor:default;position:relative;border:2px solid transparent}
+.mon.hidden-vals{cursor:pointer}
+.mon .lbl{font-weight:800;font-size:.95rem;display:flex;justify-content:space-between;gap:6px}
+.mon .val{align-self:flex-start;background:var(--var);color:#fff;border-radius:6px;padding:2px 12px;font-family:var(--display);font-weight:800;font-size:1.7rem;min-width:2.2em;text-align:center;font-variant-numeric:tabular-nums}
+.mon .was{font-size:.8rem;color:var(--muted);min-height:1.2em;font-variant-numeric:tabular-nums}
+.mon.flash{border-color:var(--var);animation:pop .45s}
+@keyframes pop{30%{transform:scale(1.05)}}
+.toggle{display:flex;gap:8px;align-items:center;font-weight:700;font-size:.92rem;color:var(--muted)}
+.toggle input{width:18px;height:18px;accent-color:var(--var)}
+.log{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto;padding-right:4px}
+.log .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.log .row:first-child{animation:slide .3s}
+@keyframes slide{from{opacity:.2;transform:translateY(-4px)}}
+.why{font-size:.85rem}
+.sub{color:var(--muted);font-size:.95rem}
+
+/* Predict */
+.section-head{display:flex;flex-direction:column;gap:6px;max-width:66ch}
+.predict{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.script{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.q{font-weight:800}
+details{border-top:1px dashed var(--line);padding-top:10px}
+summary{cursor:pointer;font-weight:800;color:var(--motion)}
+details p{margin-top:6px}
+.ans{font-family:var(--display);font-weight:800;font-size:1.4rem;color:var(--var)}
+
+/* Teacher notes */
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.notes{grid-template-columns:1fr}}
+.notes ol,.notes ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px}
+.notes li b{font-weight:800}
+.time{font-variant-numeric:tabular-nums;color:var(--var);font-weight:800}
+.vocab{display:grid;grid-template-columns:auto 1fr;gap:6px 14px}
+.vocab dt{font-weight:800}
+.vocab dd{margin:0;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<style>
+html,body{margin:0}
+[hidden]{display:none!important}
+.back{display:inline-block;margin-bottom:4px;font-weight:800;font-size:.9rem;color:var(--muted);text-decoration:none}
+.back:hover,.back:focus-visible{color:var(--ink);text-decoration:underline}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <a class="back" href="./index.html">&larr; All tasks</a>
+  <header>
+    <span class="eyebrow">Variables · Scratch maze game</span>
+    <h1>Lives Lab</h1>
+    <p>A variable is a named box that holds <b>one</b> value. The game looks inside the box whenever it needs to know something, and the value can change while the game runs.</p>
+    <ol class="mission">
+      <li><b>Play.</b> Escape the maze. Watch the <i>lives</i>, <i>score</i> and <i>moves</i> boxes.</li>
+      <li><b>Predict.</b> Press the green flag and tick <i>Predict mode</i>. Before every move, tell your partner what will be in each box. Click a box to check.</li>
+      <li><b>Explain.</b> Which blocks make a box go up? Which make it go down? Which one puts a brand new value in?</li>
+    </ol>
+  </header>
+
+  <section class="game" aria-label="Maze and variables">
+    <div class="card">
+      <div class="stage-top">
+        <h3>The maze</h3>
+        <button class="btn go" id="flag" type="button"><svg class="flag" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1v14" stroke="#fff" stroke-width="2"/><path d="M4 2h9l-2 3 2 3H4z" fill="#fff"/></svg>Green flag (restart)</button>
+      </div>
+      <div class="maze-wrap">
+        <div class="maze" id="maze" tabindex="0" aria-label="Maze. Use the arrow keys to move."></div>
+        <div class="overlay" id="overlay" hidden><div><strong id="ovTitle"></strong><span id="ovText"></span><button class="btn go" id="ovBtn" type="button">Play again</button></div></div>
+      </div>
+      <div class="pad" aria-label="Move buttons">
+        <button class="up" data-d="up" aria-label="Up">▲</button>
+        <button data-d="left" aria-label="Left">◀</button>
+        <button data-d="down" aria-label="Down">▼</button>
+        <button data-d="right" aria-label="Right">▶</button>
+      </div>
+      <p class="hint">Arrow keys or buttons. Touch a wall and you lose a life. Yellow coins are worth 10. The red heart gives a life back.</p>
+    </div>
+
+    <div class="card">
+      <div class="stage-top">
+        <h3>Variables</h3>
+        <label class="toggle"><input type="checkbox" id="predictMode"> Predict mode</label>
+      </div>
+      <p class="sub" id="modeHint">Each box shows the value stored right now, and the value it had before.</p>
+      <div class="mons">
+        <div class="mon" id="m-lives" data-v="lives"><span class="lbl">lives</span><span class="val">3</span><span class="was"></span></div>
+        <div class="mon" id="m-score" data-v="score"><span class="lbl">score</span><span class="val">0</span><span class="was"></span></div>
+        <div class="mon" id="m-moves" data-v="moves"><span class="lbl">moves</span><span class="val">0</span><span class="was"></span></div>
+      </div>
+      <h3>Blocks that just ran</h3>
+      <div class="log" id="log" aria-live="polite"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  const MAP=[
+    "###########",
+    "#S..#...c.#",
+    "#.#.#.###.#",
+    "#.#...#...#",
+    "#c###.#.#.#",
+    "#...#...#h#",
+    "###.#####.#",
+    "#c....c..E#",
+    "###########"];
+  const ROWS=MAP.length, COLS=MAP[0].length;
+  const mazeEl=document.getElementById('maze'), logEl=document.getElementById('log');
+  const overlay=document.getElementById('overlay');
+  const heartSVG='<svg class="tok heart" viewBox="0 0 24 24"><path fill="#E5484D" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.4 2.5.8-1.4 2.3-2.5 4.4-2.5 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>';
+  let grid, cells=[], pos, start, vars, over, hidden=false, revealed={};
+
+  function build(){
+    mazeEl.innerHTML=''; cells=[];
+    for(let r=0;r<ROWS;r++){for(let c=0;c<COLS;c++){
+      const d=document.createElement('div'); d.className='cell'+(MAP[r][c]==='#'?' wall':'');
+      mazeEl.appendChild(d); cells.push(d);
+    }}
+  }
+  function cell(r,c){return cells[r*COLS+c]}
+  function draw(){
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+      const ch=grid[r][c], el=cell(r,c);
+      if(ch==='#') continue;
+      let h='';
+      if(ch==='c') h='<span class="tok coin"></span>';
+      else if(ch==='h') h=heartSVG;
+      else if(ch==='E') h='<span class="tok exit">EXIT</span>';
+      if(pos.r===r&&pos.c===c) h='<span class="tok sprite" aria-label="you"></span>';
+      el.innerHTML=h;
+    }
+  }
+  const B={
+    flag:()=>'<span class="blk ev hat">when ⚑ clicked</span>',
+    set:(v,n)=>`<span class="blk var">set <span class="dd">${v}</span> to <span class="slot">${n}</span></span>`,
+    chg:(v,n)=>`<span class="blk var">change <span class="dd">${v}</span> by <span class="slot">${n}</span></span>`,
+    goStart:()=>'<span class="blk mo">go to <span class="slot">start</span></span>',
+    stop:()=>'<span class="blk ctrl">stop <span class="dd">all</span></span>',
+    ifEq:(v,n)=>`<span class="blk ctrl">if <span class="blk op" style="padding:1px 8px;font-size:.8rem"><span class="blk var" style="padding:0 6px;font-size:.8rem">${v}</span> = <span class="slot">${n}</span></span> then</span>`
+  };
+  function log(html,why){
+    const row=document.createElement('div'); row.className='row';
+    row.innerHTML=html+(why?`<span class="why">${why}</span>`:'');
+    logEl.prepend(row);
+    while(logEl.children.length>14) logEl.lastChild.remove();
+  }
+  function show(name,old){
+    const m=document.getElementById('m-'+name);
+    const val=m.querySelector('.val'), was=m.querySelector('.was');
+    revealed[name]=false;
+    val.textContent=hidden?'?':vars[name];
+    was.textContent=(old===undefined)?'':(hidden?'was '+old+' → ?':'was '+old);
+    m.classList.remove('flash'); void m.offsetWidth; m.classList.add('flash');
+  }
+  function setV(name,n,why){const old=vars[name]; vars[name]=n; log(B.set(name,n),why); show(name,old===undefined?undefined:old)}
+  function chgV(name,n,why){const old=vars[name]; vars[name]+=n; log(B.chg(name,n),why); show(name,old)}
+
+  function reset(){
+    grid=MAP.map(r=>r.split(''));
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c]==='S'){start={r,c};grid[r][c]='.'}
+    pos={...start}; over=false; overlay.hidden=true;
+    logEl.innerHTML=''; vars={};
+    log(B.flag(),'game starts');
+    setV('lives',3,'fill the lives box'); setV('score',0,'empty the score box'); setV('moves',0,'');
+    ['lives','score','moves'].forEach(n=>{document.getElementById('m-'+n).querySelector('.was').textContent=''});
+    draw();
+  }
+  function end(win){
+    over=true;
+    document.getElementById('ovTitle').textContent=win?'You escaped!':'Game over';
+    document.getElementById('ovText').textContent=win?`score = ${vars.score}, lives = ${vars.lives}, moves = ${vars.moves}`:'lives = 0, so the game stops.';
+    overlay.hidden=false;
+  }
+  function move(dir){
+    if(over) return;
+    const d={up:[-1,0],down:[1,0],left:[0,-1],right:[0,1]}[dir];
+    const nr=pos.r+d[0], nc=pos.c+d[1];
+    if(grid[nr][nc]==='#'){
+      const w=cell(nr,nc); w.classList.remove('bump'); void w.offsetWidth; w.classList.add('bump');
+      chgV('lives',-1,'touched a wall');
+      pos={...start}; log(B.goStart(),'back to the start'); draw();
+      if(vars.lives===0){log(B.ifEq('lives',0)+B.stop(),'no lives left'); end(false)}
+      return;
+    }
+    pos={r:nr,c:nc};
+    chgV('moves',1,'');
+    const ch=grid[nr][nc];
+    if(ch==='c'){grid[nr][nc]='.'; chgV('score',10,'collected a coin')}
+    else if(ch==='h'){grid[nr][nc]='.'; chgV('lives',1,'found a heart')}
+    draw();
+    if(ch==='E'){log('<span class="blk ev">broadcast <span class="dd">you win</span></span>','reached the exit'); end(true)}
+  }
+
+  document.addEventListener('keydown',e=>{
+    const k={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];
+    if(!k) return;
+    const a=document.activeElement, t=a&&a.tagName;
+    if(t==='INPUT'||t==='SUMMARY'||t==='TEXTAREA') return;
+    const game=document.querySelector('.game');
+    const r=game.getBoundingClientRect();
+    if(r.bottom<0||r.top>innerHeight) return;
+    e.preventDefault(); move(k);
+  });
+  document.querySelectorAll('.pad button').forEach(b=>b.addEventListener('click',()=>move(b.dataset.d)));
+  mazeEl.addEventListener('click',()=>mazeEl.focus());
+  document.getElementById('flag').addEventListener('click',reset);
+  document.getElementById('ovBtn').addEventListener('click',reset);
+
+  const pm=document.getElementById('predictMode');
+  pm.addEventListener('change',()=>{
+    hidden=pm.checked;
+    document.getElementById('modeHint').textContent=hidden?'Values are hidden. Say what the box holds before you check, then click a box to reveal it.':'Each box shows the value stored right now, and the value it had before.';
+    document.querySelectorAll('.mon').forEach(m=>{
+      m.classList.toggle('hidden-vals',hidden);
+      if(hidden){m.setAttribute('tabindex','0');m.setAttribute('role','button')}else{m.removeAttribute('tabindex');m.removeAttribute('role')}
+      const n=m.dataset.v; m.querySelector('.val').textContent=hidden?'?':vars[n]; m.querySelector('.was').textContent='';
+    });
+  });
+  document.querySelectorAll('.mon').forEach(m=>{
+    const reveal=()=>{if(!hidden)return; m.querySelector('.val').textContent=vars[m.dataset.v]};
+    m.addEventListener('click',reveal);
+    m.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal()}});
+  });
+
+  build(); reset();
+})();
+</script>
+
+</body>
+</html>
