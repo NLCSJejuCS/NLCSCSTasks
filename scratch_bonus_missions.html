@@ -1,0 +1,244 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Scratch Bonus Missions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap">
+<style>
+:root{
+  --bg:#EEF2F8; --panel:#FFFFFF; --ink:#1F2A44; --muted:#56627D; --line:#D6DDE9; --soft:#E6ECF5;
+  --pen:#0FBD8C; --pen-ink:#0B7D5E; --looks:#9966FF; --looks-ink:#6A3FD6; --var:#FF8C1A; --var-ink:#B85A00; --sense:#5CB1D6; --sense-ink:#1F7CA6;
+  --event:#FFBF00; --good:#2FA46B;
+  --shadow:0 1px 0 rgba(31,42,68,.05),0 8px 22px rgba(31,42,68,.07);
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:#131A2A; --panel:#1B2338; --ink:#E9EEF8; --muted:#A0ABC4; --line:#2D3852; --soft:#242E47;
+    --pen-ink:#3FE0B0; --looks-ink:#B89BFF; --var-ink:#FFA852; --sense-ink:#7FCBEA;
+    --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 22px rgba(0,0,0,.28);}
+}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#131A2A; --panel:#1B2338; --ink:#E9EEF8; --muted:#A0ABC4; --line:#2D3852; --soft:#242E47;
+  --pen-ink:#3FE0B0; --looks-ink:#B89BFF; --var-ink:#FFA852; --sense-ink:#7FCBEA;
+  --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 22px rgba(0,0,0,.28);}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:32px 64px;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);font-weight:800}
+h2{font-size:clamp(1.6rem,4vw,2.1rem);font-weight:800}
+h3{font-size:1.15rem;font-weight:800}
+p{margin:0}
+ul,ol{margin:0}
+.eyebrow{font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.75rem}
+.lede{font-size:1.1rem;color:var(--muted);max-width:62ch}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:center}
+@media (max-width:820px){.hero{grid-template-columns:1fr}}
+.hero-text{display:flex;flex-direction:column;gap:12px}
+.hero .eyebrow{color:var(--var-ink)}
+.rules{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.rules ol{padding-left:1.3em;display:flex;flex-direction:column;gap:8px}
+.rules li::marker{font-family:var(--display);font-weight:800;color:var(--var-ink)}
+
+/* overview */
+.picker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:900px){.picker{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:440px){.picker{grid-template-columns:1fr}}
+.pick{--c:var(--var);--ci:var(--var-ink);display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:16px;transition:transform .15s,border-color .15s}
+.pick:hover,.pick:focus-visible{transform:translateY(-3px);border-color:var(--c);outline:none}
+.pick svg{width:64px;height:64px}
+.pick h3{font-size:1.3rem}
+.pick p{color:var(--muted);font-size:.93rem}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.stars{font-weight:800;color:var(--ci);letter-spacing:.1em;font-size:.95rem}
+.stars .off{opacity:.25}
+.chip{font-size:.75rem;font-weight:800;border-radius:999px;padding:2px 9px;background:var(--soft);color:var(--muted)}
+.progress{font-size:.8rem;font-weight:700;color:var(--muted)}
+
+/* mission */
+.mission{--c:var(--var);--ci:var(--var-ink);background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:clamp(18px,3vw,32px);display:flex;flex-direction:column;gap:24px;scroll-margin-top:16px}
+.m-head{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.m-head svg{width:88px;height:88px}
+@media (max-width:480px){.m-head{grid-template-columns:1fr}.m-head svg{width:64px;height:64px}}
+.m-head .eyebrow{color:var(--ci)}
+.m-title{display:flex;flex-direction:column;gap:6px}
+.brief{font-size:1.08rem;max-width:64ch}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media (max-width:820px){.cols{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:12px}
+.col h3{display:flex;gap:8px;align-items:center}
+.tag{font-family:var(--body);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border-radius:6px;padding:2px 7px;background:var(--c);color:#fff}
+.checks{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks label{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;cursor:pointer;padding:8px 10px;border-radius:10px;background:var(--soft)}
+.checks input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--c)}
+.checks input:checked + span{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
+.levelup{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.levelup li{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:8px 10px;border:2px dashed var(--line);border-radius:10px}
+.levelup li::before{content:"+";font-family:var(--display);font-weight:800;color:var(--ci);font-size:1.2rem;line-height:1.2;text-align:center}
+.blocks{display:flex;flex-wrap:wrap;gap:6px}
+.blk{display:inline-flex;align-items:center;padding:3px 10px;border-radius:6px;color:#fff;font-weight:800;font-size:.8rem;box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
+.b-motion{background:#4C97FF}.b-looks{background:#9966FF}.b-sound{background:#CF63CF}.b-events{background:#E6A800}.b-control{background:#E09400}.b-sensing{background:#3FA3CF}.b-operators{background:#48B048}.b-variables{background:#F07D0A}.b-pen{background:#0EA67B}
+.hints{display:flex;flex-direction:column;gap:10px;background:var(--soft);border-radius:14px;padding:16px}
+.hint{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;background:var(--panel);border-radius:10px;padding:10px 12px;animation:in .3s}
+@keyframes in{from{opacity:.3;transform:translateY(-4px)}}
+.hint .n{font-family:var(--display);font-weight:800;width:30px;height:30px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center}
+.hint-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{font:inherit;font-weight:800;border:0;border-radius:10px;padding:9px 16px;cursor:pointer;background:var(--c);color:#fff}
+.btn.ghost{background:transparent;color:var(--muted);border:2px solid var(--line);padding:7px 12px;font-size:.85rem}
+.btn:focus-visible,.checks label:has(input:focus-visible){outline:3px solid var(--ci);outline-offset:2px}
+.hint-note{font-size:.88rem;color:var(--muted)}
+.explain{display:flex;flex-direction:column;gap:6px;border:2px solid var(--c);border-radius:14px;padding:14px 16px}
+.explain .eyebrow{color:var(--ci)}
+.explain p{font-weight:700}
+.done{font-weight:800;color:var(--good)}
+
+/* stuck */
+.stuck{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:24px;align-items:start}
+@media (max-width:820px){.stuck{grid-template-columns:1fr}}
+.stuck ol{padding-left:1.3em;display:flex;flex-direction:column;gap:10px}
+.stuck li::marker{font-family:var(--display);font-weight:800;color:var(--sense-ink)}
+.stuck .eyebrow{color:var(--sense-ink)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="hero-text">
+      <span class="eyebrow">Finished early? Choose a bonus mission</span>
+      <h1>Scratch Bonus Missions</h1>
+      <p class="lede">Four extra projects that use what you learned in the knock knock joke, the Etch a Sketch and the maze game. Each one has a list of what it must do, some level-ups for when you want more, and hints that give you clues, not code.</p>
+    </div>
+    <div class="rules">
+      <h3>Mission rules</h3>
+      <ol>
+        <li>Plan first. Say out loud what your sprite should do, step by step.</li>
+        <li>Build a little, then test. Click the green flag after every change.</li>
+        <li>Stuck? Open <b>one</b> hint. Try it before you open the next one.</li>
+        <li>No copying code from anywhere. If you can't explain a block, it isn't yours yet.</li>
+        <li>When you finish, answer the <b>Explain it</b> question for your teacher.</li>
+      </ol>
+    </div>
+  </section>
+
+  <nav class="picker" id="picker" aria-label="Choose a mission"></nav>
+
+  <div id="missions" style="display:flex;flex-direction:column;gap:32px"></div>
+
+  <section class="mission stuck" id="stuck" style="--c:var(--sense);--ci:var(--sense-ink)">
+    <div class="m-title">
+      <span class="eyebrow">Before you ask the teacher</span>
+      <h2>Bug hunting checklist</h2>
+      <p class="hint-note">Most bugs are found with one of these. Work down the list.</p>
+    </div>
+    <ol>
+      <li><b>Right sprite?</b> Check the code is on the sprite that should do the job, not on the stage or another sprite.</li>
+      <li><b>Does it start?</b> Every script needs a hat block on top. Which event starts this one?</li>
+      <li><b>Read it out loud.</b> Read each block in order, like the computer. Say what happens after each one.</li>
+      <li><b>Test one piece.</b> Click a single script to run just that part. Does it do what you expected?</li>
+      <li><b>Show the value.</b> Tick the box next to a variable so you can see it on the stage while the game runs.</li>
+      <li><b>Too fast to see?</b> Add a short wait so you can watch what is happening.</li>
+      <li><b>Explain it to a partner.</b> Talking through your code often shows you the mistake.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function(){
+const SVG={
+pen:`<svg viewBox="0 0 88 88" aria-hidden="true"><g fill="none" stroke-width="3">${[0,30,60,90,120,150].map((a,i)=>`<rect x="26" y="26" width="36" height="36" rx="3" stroke="${['#0FBD8C','#4C97FF','#9966FF','#FF8C1A','#E5484D','#FFBF00'][i]}" transform="rotate(${a} 44 44)"/>`).join('')}</g><circle cx="44" cy="44" r="5" fill="#0FBD8C"/></svg>`,
+looks:`<svg viewBox="0 0 88 88" aria-hidden="true"><path d="M16 70c-4-26 8-50 28-50s32 24 28 50c-1 5-6 6-10 3-3 4-9 4-12 0-3 4-9 4-12 0-4 3-11 3-12-3z" fill="#9966FF"/><circle cx="34" cy="42" r="8" fill="#fff"/><circle cx="56" cy="42" r="8" fill="#fff"/><circle cx="36" cy="44" r="4" fill="#1F2A44"/><circle cx="58" cy="44" r="4" fill="#1F2A44"/><path d="M36 58q9 7 18 0" stroke="#1F2A44" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M30 22l-6-10M58 22l6-10" stroke="#9966FF" stroke-width="4" stroke-linecap="round"/></svg>`,
+var:`<svg viewBox="0 0 88 88" aria-hidden="true"><circle cx="30" cy="18" r="9" fill="#E5484D"/><path d="M30 9q3-6 8-6" stroke="#2FA46B" stroke-width="3" fill="none"/><circle cx="60" cy="36" r="8" fill="#FFBF00"/><path d="M30 30v8M60 46v6" stroke="#9AA6C2" stroke-width="3" stroke-dasharray="3 4"/><path d="M14 60h60l-8 18H22z" fill="#FF8C1A"/><rect x="10" y="56" width="68" height="7" rx="3" fill="#B85A00"/></svg>`,
+sense:`<svg viewBox="0 0 88 88" aria-hidden="true"><rect x="20" y="10" width="48" height="70" rx="6" fill="#5CB1D6"/><rect x="27" y="17" width="34" height="56" rx="3" fill="#1F7CA6"/><circle cx="54" cy="47" r="3.5" fill="#FFBF00"/><text x="41" y="54" text-anchor="middle" font-family="Baloo 2,Trebuchet MS,sans-serif" font-weight="800" font-size="30" fill="#fff">?</text></svg>`
+};
+const B=(cat,label)=>`<span class="blk b-${cat}">${label}</span>`;
+const M=[
+{id:'pattern-party',c:'pen',name:'Pattern Party',stars:1,skills:['Etch a Sketch'],
+ teaser:'Turn your sprite into a machine that paints stars, spirals and flowers at the press of a key.',
+ brief:'Your sprite becomes a pattern machine. Each key draws a different colourful shape on the stage. Fill the screen with a pattern party.',
+ must:['Pressing one key clears the whole stage.','At least three keys each draw a different shape: a square, a triangle and one shape of your own.','Every shape uses a repeat loop. No stacking the same blocks again and again.','The pen colour changes while the shape is being drawn.','The pen is lifted when the sprite moves somewhere new, so there are no stray lines.'],
+ level:['A key that draws a shape at a random place on the stage, in a random size.','A flower: draw a shape, turn a little, and do that again and again all the way round.','Ask the player how many sides they want, and draw that shape.'],
+ blocks:[['pen','pen down'],['pen','change pen colour'],['control','repeat'],['motion','turn'],['events','when key pressed'],['operators','pick random']],
+ hints:['Stand up and walk a square on the floor. How many times did you walk forward? How many times did you turn? How far did you turn each time? Your repeat loop should match what you did.','Going all the way round a shape always adds up to one full turn, which is 360 degrees. If a shape has 3 sides, how could you work out the turn at each corner?','A star is sneaky. The sprite turns further at each point than for a normal 5-sided shape. Try bigger turn numbers and watch what happens.','Look in the Pen blocks for one that <i>changes</i> the colour by an amount, not one that <i>sets</i> it. Where in your loop should it go?'],
+ explain:'Why does a square need a turn of 90 but a triangle needs a different number?'},
+{id:'pocket-pet',c:'looks',name:'Pocket Pet',stars:2,skills:['Knock knock joke','Maze game'],
+ teaser:'Invent a creature that gets hungry and bored. Look after it or it gets grumpy.',
+ brief:'Design your own pet creature that lives on the stage. As time passes it gets hungry and bored. Click buttons to feed it and play with it. Its face and words show how it feels.',
+ must:['A pet sprite with at least three costumes, such as happy, hungry and sleepy.','Two variables called hunger and fun, shown on the stage.','A Feed button sprite and a Play button sprite.','Hunger and fun go down on their own as time passes.','Clicking a button makes the right variable go up.','The pet changes costume and says something to match how it feels.'],
+ level:['Ask the player to name the pet at the start, and use that name when the pet talks.','If hunger reaches 0, the pet faints and a sound plays.','Add a backdrop that changes from day to night, and the pet falls asleep at night.'],
+ blocks:[['looks','switch costume'],['looks','say'],['variables','change by'],['events','broadcast'],['control','if then'],['operators','<']],
+ hints:['Think of each variable as a meter that goes up and down. Which variable block takes a little away? What kind of loop would keep doing that every few seconds while the game runs?','A button can\'t feed the pet by itself. In your knock knock joke, how did one character tell another when it was their turn to speak? The same idea works here.','The pet needs to keep checking how it feels. Which block asks a yes or no question? Look in Operators for a block that compares a variable with a number.','Is a variable going below 0 or above 100? Add a check that notices and puts it back inside the limits.'],
+ explain:'What would happen if you took the wait block out of your hunger loop? Try it and explain why.'},
+{id:'snack-attack',c:'var',name:'Snack Attack',stars:2,skills:['Maze game','Etch a Sketch'],
+ teaser:'Snacks fall from the sky. Catch them in your bowl, but don\'t let too many hit the ground.',
+ brief:'Snacks fall from the top of the stage. Move your catcher left and right to catch them. Every catch scores points. Every snack you miss costs a life.',
+ must:['The catcher moves left and right with the arrow keys, and only left and right.','A snack falls from a random place along the top of the stage.','Catching a snack adds to the score and sends the snack back to the top.','A snack that reaches the bottom takes away a life.','The game stops when lives reaches 0.','Clicking the green flag puts score and lives back to their starting values.'],
+ level:['A bad snack, like a rotten sprout, that takes a life if you catch it.','Snacks fall faster as your score gets higher.','A high score variable that remembers your best game.'],
+ blocks:[['motion','change y by'],['motion','go to x: y:'],['sensing','touching?'],['operators','pick random'],['variables','set to'],['control','forever']],
+ hints:['Falling is just moving down a tiny bit, again and again. Which motion block moves a sprite up and down? Should its number be positive or negative?','When the snack goes back to the top, which should be random, x or y? Move your mouse across the stage and watch the x number to find the left and right edges.','How does the snack know it reached the bottom? Think about how your maze knew the player touched a wall.','For faster snacks: what if the amount the snack moves each step was stored in a variable?'],
+ explain:'Why do we set score to 0 when the green flag is clicked instead of leaving it alone?'},
+{id:'riddle-door',c:'sense',name:'Riddle Door Escape',stars:3,skills:['Maze game','Knock knock joke'],
+ teaser:'A maze where every door is locked by a riddle or a joke. Answer right to get through.',
+ brief:'Build a maze with locked doors. When the player touches a door, it asks a riddle or a joke. Type the right answer and the door disappears. Type the wrong one and you get pushed back.',
+ must:['A maze backdrop and a player that moves with the arrow keys and can\'t walk through walls.','At least two door sprites, each with its own question.','Touching a door makes it ask its question.','A right answer makes the door disappear. A wrong answer pushes the player back and plays a sound.','A variable that counts how many doors have been opened.','A win message when the player reaches the exit.'],
+ level:['A knock knock door: it says "Knock knock!" and only opens when the player types the right reply.','Wrong answers cost a life, using a lives variable like your maze game.','A timer that shows how fast the player escapes.'],
+ blocks:[['sensing','ask and wait'],['sensing','answer'],['operators','='],['looks','hide'],['sound','start sound'],['variables','change by']],
+ hints:['Who should ask the question, the door or the player? Try putting the question on the door sprite. Look in the Sensing blocks.','Whatever the player types is kept in a special round block. How could you compare it with the right answer? Look in Operators.','Does the door keep asking again and again? Think about what the player is still touching after they answer. How could you move the player away, or make the door stop checking?','Making a door disappear is a Looks job. Remember that it needs to come back when the green flag is clicked for a new game.'],
+ explain:'Where does Scratch keep the player\'s typed answer, and what happens to it when the next question is asked?'}
+];
+
+const store={get(k){try{return JSON.parse(localStorage.getItem('bm:'+k))}catch(e){return null}},set(k,v){try{localStorage.setItem('bm:'+k,JSON.stringify(v))}catch(e){}}};
+const colour={pen:['--pen','--pen-ink'],looks:['--looks','--looks-ink'],var:['--var','--var-ink'],sense:['--sense','--sense-ink']};
+const style=m=>`--c:var(${colour[m.c][0]});--ci:var(${colour[m.c][1]})`;
+const stars=n=>'<span class="stars" aria-label="'+n+' of 3 stars">'+'★'.repeat(n)+'<span class="off">'+'★'.repeat(3-n)+'</span></span>';
+
+const picker=document.getElementById('picker'), host=document.getElementById('missions');
+M.forEach(m=>{
+  const ticked=store.get(m.id+':checks')||[];
+  picker.insertAdjacentHTML('beforeend',`<a class="pick" href="#${m.id}" style="${style(m)}">${SVG[m.c]}<h3>${m.name}</h3><div class="meta">${stars(m.stars)}</div><p>${m.teaser}</p><span class="progress" id="p-${m.id}"></span></a>`);
+  const sec=document.createElement('section'); sec.className='mission'; sec.id=m.id; sec.setAttribute('style',style(m));
+  sec.innerHTML=`
+    <div class="m-head">${SVG[m.c]}<div class="m-title"><span class="eyebrow">Bonus mission · ${['','Warm-up','Medium','Tricky'][m.stars]}</span><h2>${m.name}</h2><div class="meta">${stars(m.stars)} ${m.skills.map(s=>`<span class="chip">Uses: ${s}</span>`).join('')}</div></div></div>
+    <p class="brief">${m.brief}</p>
+    <div class="cols">
+      <div class="col"><h3><span class="tag">Must have</span> Your project must…</h3>
+        <ul class="checks">${m.must.map((t,i)=>`<li><label for="${m.id}-c${i}"><input type="checkbox" id="${m.id}-c${i}" data-i="${i}"${ticked.includes(i)?' checked':''}><span>${t}</span></label></li>`).join('')}</ul>
+        <p class="done" hidden>All done! Now try a level-up, and get ready to explain your code.</p>
+      </div>
+      <div class="col"><h3><span class="tag">Level up</span> Finished? Try these</h3>
+        <ul class="levelup">${m.level.map(t=>`<li><span>${t}</span></li>`).join('')}</ul>
+        <h3>Blocks you might need</h3>
+        <div class="blocks">${m.blocks.map(b=>B(b[0],b[1])).join('')}</div>
+        <p class="hint-note">These are clues about where to look. You decide which ones to use, and how.</p>
+      </div>
+    </div>
+    <div class="hints" aria-live="polite">
+      <div class="hint-row"><h3>Hints</h3><span class="hint-note">Clues, not code. Open one at a time.</span></div>
+      <div class="hint-list"></div>
+      <div class="hint-row"><button class="btn next" type="button"></button><button class="btn ghost hide" type="button">Hide hints</button></div>
+    </div>
+    <div class="explain"><span class="eyebrow">Explain it</span><p>${m.explain}</p><span class="hint-note">Be ready to answer this for your teacher, using your own project to show them.</span></div>`;
+  host.appendChild(sec);
+
+  // checklist
+  const boxes=[...sec.querySelectorAll('.checks input')], done=sec.querySelector('.done'), prog=document.getElementById('p-'+m.id);
+  const upd=()=>{const t=boxes.filter(b=>b.checked).map(b=>+b.dataset.i);store.set(m.id+':checks',t);done.hidden=t.length!==boxes.length;prog.textContent=t.length?`${t.length} of ${boxes.length} done`:`${boxes.length} things to build`;};
+  boxes.forEach(b=>b.addEventListener('change',upd)); upd();
+
+  // hints one at a time
+  const list=sec.querySelector('.hint-list'), next=sec.querySelector('.next'), hide=sec.querySelector('.hide');
+  let shown=0;
+  const render=()=>{
+    list.innerHTML=m.hints.slice(0,shown).map((h,i)=>`<div class="hint"><span class="n">${i+1}</span><p>${h}</p></div>`).join('');
+    next.hidden=shown>=m.hints.length; next.textContent=shown===0?'Show hint 1':`I tried that. Show hint ${shown+1}`;
+    hide.hidden=shown===0;
+  };
+  next.addEventListener('click',()=>{shown++;render()});
+  hide.addEventListener('click',()=>{shown=0;render()});
+  render();
+});
+})();
+</script>
+
+</body></html>
