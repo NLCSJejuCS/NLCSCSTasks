@@ -1,0 +1,284 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Data Representation Checker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky question rail on the left (chips on phone), one column of question cards */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --ink:#17202b; --muted:#5b6776; --line:#d9dfe6;
+  --accent:#1f5fd1; --accent-soft:#e3ecfb;
+  --ok:#1d7a4a; --ok-soft:#e1f3e8; --warn:#a85d00; --warn-soft:#fbefdc; --bad:#b3332b; --bad-soft:#fbe6e4;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141a; --surface:#171e27; --ink:#e6ebf1; --muted:#97a3b2; --line:#2a3542;
+  --accent:#7aa7ff; --accent-soft:#1c2a44;
+  --ok:#5fd193; --ok-soft:#163324; --warn:#f0b35c; --warn-soft:#3a2a12; --bad:#ff8a80; --bad-soft:#3d1c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141a; --surface:#171e27; --ink:#e6ebf1; --muted:#97a3b2; --line:#2a3542;
+  --accent:#7aa7ff; --accent-soft:#1c2a44;
+  --ok:#5fd193; --ok-soft:#163324; --warn:#f0b35c; --warn-soft:#3a2a12; --bad:#ff8a80; --bad-soft:#3d1c1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:32px}
+header{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:end;justify-content:space-between}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 clamp(28px,4vw,40px)/1.1 var(--display);margin:6px 0 0;text-wrap:balance}
+.bits{font:500 13px var(--mono);color:var(--muted);letter-spacing:.2em;margin-top:6px}
+.how{max-width:62ch;color:var(--muted);margin:8px 0 0}
+.progress{min-width:260px;flex:0 1 340px;display:grid;gap:8px}
+.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line)}
+.bar span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font:13px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:0}
+nav{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));align-self:start;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+nav a{font:500 14px var(--mono);text-align:center;padding:7px 0;border-radius:6px;border:1px solid var(--line);color:var(--ink);text-decoration:none;background:var(--surface)}
+nav a:hover{border-color:var(--accent)}
+nav a.done{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+nav a.rev{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+nav a.started{border-color:var(--accent);color:var(--accent)}
+.navfoot{grid-column:1/-1;margin-top:10px}
+main{display:grid;gap:20px;min-width:0}
+section.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px 8px;scroll-margin-top:16px;min-width:0}
+.qhead{display:flex;gap:12px;align-items:baseline;margin-bottom:6px}
+.qnum{font:700 22px var(--display);color:var(--accent)}
+.qtitle{font:600 16px var(--body)}
+.part{border-top:1px solid var(--line);padding:14px 0;display:grid;gap:10px}
+.part:first-of-type{border-top:0}
+.phead{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.plabel{font:600 13px var(--mono);color:var(--muted);min-width:3.2em}
+.cue{flex:1 1 240px;min-width:0}
+.pill{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:99px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.rev{background:var(--warn-soft);color:var(--warn)}
+.pill.try{background:var(--bad-soft);color:var(--bad)} .pill.done{background:var(--accent-soft);color:var(--accent)}
+form.ans{display:flex;flex-wrap:wrap;gap:8px}
+input[type=text],select,textarea{font:500 16px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0}
+input[type=text]{flex:1 1 220px;letter-spacing:.04em}
+textarea{width:100%;font:15px/1.5 var(--body);min-height:84px;resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible,nav a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input:disabled,select:disabled{opacity:.75}
+button{font:600 14px var(--body);border-radius:6px;padding:8px 16px;border:1px solid var(--accent);background:var(--accent);color:var(--surface);cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+button.warnbtn{background:transparent;border-color:var(--warn);color:var(--warn)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.fb{font-size:14px;border-radius:6px;padding:10px 12px;display:grid;gap:6px}
+.fb.bad{background:var(--bad-soft)} .fb.ok{background:var(--ok-soft)} .fb.rev{background:var(--warn-soft)} .fb.info{background:var(--accent-soft)}
+.fb b.t{font-weight:600}
+code,.mono{font:500 14px var(--mono)}
+.ansval{font:600 15px var(--mono);word-break:break-word}
+details.method{border:1px dashed var(--line);border-radius:6px;padding:8px 12px;background:var(--bg)}
+details.method summary{cursor:pointer;font-weight:600;color:var(--accent)}
+details.method ol{margin:8px 0 4px;padding-left:22px;display:grid;gap:3px}
+.match{display:grid;gap:8px}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,240px);gap:10px;align-items:center}
+.mrow select{width:100%;font:14px var(--body)}
+.mine{white-space:pre-wrap;background:var(--bg);border-radius:6px;padding:10px 12px;font-size:14px;border-left:3px solid var(--accent)}
+.marks{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.marks label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.marks input{margin-top:4px;accent-color:var(--ok);width:16px;height:16px;flex:none}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:760px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:16px}
+  nav{position:static;display:flex;overflow-x:auto;gap:6px;padding-bottom:4px}
+  nav a{flex:0 0 44px}
+  .navfoot{display:none}
+  .mrow{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:no-preference){.fb{animation:in .18s ease-out}@keyframes in{from{transform:translateY(-3px);opacity:.4}}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Computer Systems Workbook · Chapter 1</div>
+      <h1>Data Representation Checker</h1>
+      <div class="bits">0100 0100 0101 0010</div>
+      <p class="how">Work from your workbook. Type your answer and press <b>Check</b>. A wrong answer gets a hint, then a worked example with different numbers. The answer only unlocks after <span id="revN">3</span> real attempts, and it is recorded as <b>revealed</b> in your progress. For written questions, write your own answer first, then tick off the mark points you hit.</p>
+    </div>
+    <div class="progress" aria-live="polite">
+      <div class="bar" id="bar"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </header>
+  <nav id="nav" aria-label="Questions"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+// Teacher setting: wrong attempts before "Show answer" appears. Set to Infinity to never reveal.
+const REVEAL_AFTER = 3;
+
+const D = {"questions": [{"num": "1", "title": "Denary to binary and hex", "parts": [{"id": "1a", "label": "a", "cue": "165 → 8-bit binary", "type": "bin", "a": ["X1xSQx1SQxw="], "hint": "Start at the 128 column. 165 − 128 = 37. Which columns make 37?", "method": "d2b"}, {"id": "1b", "label": "b", "cue": "165 → hexadecimal", "type": "hex", "a": ["L1k="], "hint": "Split your binary from (a) into two 4-bit nibbles and convert each one.", "method": "b2h"}]}, {"num": "2", "title": "Converting between bases", "parts": [{"id": "2a", "label": "a", "cue": "0111 0110 → denary", "type": "num", "a": ["X11b"], "hint": "Add the place values (64, 32, 16 …) only where there is a 1.", "method": "b2d"}, {"id": "2b", "label": "b", "cue": "5F → denary", "type": "num", "a": ["V1k="], "hint": "The left digit is worth 16s. F = 15.", "method": "h2d"}, {"id": "2c", "label": "c", "cue": "1010 1100 0100 → hexadecimal", "type": "hex", "a": ["Ly9X"], "hint": "Each group of 4 bits is one hex digit. 1010 = 10 = A.", "method": "b2h"}, {"id": "2d", "label": "d", "cue": "3ED → binary", "type": "bin", "a": ["XlxSQhxSQh0DAQIH", "X11SQhxTQhwCAQ=="], "hint": "Write each hex digit as 4 bits: 3, then E (14), then D (13).", "method": "h2b", "disp": "XlxSQg1SQhwCEAMHXl1DW1kLFg1eVVNSBwIEU1cGAUJBEFNEC0wMA1kKHENTXBs="}]}, {"num": "3", "title": "Storage units", "parts": [{"id": "3a", "label": "a", "cue": "Total size in MiB", "type": "num", "a": ["X15bQx0="], "hint": "Multiply the number of files by the size of each file.", "method": "units"}, {"id": "3b", "label": "b", "cue": "Total size in GiB", "type": "num", "a": ["X15NRg=="], "hint": "There are 1024 MiB in 1 GiB, not 1000.", "method": "units"}]}, {"num": "4", "title": "ASCII codes", "parts": [{"id": "4ai", "label": "a i", "cue": "65 → 8-bit binary", "type": "bin", "a": ["Xl1TQx1TQxw="], "hint": "64 + 1.", "method": "d2b"}, {"id": "4aii", "label": "a ii", "cue": "97 → 8-bit binary", "type": "bin", "a": ["Xl1SQx1TQxw="], "hint": "64 + 32 + 1.", "method": "d2b"}, {"id": "4bi", "label": "b i", "cue": "Character V → denary code", "type": "num", "a": ["Vlo="], "hint": "Look up V in the ASCII table in the workbook.", "method": "ascii"}, {"id": "4bii", "label": "b ii", "cue": "Character v → denary code", "type": "num", "a": ["X11b"], "hint": "Lower case is 32 more than upper case.", "method": "ascii"}, {"id": "4ci", "label": "c i", "cue": "86 → 8-bit binary", "type": "bin", "a": ["Xl1TQh1SQh0="], "hint": "64 + 16 + 4 + 2.", "method": "d2b"}, {"id": "4cii", "label": "c ii", "cue": "118 → 8-bit binary", "type": "bin", "a": ["Xl1SQh1SQh0="], "hint": "Compare with your answer to (c i). Which single column changes?", "method": "d2b"}, {"id": "4d", "label": "d", "cue": "Explain how to convert upper case to lower case", "type": "written", "marks": ["IgMUFl9OEExBVRJ3PS8qOg0AHElXQxJXHAlDQB9DHkJAVRJCBg0NU1kLFg1fUUZVBgUNFA0WA11XQh9VDx8GU0EGB1lXQg==", "PQNDA0ECEEgSURIHTgUNU1kLFg0BAhJVAQAWHkNDHEsSRFpTThkTA0gRXk5TQ1cWDAUNEl8aU05dVFc=", "KxQCHl0PFhcSfRILTltUUxBDQxwCAAMHXl1PU14MU0ASDRIBWUxIUx5RUxASAQIPTlFDQxxSQxwDAAM="]}]}, {"num": "5", "title": "Binary codes (see workbook for the code table)", "parts": [{"id": "5a", "label": "a", "cue": "8-bit binary value", "type": "bin", "a": ["XlxSQx1TQxw="], "hint": "Check each place value against the denary value in the question.", "method": "d2b"}, {"id": "5bi", "label": "b i", "cue": "8-bit binary value", "type": "bin", "a": ["X1xTQx1SQx0="], "hint": "Only two columns contain a 1.", "method": "d2b"}, {"id": "5bii", "label": "b ii", "cue": "Denary value of (b i)", "type": "num", "a": ["X19R"], "hint": "Add the place values of your two 1-bits.", "method": "b2d"}, {"id": "5ci_R", "label": "c i", "cue": "R → 8-bit binary", "type": "bin", "a": ["XlxTQhxTQhw="], "hint": "Find R's code value first, then convert it.", "method": "d2b"}, {"id": "5ci_r", "label": "c i", "cue": "r → 8-bit binary", "type": "bin", "a": ["Xl1SQxxSQx0="], "hint": "Find r's code value first, then convert it.", "method": "d2b"}, {"id": "5cii_M", "label": "c ii", "cue": "M → 8-bit binary", "type": "bin", "a": ["XlxTQh1SQh0="], "hint": "Find M's code value first, then convert it.", "method": "d2b"}, {"id": "5cii_m", "label": "c ii", "cue": "m → 8-bit binary", "type": "bin", "a": ["Xl1TQhxTQx0="], "hint": "Find m's code value first, then convert it.", "method": "d2b"}]}, {"num": "6", "title": "Larger hex numbers", "parts": [{"id": "6a", "label": "a", "cue": "44801 → hexadecimal", "type": "hex", "a": ["LypTQg=="], "hint": "Keep dividing by 16 and record the remainders, then read them bottom to top.", "method": "d2h"}, {"id": "6b", "label": "b", "cue": "Your hex answer → 16-bit binary", "type": "bin", "a": ["X1xSQxxSQhwCAAIGXlxTQg=="], "hint": "Write each of your four hex digits as 4 bits.", "method": "h2b"}]}, {"num": "7", "title": "Uses of hexadecimal", "parts": [{"id": "7", "label": "", "cue": "Give three uses of hexadecimal", "type": "written", "marks": ["IwkOHF8aU0lHXUJF", "Kx4RHF9DEEJWVUE=", "Iy0gU0wHF19XQ0FTHQ==", "JzxDEkkHAUhBQ1dFTkQqI1tVWg==", "JjguPw0AHEFdRUAWDQMHFl4="], "need": "Any three"}]}, {"num": "8", "title": "Matching", "parts": [{"id": "8", "label": "", "cue": "Match each question to its answer", "type": "match", "a": ["X1g=", "XFQ=", "X14=", "Wlw=", "XV4=", "X1o="], "items": ["Denary value of the hex digit E", "Denary value of the binary number 0001 1100", "(96 × 2²⁰ × 8) ÷ (64 × 10⁶) = 12.583, rounded up", "If 2ˣ = 1 tebibyte (TiB), the value of x", "Hexadecimal value of the denary number 50", "Number of bits in two bytes of data"], "options": ["10", "12", "14", "16", "22", "28", "32", "40"]}]}, {"num": "9", "title": "Flowchart trace", "parts": [{"id": "9ai", "label": "a i", "cue": "Number = 220: the 8 OUTPUT digits in order", "type": "bin", "a": ["X11TQhxSQx0="], "hint": "Each time X − D is 0 or more, the output is 1 and X becomes X − D. D halves each loop.", "method": "d2b"}, {"id": "9aii", "label": "a ii", "cue": "Number = 73: the 8 OUTPUT digits in order", "type": "bin", "a": ["Xl1TQxxTQxw="], "hint": "73 is smaller than 128, so the first output is 0.", "method": "d2b"}, {"id": "9b", "label": "b", "cue": "What does the flowchart do?", "type": "written", "marks": ["JxhDEEINBUhAREEWD0wHFkMCAVQSGFBXHQlDQh1KU0NHXVBTHI7j1Q==", "jOzFGkMXHA1TXhIOQw4KBw0BGkNTQksWRg4CAEhDQQQSXkdbDAkR"]}]}, {"num": "10", "title": "Binary addition", "parts": [{"id": "10ai", "label": "a i", "cue": "First binary number → denary", "type": "num", "a": ["V1g="], "hint": "Add the place values where there is a 1.", "method": "b2d"}, {"id": "10aii", "label": "a ii", "cue": "Second binary number → denary", "type": "num", "a": ["WF0="], "hint": "Add the place values where there is a 1.", "method": "b2d"}, {"id": "10bi", "label": "b i", "cue": "Add the two binary numbers (8 bits)", "type": "bin", "a": ["X1xTQhxTQhw="], "hint": "1 + 1 = 0 carry 1; 1 + 1 + 1 = 1 carry 1.", "method": "badd"}, {"id": "10bii", "label": "b ii", "cue": "Your answer to (b i) → denary", "type": "num", "a": ["X1lW"], "hint": "It should equal your two answers from (a) added together.", "method": "b2d"}]}, {"num": "11", "title": "Overflow", "parts": [{"id": "11a", "label": "a", "cue": "Largest number in 8 bits (denary)", "type": "num", "a": ["XFlW"], "hint": "All eight bits are 1.", "method": "b2d"}, {"id": "11bi", "label": "b i", "cue": "Result of the addition (include any extra bit)", "type": "bin", "a": ["X1xTQxxTQh0C"], "hint": "Your answer should have 9 bits because a carry comes out of the last column.", "method": "overflow"}, {"id": "11bii", "label": "b ii", "cue": "What has happened, and why?", "type": "written", "marks": ["L0wNGkMXGw1QWUYWBx9DFEgNFl9TRFdS", "PQNDEkNDHFtXQlRaARtDFl8RHF8SWFNFTgMAEFgRAUhW", "OgQGU18GAFheRBJfHUwBGkoEFl8SRFpXAExRRhhPU1laVRJaDx4EFl4XU0NHXVBTHExbU08KB14SU1NYTh8XHF8G"]}]}, {"num": "12", "title": "Logical shifts", "parts": [{"id": "12a", "label": "a", "cue": "Binary number → denary", "type": "num", "a": ["WFw="], "hint": "32 + 16 + …", "method": "b2d"}, {"id": "12bi", "label": "b i", "cue": "Result of the logical shift right", "type": "bin", "a": ["XlxTQhxSQh0="], "hint": "Every bit moves one place right; a 0 fills the empty left-hand bit.", "method": "shift"}, {"id": "12bii", "label": "b ii", "cue": "Denary value of (b i)", "type": "num", "a": ["XVw="], "hint": "A shift right by 1 divides by 2.", "method": "shift"}, {"id": "12biii", "label": "b iii", "cue": "Result after the further shift right", "type": "bin", "a": ["XlxTQx1SQhw="], "hint": "Shift the bits two more places right. Bits that fall off the end are lost.", "method": "shift", "note": "OgQGU18GAFheRBJfHUxUXw0UG0RRWBJfHUwUAUINFA1QVVFXGx8GUx5TU+6FEAYWU0xUXRhNU2wSAR9UBxhDBEwQU0FdQ0YWAQoFU1kLFg1AWVVeGkELEkMHU0hcVBw="}, {"id": "12ci", "label": "c i", "cue": "Result of the logical shift left", "type": "bin", "a": ["X11SQh1TQx0="], "hint": "Bits move left two places; 0s fill in from the right.", "method": "shift"}, {"id": "12cii", "label": "c ii", "cue": "Denary value of (c i)", "type": "num", "a": ["XFhT"], "hint": "Each shift left multiplies by 2.", "method": "shift", "note": "XFhTUxBDRR0S86UWXK7RXQ0mEk5aEF5ZCQUAEkFDAEVbVkYWAgkFBw0OBkFGWUJaBwkQU08aUx8eEEFZThgUHA0QG0RUREEWAxkPB0QTH1QSUksWWkI="}]}, {"num": "13", "title": "Add, then shift", "parts": [{"id": "13a37", "label": "a", "cue": "37 → 8-bit binary", "type": "bin", "a": ["XlxSQx1SQxw="], "hint": "32 + 4 + 1.", "method": "d2b"}, {"id": "13a19", "label": "a", "cue": "19 → 8-bit binary", "type": "bin", "a": ["XlxTQh1TQhw="], "hint": "16 + 2 + 1.", "method": "d2b"}, {"id": "13b", "label": "b", "cue": "Add your two binary numbers", "type": "bin", "a": ["XlxSQhxTQx0="], "hint": "37 + 19 should give 56.", "method": "badd"}, {"id": "13c", "label": "c", "cue": "Result of the logical shift left", "type": "bin", "a": ["X11SQx1TQx0="], "hint": "Shift your answer from (b) two places left.", "method": "shift", "note": "W1pDsLpDQe+AEA8WXF5XXQ=="}, {"id": "13d", "label": "d", "cue": "Result of the logical shift right", "type": "bin", "a": ["XlxTQx1TQhw="], "hint": "Shift your answer from (b) four places right.", "method": "shift", "note": "OgQGU1sCH1hXEFtFTl9PU1oLGk5aEFtFThsRHEMEU09XU1NDHQlDRhtDsJoSAtC32kxeUx5NRgMScRIHQw4KBw0LEl4SUldTAEwPHF4XXQ=="}]}, {"num": "14", "title": "Two's complement", "parts": [{"id": "14a", "label": "a", "cue": "Value of the left-most bit (denary)", "type": "num", "a": ["Q11RSw=="], "hint": "In two's complement the most significant bit is negative.", "method": "twosrange"}, {"id": "14bi", "label": "b i", "cue": "Most negative 8-bit number (binary)", "type": "bin", "a": ["X1xTQx1TQx0="], "hint": "Only the negative column is switched on.", "method": "twosrange"}, {"id": "14bii", "label": "b ii", "cue": "Most positive 8-bit number (binary)", "type": "bin", "a": ["Xl1SQhxSQhw="], "hint": "The negative column must be off.", "method": "twosrange"}, {"id": "14ci", "label": "c i", "cue": "47 → two's complement", "type": "bin", "a": ["XlxSQxxSQhw="], "hint": "Positive numbers are written the normal way.", "method": "twos"}, {"id": "14cii", "label": "c ii", "cue": "−59 → two's complement", "type": "bin", "a": ["X11TQx1SQxw="], "hint": "Write +59, flip every bit, then add 1.", "method": "twos"}, {"id": "14di", "label": "d i", "cue": "1100 1110 → denary", "type": "num", "a": ["Q1lT"], "hint": "Start at −128 and add the positive place values.", "method": "twos"}, {"id": "14dii", "label": "d ii", "cue": "1111 1110 → denary", "type": "num", "a": ["Q14="], "hint": "−128 + 64 + 32 + 16 + 8 + 4 + 2.", "method": "twos"}, {"id": "14ei", "label": "e i", "cue": "45 → two's complement", "type": "bin", "a": ["XlxSQxxSQxw="], "hint": "32 + 8 + 4 + 1.", "method": "twos"}, {"id": "14eii", "label": "e ii", "cue": "−45 → two's complement", "type": "bin", "a": ["X11TQh1TQhw="], "hint": "Flip every bit of your answer to (e i), then add 1.", "method": "twos"}, {"id": "14eiii", "label": "e iii", "cue": "Add your answers to (e i) and (e ii)", "type": "bin", "a": ["X1xTQx1TQx0C", "XlxTQx1TQx0="], "hint": "45 + (−45) should be 0. Watch the carry out of the last column.", "method": "badd", "note": "JwJDB1oMVF4SU11bHgAGHkgNBw1GWFcWCAUNEkFDEExAQksWBwIXHA0CUxRGWBJUBxhDF0IGAA1cX0YWAwkCHQ0MBUhAVl5ZGUJDOkoNHF9XEFtCVUwXG0hDHFlaVUAWVkwBGlkQU0pbRlcWGgQGU04MAV9XU0YWDwIQBEgRU0JUEEhTHANN", "disp": "X0xTQx1TUx0CAAIWRhgLFg1aB0USUltCTgUQU0QEHUJAVVYaTgAGElsKHUoSAAIGXkxTQx1TWg=="}]}, {"num": "15", "title": "File size calculations", "parts": [{"id": "15a", "label": "a", "cue": "Image file size in MiB", "type": "num", "a": ["X1o="], "hint": "Width × height × colour depth gives bits. Then ÷ 8 and ÷ 1024 twice.", "method": "imgsize"}, {"id": "15b", "label": "b", "cue": "Sound file size in MiB", "type": "num", "a": ["X1pT"], "hint": "Sample rate × bits per sample × seconds, × 2 for stereo, then ÷ 8 and ÷ 1024 twice.", "method": "soundsize"}]}, {"num": "16", "title": "Compression", "parts": [{"id": "16a", "label": "a", "cue": "Reasons for compressing files", "type": "written", "marks": ["PQ0VFl5DAFldQlNRC0wQA0wAFg1dXhJCBglDO2knXH5hdA==", "KA0QB0gRU1ldEEdGAgMCFwIHHFpcXF1XCkwFGkEGAA==", "PQECH0EGAQ1UWV5TTh8KCUhDHkhTXkEWGgQGU0sKH0gSU1NYTg4GU0gOEkReVVY="]}, {"id": "16b", "label": "b", "cue": "Lossless and lossy compression", "type": "written", "marks": ["IgMQAEEGAF4IEFNaAkwXG0hDHF9bV1tYDwBDF0wXEg1RUVwWDAlDAUgAHENBREBDDRgGFw0UG0hcEEZeC0wFGkEGU0RBEEdYDQMOA18GAF5XVA==", "IgMQAFRZU1laVRJXAgsMAUQXG0ASQldbARoGAA0WHUNXU1dFHQ0RCg0HEllTEFREAQFDB0UGU0JAWVVfAA0PU0sKH0g=", "IgMQAFRZU1laVRJZHAUEGkMCHw1UWV5TTg8CHUMMBw1QVRJECw8MHV4XAVhRRFdSTgMNEEhDEEJfQEBTHR8GFw=="]}, {"id": "16ci", "label": "c i", "cue": "A lossy file format", "type": "text", "a": ["AxxQ", "AxwGFB4=", "AxxX", "AxwGFBk=", "BBwGFA==", "BBwE"], "hint": "Think of common photo, music or video formats.", "disp": "IzxQUwUuI2h1HQEfQkwuIxlDW2BidXUbWkVDHF9DOX13dw=="}, {"id": "16cii", "label": "c ii", "cue": "A lossless compression method", "type": "text", "a": ["HAAG", "HBkNH0gNFFlaVVxVAQgKHUo=", "HBkNH0gNFFla"], "hint": "It counts repeated values.", "disp": "PCAmUwURBkMfXFdYCRgLU0gNEEJWWVxRRw=="}]}, {"num": "17", "title": "Image terms", "parts": [{"id": "17a", "label": "a", "cue": "Colour depth", "type": "written", "marks": ["OgQGU0MWHk9XQhJZCEwBGlkQU1hBVVYWGgNDAUgTAUhBVVxCTgkCEEVDEEJeX0dE"]}, {"id": "17b", "label": "b", "cue": "Image resolution", "type": "written", "marks": ["OgQGU0MWHk9XQhJZCEwTGlUGH14SRFpXGkwOEkYGU1hCEFNYTgUOEkoG", "C0IEXQ1XQxQEEPGhTl9SSh8="]}]}, {"num": "18", "title": "ASCII and Unicode", "parts": [{"id": "18", "label": "", "cue": "Compare ASCII and Unicode", "type": "written", "marks": ["PRgCHUkCAUkScWF1JyVDBl4GAA0FHVBfGkwAHEkGAA==", "JxhDAUgTAUhBVVxCHUwIFlQBHExAVBJaCxgXFl8QXw1cRV9UCx4QU0wNFw1RWFNEDw8XFl8QXw1CXEdFTl9RU04MHVlAX14WDQQCAUwAB0hAQw==", "KxQXFkMHFkkScWF1JyVDBl4GAA0KHVBfGkwAHEkGAAESUV5aARsKHUpDAEJfVRJYAQJONkMEH0RBWBJVBg0REk4XFl9B", "OwIKEEIHFg1RUVwWHAkTAUgQFkNGEFNaAkwXG0hDH0xcV0dXCQkQU0IFU1laVRJBAR4PFw==", "OgQGU0sKAV5GEAMEVkw2HUQAHElXEFFeDx4CEFkGAV4SUUBTThgLFg0QEkBXEFNFTi0wMGQqXw1QRUYWOwIKEEIHFg1BRUJGAR4XAA0OEkNLEEZeARkQEkMHAA1fX0BT", "Lz8gOmRDBl5XQxJZAAlDEVQXFg1CVUAWDQQCAUwAB0hACxJjAAUAHEkGU1hBVUEWGxxDB0JDFUJHQhJUFxgGAA0TFl8SU1pXHA0AB0gR"]}]}, {"num": "19", "title": "Key terms", "parts": [{"id": "19", "label": "", "cue": "Match each description to its term", "type": "match", "a": ["IgkCAFlDAERVXltQBw8CHVlDEURG", "OhsMVF5DEEJfQF5TAwkNBw==", "IRoGAUsPHFoSVUBEAR4=", "IgMEGk4CHw1BWFtQGg==", "LwEGAUQAEkMSQ0ZXAAgCAUlDEEJWVRJQAR5DGkMFHF9fUUZfAQJDGkMXFl9RWFNYCQk=", "PQ0OA0EKHUoSQlNCCw==", "PgUbFkE="], "items": ["In a binary number, the right-most binary digit", "Method used to represent negative as well as positive numbers", "Result of adding two binary numbers that exceeds the maximum size that can be stored", "Moving bits left or right in a register, multiplying or dividing by 2ˣ", "A 7-bit code for keyboard letters, numbers and characters plus 32 control codes", "Number of sound samples taken per second", "The smallest element of a picture"], "options": ["Overflow error", "Resolution", "Unicode", "American standard code for information interchange", "Pixel", "Two's complement", "Sampling rate", "Logical shift", "Least significant bit", "Error code", "Colour depth"]}]}, {"num": "20", "title": "Multiple choice", "parts": [{"id": "20a", "label": "a", "cue": "Choose A–E", "type": "mcq", "a": ["LA=="], "options": ["A", "B", "C", "D", "E"]}, {"id": "20b", "label": "b", "cue": "Choose A–E", "type": "mcq", "a": ["Kg=="], "options": ["A", "B", "C", "D", "E"]}, {"id": "20c", "label": "c", "cue": "Choose A–E", "type": "mcq", "a": ["Lw=="], "options": ["A", "B", "C", "D", "E"]}, {"id": "20d", "label": "d", "cue": "Choose A–E", "type": "mcq", "a": ["Kg=="], "options": ["A", "B", "C", "D", "E"]}, {"id": "20e", "label": "e", "cue": "Choose A–E", "type": "mcq", "a": ["LA=="], "options": ["A", "B", "C", "D", "E"]}]}, {"num": "21", "title": "Run-length encoding", "parts": [{"id": "21a", "label": "a", "cue": "Explain RLE", "type": "written", "marks": ["JxhDGl5DEg1UX0BbTgMFU0EMAF5eVUFFTg8MHl0RFl5BWV1Y", "JxhDAUgHBk5XQxJCBglDAEQZFg1dVhJXTh8XAUQNFA1dVhJXCgYCEEgNBwESWVZTABgKEEwPU0lTRFM=", "L0wRFl0GEllXVBJFGh4KHUpDGl4SVVxVAQgGFw0CAA1GR10WGA0PBkgQSQ1GWFcWABkOEUgRU0JUEFtSCwIXGk4CHw1bRFdbHUBDB0UGHQ1GWFcWBxgGHgoQU05dVFc=", "JxhDGl5DHENeSRJTCAoGEFkKBUgSR1pTHAlDB0UGAUgSUUBTTgAMHUpDAVhcQxJZCEwRFl0GEllXVBJDAAUXAA=="]}, {"id": "21bi", "label": "b i", "cue": "RLE code for the 8 × 8 grid (e.g. 3W 2D …)", "type": "text", "a": ["XRtRFxgUR0kBRwNSXxtRFxwUQkkDRwMACl0UQklSBB9WAUUHCl8UR0lWBB9WA0U="], "hint": "Read the grid row by row, left to right, without stopping at the end of each row. Count each run.", "method": "rle", "disp": "XTtDQWlDRnoSBHYWXTtDQmlDQnoSAnYWXztDQmlDQnoSAQRyTl00UxwnUxxlEAByTl00UxwnUx5lEAZyTlk0Ux8nUx5l"}, {"id": "21bii", "label": "b ii", "cue": "Bytes saved by RLE", "type": "num", "a": ["X1Q="], "hint": "Uncompressed: one byte per square. RLE: one byte per value in your code.", "method": "rle", "note": "OgQGUxVDsLoSCBJRHAUHU0MGFklBEAQCTg4aB0gQSA1GWFcWPCAmU04MF0gSRUFTHUxXRQ0BCllXQwkWWFhDkaXxUxkEEA8WX1RDEVQXFl4SQ1NACwhN"}]}, {"num": "22", "title": "Sound sampling", "parts": [{"id": "22ai", "label": "a i", "cue": "Sampling resolution", "type": "written", "marks": ["OgQGU0MWHk9XQhJZCEwBGlkQU1hBVVYWGgNDAUgTAUhBVVxCTh8MBkMHU0xfQF5fGhkHFg=="]}, {"id": "22aii", "label": "a ii", "cue": "Sampling rate", "type": "written", "marks": ["OgQGU0MWHk9XQhJZCEwQHFgNFw1BUV9GAgkQU1kCGEhcEEJTHEwQFk4MHUk="]}, {"id": "22bi", "label": "b i", "cue": "Sampling resolution of the graph (bits)", "type": "num", "a": ["Wg=="], "hint": "Find the largest amplitude value. How many bits do you need to store it?", "method": "sampling"}, {"id": "22bii", "label": "b ii", "cue": "Sampling rate of the graph (Hz)", "type": "num", "a": ["X1w="], "hint": "Count how many samples are taken in one second.", "method": "sampling"}, {"id": "22biii9", "label": "b iii", "cue": "Point 9 → binary", "type": "bin", "a": ["X11SQw=="], "hint": "Read the amplitude at point 9, then write it using the number of bits from (b i).", "method": "sampling"}, {"id": "22biii18", "label": "b iii", "cue": "Point 18 → binary", "type": "bin", "a": ["X1xSQg=="], "hint": "Read the amplitude at point 18, then write it using the number of bits from (b i).", "method": "sampling"}, {"id": "22c", "label": "c", "cue": "Benefits and drawbacks of a larger sampling resolution", "type": "written", "marks": ["LAkNFksKBxcSXFNECQkRU0kaHUxfWVEWHA0NFEg=", "LAkNFksKBxcSUldCGgkRXw0OHF9XEFRXBxgLFVgPU15dRVxSTh0WEkEKB1Q=", "LAkNFksKBxcSXFdFHUwQHFgNFw1WWUFCAR4XGkIN", "Kh4CBE8CEEYIEF5XHAsGAQ0FGkFXQw==", "Kh4CBE8CEEYIEEZXBQkQU0EMHUpXQhJCAUwXAUwNAEBbRB1SARsNH0ICFw==", "Kh4CBE8CEEYIEFxTCwgQU0AMAUgSQEBZDQkQAEQNFA1CX0VTHA=="], "need": "Benefits and drawbacks"}]}, {"num": "23", "title": "Denary to hex by division", "parts": [{"id": "23n", "label": "", "cue": "986 → hexadecimal", "type": "hex", "a": ["XSgi"], "hint": "Divide by 16 repeatedly. Remainders above 9 become letters.", "method": "d2h"}, {"id": "23", "label": "", "cue": "Describe the method you used", "type": "written", "marks": ["JQkGAw0HGltbVFtYCUwBCg1SRQ1HXkZfAkwXG0hDBUxeRVcWXkwKAA0RFkxRWFdS", "JQkGAw0XAUxRWxJZCEwXG0hDAUhfUVtYCgkRU0wFB0hAEFdXDQRDF0QVGl5bX1w=", "PAkCFw0XG0gSQldbDwUNF0gRAA1UQl1bTg4MB1kMHg1GXxJCARw=", "LQMNBUgRBw1AVV9XBwIHFl8QU0xQX0RTTlVDGkMXHA1z0rKlKA=="]}]}, {"num": "24", "title": "Why binary and hex?", "parts": [{"id": "24a", "label": "a", "cue": "What does 'bit' stand for?", "type": "text", "a": ["DAUNEl8aF0RVWUY="], "hint": "Two words.", "disp": "DAUNEl8aU0lbV1tC"}, {"id": "24b", "label": "b", "cue": "Why do computers use binary?", "type": "written", "marks": ["LQMOA1gXFl8SU1tEDRkKB15DEl9XEF9XCglDBl1DHEsSQ0VfGg8LFl5MB19TXkFfHRgMAV6B84s=", "jOzFBEUKEEUSU1NYTg4GU2ItUwUDGRJZHEwsNWtDWx0b"]}, {"id": "24c", "label": "c", "cue": "Why do programmers use hexadecimal?", "type": "written", "marks": ["JgkbU0QQU0wSXV1EC0wLBkACHQBUQltTAAgPCg0UElQSX1QWHQQMBEQNFA1QWVxXHBVDBUwPBkhB0rKQ", "jOzFAEQNEEgSAhJeCxRDF0QEGllBEEBTHh4GAEgNBw1TXhIOQw4KBw0BGkNTQksWABkOEUgR", "JxhDGl5DFkxBSRJCAUwAHEMVFl9GEFBTGhsGFkNDG0hKEFNYCkwBGkMCAVTQsJQ=", "jOzFBEUKEEUSXVNdCx9DBF8KB0RcVxJFAQoXBEwRFg1dQhJSBw0EHUIQGkNVEFdEHAMRAA0GEl5bVUA="]}]}], "methods": {"d2b": {"t": "Denary → binary", "q": "Convert <b>178</b>.", "s": ["Write the place values: 128 64 32 16 8 4 2 1", "178 ≥ 128 → <b>1</b>, leaves 50", "50 &lt; 64 → <b>0</b>", "50 ≥ 32 → <b>1</b>, leaves 18", "18 ≥ 16 → <b>1</b>, leaves 2", "8 → <b>0</b>, 4 → <b>0</b>", "2 → <b>1</b>, leaves 0; 1 → <b>0</b>", "Answer: <code>1011 0010</code>"]}, "d2h": {"t": "Denary → hexadecimal", "q": "Convert <b>3020</b>.", "s": ["3020 ÷ 16 = 188 remainder <b>12</b> (C)", "188 ÷ 16 = 11 remainder <b>12</b> (C)", "11 ÷ 16 = 0 remainder <b>11</b> (B)", "Read the remainders bottom to top: <code>BCC</code>"]}, "b2d": {"t": "Binary → denary", "q": "Convert <b>0101 1010</b>.", "s": ["Place values: 128 64 32 16 8 4 2 1", "1s are under 64, 16, 8 and 2", "64 + 16 + 8 + 2 = <code>90</code>"]}, "h2d": {"t": "Hexadecimal → denary", "q": "Convert <b>7C</b>.", "s": ["The left digit counts 16s, the right digit counts 1s", "7 × 16 = 112", "C = 12", "112 + 12 = <code>124</code>"]}, "b2h": {"t": "Binary → hexadecimal", "q": "Convert <b>1101 0110 0011</b>.", "s": ["Split into groups of 4 from the right", "1101 = 13 = D", "0110 = 6", "0011 = 3", "Answer: <code>D63</code>"]}, "h2b": {"t": "Hexadecimal → binary", "q": "Convert <b>2B7</b>.", "s": ["Write each hex digit as 4 bits", "2 = 0010", "B = 11 = 1011", "7 = 0111", "Answer: <code>0010 1011 0111</code>"]}, "units": {"t": "Storage units", "q": "600 photos, each 8 MiB.", "s": ["Total = 600 × 8 = <code>4800 MiB</code>", "1 GiB = 1024 MiB", "4800 ÷ 1024 = <code>4.6875 GiB</code>"]}, "ascii": {"t": "ASCII upper and lower case", "q": "Letter <b>K</b>.", "s": ["K = 75", "Lower case is 32 more: k = 75 + 32 = 107", "107 = 64 + 32 + 8 + 2 + 1 = <code>0110 1011</code>"]}, "badd": {"t": "Binary addition", "q": "Add <b>0101 0110</b> and <b>0011 1001</b>.", "s": ["Work right to left, column by column", "0+0=0, 1+0=1, 1+0=1, 0+1=1", "1+1=0 carry 1", "0+1+carry 1 = 0 carry 1", "1+0+carry 1 = 0 carry 1", "0+0+carry 1 = 1", "Answer: <code>1000 1111</code> (86 + 57 = 143 ✓)"]}, "overflow": {"t": "Overflow", "q": "Add <b>1100 0000</b> and <b>0100 0001</b>.", "s": ["Column by column from the right gives 0000 0001", "The left-most column is 1 + 1 = 0 carry 1", "That carry has nowhere to go in 8 bits: <code>1 0000 0001</code>", "A 9th bit means the result (257) is too big: overflow"]}, "shift": {"t": "Logical shifts", "q": "Start with <b>0010 1100</b> (44).", "s": ["Shift right 2: every bit moves 2 places right, 0s fill from the left", "Result <code>0000 1011</code> = 11 (44 ÷ 4)", "Shift left 1 instead: <code>0101 1000</code> = 88 (44 × 2)", "Any 1-bit that falls off the end is lost, which makes the answer inaccurate"]}, "twos": {"t": "Two's complement", "q": "Write <b>−37</b>, then read <b>1110 1100</b>.", "s": ["+37 = 0010 0101", "Flip every bit: 1101 1010", "Add 1: <code>1101 1011</code> = −37", "Reading 1110 1100: the left-most bit is worth −128", "−128 + 64 + 32 + 8 + 4 = <code>−20</code>"]}, "twosrange": {"t": "Two's complement range", "q": "Using <b>4 bits</b>.", "s": ["Place values: −8 4 2 1", "Most negative: only the −8 bit on = <code>1000</code> = −8", "Most positive: everything except −8 on = <code>0111</code> = +7", "Now apply the same idea to 8 bits"]}, "imgsize": {"t": "Image file size", "q": "1024 × 768 image, 24-bit colour.", "s": ["Bits = 1024 × 768 × 24", "Bytes = that ÷ 8", "MiB = that ÷ 1024 ÷ 1024", "(1024 × 768 × 24) ÷ (8 × 1024 × 1024) = <code>2.25 MiB</code>"]}, "soundsize": {"t": "Sound file size", "q": "Mono, 20 480 samples per second, 8 bits, 512 seconds.", "s": ["Bits = 20 480 × 8 × 512", "Mono, so no × 2 (stereo would double it)", "÷ 8 for bytes, then ÷ 1024 ÷ 1024 for MiB", "(20 480 × 8 × 512) ÷ (8 × 1024 × 1024) = <code>10 MiB</code>"]}, "rle": {"t": "Run-length encoding", "q": "One row: W W W W D D D W W", "s": ["Count each run of identical values", "4 W, then 3 D, then 2 W", "Code: <code>4W 3D 2W</code>", "Uncompressed: 9 bytes. RLE: 6 values = 6 bytes. Saving: 3 bytes"]}, "sampling": {"t": "Sampling", "q": "A graph whose amplitude goes up to 7.", "s": ["Values 0–7 need 3 bits (7 = 111)", "So the sampling resolution is 3 bits", "A sample with amplitude 6 is stored as <code>110</code>", "Samples per second = sampling rate, in Hz"]}}};
+const K = "nlcs-cs-2026";
+function dec(b){const s=atob(b);let o="";for(let i=0;i<s.length;i++)o+=String.fromCharCode(s.charCodeAt(i)^K.charCodeAt(i%K.length));try{return decodeURIComponent(escape(o))}catch(e){return o}}
+const STORE="drc-progress-v1";
+let S={}; try{S=JSON.parse(localStorage.getItem(STORE)||"{}")||{}}catch(e){S={}}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}}
+const $=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+document.getElementById("revN").textContent=isFinite(REVEAL_AFTER)?REVEAL_AFTER:"(never)";
+
+function norm(s,t){
+  s=String(s||"").trim().replace(/[−–—]/g,"-");
+  if(t==="text") return s.toLowerCase().replace(/[^a-z0-9]/g,"");
+  s=s.toUpperCase().replace(/[\s,]/g,"").replace(/^(0X|&|#)/,"").replace(/(MIB|GIB|MB|GB|HZ|BITS?|BYTES?)$/,"");
+  if(t==="num") s=s.replace(/^\+/,"");
+  return s;
+}
+function diag(p,v){
+  const ans=p.a.map(x=>norm(dec(x),p.type));
+  if(p.type==="bin"){
+    if(/[^01]/.test(v)) return "Binary answers use only 0s and 1s.";
+    const lens=[...new Set(ans.map(a=>a.length))];
+    if(lens.length===1&&v.length!==lens[0]) return `Your answer has ${v.length} bits. This one needs ${lens[0]}, including any leading zeros.`;
+  }
+  if(p.type==="hex"&&/[^0-9A-F]/.test(v)) return "Hex digits are 0–9 and A–F only.";
+  if(p.type==="num"){
+    if(/^[01]{5,}$/.test(v)&&!/^[01]+$/.test(ans[0])) return "That looks like binary. This one wants a denary number.";
+    if(isNaN(Number(v))) return "This answer should be a number.";
+  }
+  return "";
+}
+function st(id){return S[id]||(S[id]={w:0})}
+
+function renderPart(p,box){
+  const s=st(p.id); box.innerHTML="";
+  const head=$("div","phead");
+  head.append($("span","plabel",esc(p.label||"")),$("span","cue",esc(p.cue)));
+  const pill=s.st==="correct"?["ok",s.first?"First try":"Correct"]:s.st==="revealed"?["rev","Revealed"]:s.st==="done"?["done","Self-marked"]:s.w?["try",`${s.w} ${s.w>1?"tries":"try"}`]:null;
+  if(pill) head.append($("span","pill "+pill[0],pill[1]));
+  box.append(head);
+  ({written:renderWritten,match:renderMatch}[p.type]||renderCheck)(p,s,box);
+}
+
+function renderCheck(p,s,box){
+  const f=$("form","ans"); let inp;
+  if(p.type==="mcq"){inp=$("select");inp.append(new Option("—",""));p.options.forEach(o=>inp.append(new Option(o,o)))}
+  else{inp=$("input");inp.type="text";inp.autocomplete="off";inp.spellcheck=false;inp.placeholder=p.type==="bin"?"e.g. 0101 1010":p.type==="hex"?"e.g. 3F":p.type==="text"?"your answer":"number"}
+  inp.id="in-"+p.id; inp.setAttribute("aria-label",`${p.label} ${p.cue}`);
+  const locked=s.st==="correct"||s.st==="revealed";
+  if(locked){inp.value=s.val||"";inp.disabled=true}else if(s.raw)inp.value=s.raw;
+  const b=$("button",null,"Check"); b.type="submit"; b.disabled=locked;
+  f.append(inp,b); box.append(f);
+  f.addEventListener("submit",e=>{e.preventDefault();check(p,inp.value,box)});
+  if(s.st==="correct"){
+    const fb=$("div","fb ok",`<b class="t">Correct.</b>`); if(p.note)fb.append($("div",null,esc(dec(p.note)))); box.append(fb);
+  }else if(s.st==="revealed"){
+    const shown=p.disp?dec(p.disp):p.a.map(dec).join(" or ");
+    const fb=$("div","fb rev",`<b class="t">Answer:</b><span class="ansval">${esc(shown)}</span>`);
+    if(p.note)fb.append($("div",null,esc(dec(p.note)))); box.append(fb); addMethod(p,box,false);
+  }else if(s.w>0){
+    const d=diag(p,norm(s.raw,p.type));
+    const fb=$("div","fb bad",`<b class="t">Not yet.</b>`);
+    if(d)fb.append($("div",null,esc(d)));
+    if(p.hint)fb.append($("div",null,"Hint: "+esc(p.hint)));
+    box.append(fb);
+    if(s.w>=2) addMethod(p,box,true);
+    if(s.w>=REVEAL_AFTER){const r=$("button","warnbtn","Show answer (recorded as revealed)");r.type="button";
+      r.onclick=()=>{s.st="revealed";save();renderPart(p,box);refresh()};box.append(r)}
+  }
+}
+function addMethod(p,box,open){
+  const m=D.methods[p.method]; if(!m) return;
+  const d=$("details","method"); d.open=open;
+  d.innerHTML=`<summary>Worked example: ${esc(m.t)} (different numbers)</summary><div>${m.q}</div><ol>${m.s.map(x=>`<li>${x}</li>`).join("")}</ol>`;
+  box.append(d);
+}
+function check(p,raw,box){
+  const s=st(p.id),v=norm(raw,p.type); if(!v) return;
+  const ans=p.a.map(x=>norm(dec(x),p.type));
+  if(ans.includes(v)){s.st="correct";s.first=!s.w;s.val=raw}
+  else if(v!==norm(s.raw,p.type)){s.w++;s.raw=raw}
+  else s.raw=raw;
+  save();renderPart(p,box);refresh();
+  const nb=box.querySelector("input,select"); if(nb&&!nb.disabled)nb.focus();
+}
+
+function renderMatch(p,s,box){
+  const locked=s.st==="correct"||s.st==="revealed";
+  const answers=p.a.map(dec); s.sel=s.sel||[];
+  const wrap=$("div","match");
+  p.items.forEach((it,i)=>{
+    const row=$("div","mrow"); const sel=$("select"); sel.id=`m-${p.id}-${i}`;
+    sel.append(new Option("Choose…",""));p.options.forEach(o=>sel.append(new Option(o,o)));
+    sel.value=s.st==="revealed"?answers[i]:(s.sel[i]||""); sel.disabled=locked;
+    sel.onchange=()=>{s.sel[i]=sel.value;save()};
+    row.append($("div",null,esc(it)),sel); wrap.append(row);
+  });
+  box.append(wrap);
+  const b=$("button",null,"Check matches");b.type="button";b.disabled=locked;
+  b.onclick=()=>{
+    const n=p.items.filter((_,i)=>s.sel[i]===answers[i]).length;
+    if(n===p.items.length){s.st="correct";s.first=!s.w}
+    else{const key=s.sel.join("|");if(key!==s.lastKey){s.w++;s.lastKey=key}s.score=n}
+    save();renderPart(p,box);refresh();
+  };
+  if(!locked) box.append(b);
+  if(s.st==="correct") box.append($("div","fb ok",`<b class="t">All matched.</b>`));
+  else if(s.st==="revealed") box.append($("div","fb rev",`<b class="t">Correct matches shown above.</b>`));
+  else if(s.w>0){
+    box.append($("div","fb bad",`<b class="t">${s.score} of ${p.items.length} correct.</b><div>The page won't say which ones. Work each one out again rather than swapping options around.</div>`));
+    if(s.w>=REVEAL_AFTER){const r=$("button","warnbtn","Show matches (recorded as revealed)");r.type="button";
+      r.onclick=()=>{s.st="revealed";save();renderPart(p,box);refresh()};box.append(r)}
+  }
+}
+
+function renderWritten(p,s,box){
+  if(s.st!=="done"){
+    const ta=$("textarea");ta.id="w-"+p.id;ta.placeholder="Write your answer here first. The mark scheme unlocks when you submit.";ta.value=s.txt||"";
+    const b=$("button",null,"Submit and see mark points");b.type="button";
+    const ok=()=>ta.value.replace(/\s/g,"").length>=12; b.disabled=!ok();
+    ta.oninput=()=>{s.txt=ta.value;save();b.disabled=!ok()};
+    b.onclick=()=>{if(!ok())return;s.txt=ta.value;s.st="done";s.ticks=[];save();renderPart(p,box);refresh()};
+    box.append(ta,b,$("div","small","Write a real attempt. Your answer stays on screen next to the mark points."));
+    return;
+  }
+  box.append($("div","mine",esc(s.txt)));
+  const fb=$("div","fb info"); const pts=p.marks.map(dec); s.ticks=s.ticks||[];
+  const cnt=$("b","t");
+  const upd=()=>cnt.textContent=`Mark points${p.need?" ("+p.need+")":""}: you ticked ${s.ticks.filter(Boolean).length} of ${pts.length}`;
+  upd(); fb.append(cnt);
+  const ul=$("ul","marks");
+  pts.forEach((m,i)=>{const li=$("li"),lab=$("label"),cb=$("input");cb.type="checkbox";cb.id=`t-${p.id}-${i}`;cb.checked=!!s.ticks[i];
+    cb.onchange=()=>{s.ticks[i]=cb.checked;save();upd()};lab.append(cb,$("span",null,esc(m)));li.append(lab);ul.append(li)});
+  fb.append(ul,$("div","small","Tick only the points your answer actually makes. Then improve your answer in your workbook."));
+  box.append(fb);
+}
+
+const main=document.getElementById("main"),nav=document.getElementById("nav");
+D.questions.forEach(q=>{
+  const sec=$("section","q");sec.id="q"+q.num;
+  sec.append($("div","qhead",`<span class="qnum">Q${q.num}</span><span class="qtitle">${esc(q.title)}</span>`));
+  q.parts.forEach(p=>{const box=$("div","part");box.dataset.id=p.id;sec.append(box);renderPart(p,box)});
+  main.append(sec);
+  const a=$("a",null,q.num);a.href="#q"+q.num;a.id="nav-"+q.num;
+  a.onclick=e=>{e.preventDefault();sec.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};
+  nav.append(a);
+});
+const foot=$("div","navfoot");const rb=$("button","ghost","Reset my progress");rb.type="button";let arm=false;
+rb.onclick=()=>{if(!arm){arm=true;rb.textContent="Click again to confirm";setTimeout(()=>{arm=false;rb.textContent="Reset my progress"},3000);return}
+  S={};save();location.reload()};
+foot.append(rb);nav.append(foot);
+
+function refresh(){
+  let c=0,f=0,r=0,w=0,total=0;
+  D.questions.forEach(q=>{
+    let done=0,rev=false,started=false;
+    q.parts.forEach(p=>{total++;const s=S[p.id]||{};
+      if(s.st==="correct"){c++;if(s.first)f++;done++}else if(s.st==="revealed"){r++;rev=true;done++}else if(s.st==="done"){w++;done++}
+      if(s.w||s.st||s.txt)started=true});
+    const a=document.getElementById("nav-"+q.num);
+    a.className=rev?"rev":done===q.parts.length?"done":started?"started":"";
+  });
+  const pct=n=>(n/total*100)+"%";
+  document.getElementById("bar").innerHTML=`<span style="width:${pct(c)};background:var(--ok)"></span><span style="width:${pct(w)};background:var(--accent)"></span><span style="width:${pct(r)};background:var(--warn)"></span>`;
+  document.getElementById("legend").innerHTML=`<span><i style="background:var(--ok)"></i>${c} correct (${f} first try)</span><span><i style="background:var(--accent)"></i>${w} self-marked</span><span><i style="background:var(--warn)"></i>${r} revealed</span><span>${total-c-w-r} to go</span>`;
+}
+refresh();
+</script>
+
+</body></html>
