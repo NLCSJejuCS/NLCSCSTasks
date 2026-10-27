@@ -315,6 +315,30 @@
       gap: 1.5rem;
     }
 
+    /* ---------- IGCSE unit groups (headings only, cards use the section colour) ---------- */
+    .unit { margin-bottom: 2.25rem; }
+    .unit:last-child { margin-bottom: 0; }
+    .unit-title {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      font-family: var(--serif);
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--section-colour);
+      padding-left: 0.75rem;
+      border-left: 4px solid var(--section-colour);
+      margin-bottom: 1rem;
+    }
+    .unit-title span {
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
     /* ---------- Cards ---------- */
     .card {
       background: #fff;
@@ -807,9 +831,13 @@
         <h2>Year 10–11</h2>
         <span class="section-sub">IGCSE Computer Science</span>
       </div>
-      <div class="grid">
 
-        <!-- IGCSE Python Practice Workbook (separate repo: nscarlettnlcs/PythonCode) -->
+        <!-- Cards are grouped by unit, each group with its own heading -->
+        <div class="unit unit-prog">
+          <h3 class="unit-title">Programming<span>Python practice</span></h3>
+          <div class="grid">
+
+<!-- IGCSE Python Practice Workbook (separate repo: nscarlettnlcs/PythonCode) -->
         <div class="card" data-tags="igcse 0478 year 10 year 11 python practice workbook coding exercises programming tests check answer">
           <div>
             <div class="card-head">
@@ -827,7 +855,14 @@
           <a href="https://nscarlettnlcs.github.io/PythonCode/" class="btn" target="_blank" rel="noopener">Open Workbook</a>
         </div>
 
-        <!-- Data Representation Checker (IGCSE 0478 Computer Systems Workbook, Chapter 1) -->
+          </div>
+        </div>
+
+        <div class="unit unit-1">
+          <h3 class="unit-title">Unit 1<span>Data representation</span></h3>
+          <div class="grid">
+
+<!-- Data Representation Checker (IGCSE 0478 Computer Systems Workbook, Chapter 1) -->
         <div class="card" data-tags="igcse 0478 year 10 year 11 data representation workbook answers checker check chapter 1 computer systems binary denary hexadecimal hex conversion ascii unicode storage units mib gib binary addition overflow logical shift two's complement file size compression rle run-length encoding sound sampling images colour depth resolution self-mark mark points hints worked examples">
           <div>
             <div class="card-head">
@@ -844,7 +879,7 @@
           <a href="./Data_Representation_Checker.html" class="btn">Open Checker</a>
         </div>
 
-        <!-- Sound Sampling Lab (IGCSE 0478 Data representation: sound) -->
+<!-- Sound Sampling Lab (IGCSE 0478 Data representation: sound) -->
         <div class="card" data-tags="igcse 0478 year 10 year 11 data representation sound sampling sample rate bit depth resolution file size calculation compression lossy lossless adc dac binary simulation keywords matching fill the gaps exam questions">
           <div>
             <div class="card-head">
@@ -861,7 +896,7 @@
           <a href="./IGCSE_Sound_Sampling_Lab.html" class="btn">Open Task</a>
         </div>
 
-        <!-- Bitmap Image Lab (IGCSE 0478 Data representation: images) -->
+<!-- Bitmap Image Lab (IGCSE 0478 Data representation: images) -->
         <div class="card" data-tags="igcse 0478 year 10 year 11 data representation images bitmap pixel resolution colour depth bit depth rgb hexadecimal metadata file size calculation vector lossy lossless binary simulation keywords matching fill the gaps exam questions">
           <div>
             <div class="card-head">
@@ -878,7 +913,33 @@
           <a href="./IGCSE_Bitmap_Image_Lab.html" class="btn">Open Task</a>
         </div>
 
-      </div>
+          </div>
+        </div>
+
+        <div class="unit unit-2">
+          <h3 class="unit-title">Unit 2<span>Data transmission</span></h3>
+          <div class="grid">
+
+<!-- Data Transmission Lab (IGCSE 0478 Unit 2: Data transmission) -->
+        <div class="card" data-tags="igcse 0478 year 10 year 11 unit 2 data transmission serial parallel simplex half-duplex full-duplex half duplex full duplex direction usb universal serial bus benefits drawbacks cable skew ascii bits keywords matching">
+          <div>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="8" x2="19" y2="8"/><polyline points="15 4 19 8 15 12"/><line x1="21" y1="16" x2="5" y2="16"/><polyline points="9 12 5 16 9 20"/></svg></span>
+              <h3 class="card-title">Data Transmission Lab</h3>
+            </div>
+            <p class="card-description">See how data travels between devices. Match the key terms, race serial against parallel over different cable lengths, choose simplex, half-duplex or full-duplex for real situations, and sort the benefits and drawbacks of USB.</p>
+            <div class="tags">
+              <span class="tag">IGCSE</span>
+              <span class="tag">Data Transmission</span>
+              <span class="tag">USB</span>
+            </div>
+          </div>
+          <a href="./data_transmission_lab.html" class="btn">Open Task</a>
+        </div>
+
+          </div>
+        </div>
+
     </section>
 
     <!-- ===================== YEAR 12–13 (IB) ===================== -->
@@ -1038,6 +1099,12 @@
         const showEmptySection = empty && inFilter && query === '';
         const showSection = visibleCards > 0 || showEmptySection;
         section.style.display = showSection ? 'block' : 'none';
+
+        // Hide a unit heading when none of its cards match
+        section.querySelectorAll('.unit').forEach(unit => {
+          const anyCard = [...unit.querySelectorAll('.card')].some(c => c.style.display !== 'none');
+          unit.style.display = anyCard ? 'block' : 'none';
+        });
         if (visibleCards > 0) anyVisible = true;
       });
 
