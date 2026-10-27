@@ -240,7 +240,7 @@
 
     .search-wrap {
       position: relative;
-      margin-bottom: 3rem;
+      margin-bottom: 2.25rem;
     }
     .search-wrap svg {
       position: absolute;
@@ -265,6 +265,106 @@
     }
     .search-input::placeholder { color: #8a95a3; }
     .search-input:focus { border-bottom-color: var(--blue); }
+
+    /* ---------- Year group tiles ---------- */
+    .years {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.9rem;
+      margin-bottom: 3rem;
+    }
+    .year {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding: 1.6rem 1.25rem 1.3rem;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      text-decoration: none;
+      transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
+    }
+    .year::before {
+      content: "";
+      position: absolute;
+      left: -1px; right: -1px; top: -1px;
+      height: 5px;
+      background: var(--section-colour);
+    }
+    .year:hover, .year:focus-visible {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px -18px rgba(11,37,69,0.45);
+      border-color: var(--section-colour);
+      outline: none;
+    }
+    .year-name {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+    .year-sub {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--section-colour);
+    }
+    .year-count {
+      margin-top: 0.6rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .year-count::after { content: " \2192"; color: var(--section-colour); font-weight: 900; }
+
+    .view-head {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.25rem 1rem;
+      padding-bottom: 0.85rem;
+      margin-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .view-head::after {
+      content: "";
+      position: absolute;
+      left: 0; bottom: -1px;
+      width: 64px; height: 3px;
+      background: var(--section-colour, var(--navy));
+    }
+    .view-head h2 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 2rem;
+      color: var(--navy);
+    }
+    .view-head .section-sub {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--section-colour, var(--navy));
+    }
+    .back {
+      flex-basis: 100%;
+      font-size: 0.8rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--blue);
+      text-decoration: none;
+      margin-bottom: 0.5rem;
+    }
+    .back:hover { text-decoration: underline; }
+    /* inside one year group the cards speak for themselves */
+    body.in-year .section-header { display: none; }
+    body.in-year .section-tools .section-header { display: flex; }
+    body.in-year .section { margin-bottom: 2rem; }
+    .lesson-list li[hidden] { display: none; }
+    [hidden] { display: none !important; }
 
     /* ---------- Sections ---------- */
     .section { margin-bottom: 3.5rem; }
@@ -570,10 +670,10 @@
         <span class="brand-text">Computing<br>Department</span>
       </a>
       <nav aria-label="Jump to section">
-        <a href="#tools">Tools</a>
-        <a href="#primary">Junior</a>
-        <a href="#ks3">Senior</a>
-        <a href="#ib">Sixth Form</a>
+        <a href="#y5">Junior</a>
+        <a href="#y7">Key Stage 3</a>
+        <a href="#igcse">IGCSE</a>
+        <a href="#ib">IB</a>
       </nav>
     </div>
   </header>
@@ -593,70 +693,52 @@
   <section class="overview" aria-label="Overview">
     <div class="container">
       <div class="stat"><div class="stat-num" id="statTasks">0</div><div class="stat-label">Tasks and resources</div></div>
-      <div class="stat"><div class="stat-num" id="statSections">0</div><div class="stat-label">Collections</div></div>
       <div class="stat"><div class="stat-num">5–13</div><div class="stat-label">Year groups covered</div></div>
     </div>
   </section>
 
   <main class="container">
 
-    <p class="eyebrow">Find a task</p>
-
-    <!-- Filter chips: counts are filled in by the script -->
-    <nav class="filters" id="filters" aria-label="Filter by year group">
-      <button class="chip active" data-filter="all">All</button>
-      <button class="chip" data-filter="tools" style="--chip-colour: var(--tools)">Tools</button>
-      <button class="chip" data-filter="lessons" style="--chip-colour: var(--lessons)">Interactive Lessons</button>
-      <button class="chip" data-filter="primary" style="--chip-colour: var(--primary)">Year 5–6</button>
-      <button class="chip" data-filter="ks3" style="--chip-colour: var(--ks3)">Year 7–9</button>
-      <button class="chip" data-filter="igcse" style="--chip-colour: var(--igcse)">IGCSE (Y10–11)</button>
-      <button class="chip" data-filter="ib" style="--chip-colour: var(--ib)">IB (Y12–13)</button>
-    </nav>
-
+    <!-- ===================== YEAR GROUPS =====================
+         The landing view shows one tile per year group. Clicking a tile shows only
+         that year's resources. Each card says which year groups it belongs to in
+         data-years (5, 6, 7, 8, 9, igcse, ib, or "all" for tools). -->
     <div class="search-wrap">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" class="search-input" placeholder="Search tasks, topics or keywords..." aria-label="Search tasks">
+      <input type="search" id="searchInput" class="search-input" placeholder="Search every year group for a task, topic or keyword..." aria-label="Search tasks">
     </div>
 
-    <!-- ===================== TOOLS (all year groups) ===================== -->
-    <section class="section section-tools" data-section="tools" id="tools">
-      <div class="section-header">
-        <h2>Tools</h2>
-        <span class="section-sub">For all year groups</span>
-      </div>
-      <div class="grid">
+    <div id="home">
+      <p class="eyebrow">Choose your year group</p>
+      <nav class="years" id="years" aria-label="Year groups">
+        <a class="year" href="#y5"    data-year="5"     style="--section-colour: var(--primary)"><span class="year-name">Year 5</span><span class="year-sub">Junior School</span><span class="year-count"></span></a>
+        <a class="year" href="#y6"    data-year="6"     style="--section-colour: var(--primary)"><span class="year-name">Year 6</span><span class="year-sub">Junior School</span><span class="year-count"></span></a>
+        <a class="year" href="#y7"    data-year="7"     style="--section-colour: var(--ks3)"><span class="year-name">Year 7</span><span class="year-sub">Key Stage 3</span><span class="year-count"></span></a>
+        <a class="year" href="#y8"    data-year="8"     style="--section-colour: var(--ks3)"><span class="year-name">Year 8</span><span class="year-sub">Key Stage 3</span><span class="year-count"></span></a>
+        <a class="year" href="#y9"    data-year="9"     style="--section-colour: var(--ks3)"><span class="year-name">Year 9</span><span class="year-sub">Key Stage 3</span><span class="year-count"></span></a>
+        <a class="year" href="#igcse" data-year="igcse" style="--section-colour: var(--igcse)"><span class="year-name">IGCSE</span><span class="year-sub">Years 10–11</span><span class="year-count"></span></a>
+        <a class="year" href="#ib"    data-year="ib"    style="--section-colour: var(--ib)"><span class="year-name">IB</span><span class="year-sub">Years 12–13</span><span class="year-count"></span></a>
+      </nav>
+    </div>
 
-        <!-- Python Coding Workspace (external Google Apps Script app) -->
-        <div class="card" data-tags="python coding programming workspace assignments ide code editor">
-          <div>
-            <div class="card-head">
-              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="8 7 3 12 8 17"/><polyline points="16 7 21 12 16 17"/><line x1="14" y1="4" x2="10" y2="20"/></svg></span>
-              <h3 class="card-title">Python Coding Workspace</h3>
-            </div>
-            <p class="card-description">Online Python coding workspace where assignments are set. Open it to find your current task, write and run your code, and submit your work.</p>
-            <div class="tags">
-              <span class="tag">Python</span>
-              <span class="tag">Coding</span>
-              <span class="tag">Assignments</span>
-            </div>
-          </div>
-          <a href="https://script.google.com/a/macros/nlcsjeju.kr/s/AKfycbybpmoLZUVRSLOjZP1zgMqa2mn4DIL9IxAmBwLKezHLWSlKj4eLqnqKJH0z8_JrIVSsVA/exec?view=teacher" class="btn" target="_blank" rel="noopener">Open Workspace</a>
-        </div>
-
-      </div>
-    </section>
+    <div class="view-head" id="viewHead" hidden>
+      <a class="back" href="#" id="backBtn">&larr; All year groups</a>
+      <h2 id="viewTitle"></h2>
+      <span class="section-sub" id="viewSub"></span>
+    </div>
+    <p class="empty" id="viewEmpty" hidden>Resources for this year group are coming soon.</p>
 
     <!-- ===================== INTERACTIVE LESSONS (separate repo) =====================
          Lives in its own repository (nscarlettnlcs/InteractiveLessons).
          data-also makes this section appear under the Year 7–9 and IGCSE filters too. -->
-    <section class="section section-lessons" data-section="lessons" data-also="ks3 igcse" id="lessons">
+    <section class="section section-lessons" data-section="lessons" data-also="ks3 igcse">
       <div class="section-header">
         <h2>Interactive Lessons</h2>
         <span class="section-sub">Teacher-led lessons for Year 7, Year 9 and IGCSE</span>
       </div>
       <div class="grid">
 
-        <div class="card card-wide" data-tags="interactive lessons live room code vote python for loops while loops functions year 7 year 9 year 10 igcse 0478 ks3 support core stretch primm">
+        <div class="card card-wide" data-years="7 9 igcse" data-tags="interactive lessons live room code vote python for loops while loops functions year 7 year 9 year 10 igcse 0478 ks3 support core stretch primm">
           <div class="card-body">
             <div>
               <div class="card-head">
@@ -672,10 +754,10 @@
               </div>
             </div>
             <ul class="lesson-list">
-              <li><strong>Year 7</strong>Python For Loops</li>
-              <li><strong>Year 7</strong>Python While Loops</li>
-              <li><strong>Year 9</strong>Python Functions</li>
-              <li><strong>Year 10</strong>While Loops (IGCSE 0478)</li>
+              <li data-year="7"><strong>Year 7</strong>Python For Loops</li>
+              <li data-year="7"><strong>Year 7</strong>Python While Loops</li>
+              <li data-year="9"><strong>Year 9</strong>Python Functions</li>
+              <li data-year="igcse"><strong>Year 10</strong>While Loops (IGCSE 0478)</li>
             </ul>
           </div>
           <a href="https://nscarlettnlcs.github.io/InteractiveLessons/" class="btn" target="_blank" rel="noopener">Open Lessons</a>
@@ -685,7 +767,7 @@
     </section>
 
     <!-- ===================== YEAR 5–6 (Primary) ===================== -->
-    <section class="section section-primary" data-section="primary" id="primary">
+    <section class="section section-primary" data-section="primary">
       <div class="section-header">
         <h2>Year 5–6</h2>
         <span class="section-sub">Junior School</span>
@@ -693,7 +775,7 @@
       <div class="grid">
 
         <!-- Yr5 ESafety Matching -->
-        <div class="card" data-tags="esafety e-safety online safety year 5 matching primary">
+        <div class="card" data-years="5" data-tags="esafety e-safety online safety year 5 matching primary">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><polyline points="8.5 12 11 14.5 15.5 9.5"/></svg></span>
@@ -709,7 +791,7 @@
         </div>
 
         <!-- Scratch Vocabulary Match (Year 6) -->
-        <div class="card" data-tags="scratch vocabulary keywords year 6 matching primary block programming sprite costume backdrop stage script block event loop variable broadcast clone coordinates condition operator direction pen message boolean input random starter challenge">
+        <div class="card" data-years="6" data-tags="scratch vocabulary keywords year 6 matching primary block programming sprite costume backdrop stage script block event loop variable broadcast clone coordinates condition operator direction pen message boolean input random starter challenge">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h6v3h4V5h6v6h-6v-1h-4v1H4z"/><path d="M4 14h9v5H4z"/><line x1="16" y1="16.5" x2="20" y2="16.5"/></svg></span>
@@ -726,7 +808,7 @@
         </div>
 
         <!-- Comment Coach (Year 6 Scratch unit: giving kind, helpful feedback) -->
-        <div class="card" data-tags="comment coach feedback comments kind helpful constructive peer review scratch knock knock joke animation year 6 primary digital footprint e-safety esafety online safety i really like next time you could have you thought about">
+        <div class="card" data-years="6" data-tags="comment coach feedback comments kind helpful constructive peer review scratch knock knock joke animation year 6 primary digital footprint e-safety esafety online safety i really like next time you could have you thought about">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M12 15.5s-3.2-1.9-3.2-4.1a1.8 1.8 0 0 1 3.2-1.1 1.8 1.8 0 0 1 3.2 1.1c0 2.2-3.2 4.1-3.2 4.1z"/></svg></span>
@@ -743,7 +825,7 @@
         </div>
 
         <!-- Lives Lab (Year 6 Scratch unit, aMAZEing Scratch: introducing variables for the maze game) -->
-        <div class="card" data-tags="lives lab variables variable maze game amazeing scratch year 6 primary lives score moves set change predict check green flag starter levels level 1 level 2 level 3 coin heart if else selection">
+        <div class="card" data-years="6" data-tags="lives lab variables variable maze game amazeing scratch year 6 primary lives score moves set change predict check green flag starter levels level 1 level 2 level 3 coin heart if else selection">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1"/><polyline points="3 9 9 9 9 15"/><polyline points="15 3 15 9 21 9"/><polyline points="21 15 15 15 15 21"/><circle cx="12" cy="12" r="1.5"/></svg></span>
@@ -763,7 +845,7 @@
     </section>
 
     <!-- ===================== YEAR 7–9 (KS3) ===================== -->
-    <section class="section section-ks3" data-section="ks3" id="ks3">
+    <section class="section section-ks3" data-section="ks3">
       <div class="section-header">
         <h2>Year 7–9</h2>
         <span class="section-sub">Key Stage 3</span>
@@ -771,7 +853,7 @@
       <div class="grid">
 
         <!-- Spot the Pattern -->
-        <div class="card" data-tags="year 7 ks3 python pattern recognition computational thinking logic">
+        <div class="card" data-years="7" data-tags="year 7 ks3 python pattern recognition computational thinking logic">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><rect x="15.5" y="3.5" width="5" height="5" rx="0.5"/><polygon points="6 15 8.8 20 3.2 20"/><circle cx="18" cy="17.5" r="2.5"/><line x1="10" y1="6" x2="13.5" y2="6" stroke-dasharray="1 2.5"/><line x1="10.5" y1="18" x2="13.5" y2="18" stroke-dasharray="1 2.5"/></svg></span>
@@ -788,7 +870,7 @@
         </div>
 
         <!-- Year 7 Python Practice Workbook (separate repo: nscarlettnlcs/NLCS_Y7_Python) -->
-        <div class="card" data-tags="year 7 ks3 python practice workbook coding exercises programming beginner tests check answer">
+        <div class="card" data-years="7" data-tags="year 7 ks3 python practice workbook coding exercises programming beginner tests check answer">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="8 7 3 12 8 17"/><polyline points="16 7 21 12 16 17"/><line x1="14" y1="4" x2="10" y2="20"/></svg></span>
@@ -806,7 +888,7 @@
         </div>
 
         <!-- Text Adventure Visualiser: Cave Escape + Mario starter code (Year 7 text adventure project introduction) -->
-        <div class="card" data-tags="year 7 ks3 python text adventure project game story print input variable if elif else selection branching indentation nested while loop room starter code mario cave escape introduction visualiser">
+        <div class="card" data-years="7" data-tags="year 7 ks3 python text adventure project game story print input variable if elif else selection branching indentation nested while loop room starter code mario cave escape introduction visualiser">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V12a9 9 0 0 1 18 0v9"/><path d="M9 21v-5a3 3 0 0 1 6 0v5"/><line x1="2" y1="21" x2="22" y2="21"/></svg></span>
@@ -826,7 +908,7 @@
     </section>
 
     <!-- ===================== YEAR 10–11 (IGCSE) ===================== -->
-    <section class="section section-igcse" data-section="igcse" id="igcse">
+    <section class="section section-igcse" data-section="igcse">
       <div class="section-header">
         <h2>Year 10–11</h2>
         <span class="section-sub">IGCSE Computer Science</span>
@@ -838,7 +920,7 @@
           <div class="grid">
 
         <!-- IGCSE Python Practice Workbook (separate repo: nscarlettnlcs/PythonCode) -->
-        <div class="card" data-tags="igcse 0478 year 10 year 11 python practice workbook coding exercises programming tests check answer">
+        <div class="card" data-years="igcse" data-tags="igcse 0478 year 10 year 11 python practice workbook coding exercises programming tests check answer">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="8 7 3 12 8 17"/><polyline points="16 7 21 12 16 17"/><line x1="14" y1="4" x2="10" y2="20"/></svg></span>
@@ -863,7 +945,7 @@
           <div class="grid">
 
         <!-- Data Representation Checker (IGCSE 0478 Computer Systems Workbook, Chapter 1) -->
-        <div class="card" data-tags="igcse 0478 year 10 year 11 data representation workbook answers checker check chapter 1 computer systems binary denary hexadecimal hex conversion ascii unicode storage units mib gib binary addition overflow logical shift two's complement file size compression rle run-length encoding sound sampling images colour depth resolution self-mark mark points hints worked examples">
+        <div class="card" data-years="igcse" data-tags="igcse 0478 year 10 year 11 data representation workbook answers checker check chapter 1 computer systems binary denary hexadecimal hex conversion ascii unicode storage units mib gib binary addition overflow logical shift two's complement file size compression rle run-length encoding sound sampling images colour depth resolution self-mark mark points hints worked examples">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="1"/><path d="M9 4V3h6v1"/><line x1="9" y1="3" x2="15" y2="3"/><polyline points="8.5 12.5 11 15 15.5 10"/></svg></span>
@@ -880,7 +962,7 @@
         </div>
 
 <!-- Sound Sampling Lab (IGCSE 0478 Data representation: sound) -->
-        <div class="card" data-tags="igcse 0478 year 10 year 11 data representation sound sampling sample rate bit depth resolution file size calculation compression lossy lossless adc dac binary simulation keywords matching fill the gaps exam questions">
+        <div class="card" data-years="igcse" data-tags="igcse 0478 year 10 year 11 data representation sound sampling sample rate bit depth resolution file size calculation compression lossy lossless adc dac binary simulation keywords matching fill the gaps exam questions">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="2 12 5 12 7 6 10 18 13 4 16 17 18 12 22 12"/></svg></span>
@@ -897,7 +979,7 @@
         </div>
 
 <!-- Bitmap Image Lab (IGCSE 0478 Data representation: images) -->
-        <div class="card" data-tags="igcse 0478 year 10 year 11 data representation images bitmap pixel resolution colour depth bit depth rgb hexadecimal metadata file size calculation vector lossy lossless binary simulation keywords matching fill the gaps exam questions">
+        <div class="card" data-years="igcse" data-tags="igcse 0478 year 10 year 11 data representation images bitmap pixel resolution colour depth bit depth rgb hexadecimal metadata file size calculation vector lossy lossless binary simulation keywords matching fill the gaps exam questions">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg></span>
@@ -921,7 +1003,7 @@
           <div class="grid">
 
         <!-- Data Packets and Switching (IGCSE 0478 Unit 2: Data transmission) -->
-        <div class="card" data-tags="igcse 0478 year 10 year 11 unit 2 data transmission data packets packet switching header payload trailer source destination ip address packet number sequence error checking router routing network envelope keywords matching">
+        <div class="card" data-years="igcse" data-tags="igcse 0478 year 10 year 11 unit 2 data transmission data packets packet switching header payload trailer source destination ip address packet number sequence error checking router routing network envelope keywords matching">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="1"/><polyline points="2 6 12 13 22 6"/></svg></span>
@@ -939,7 +1021,7 @@
 
         <!-- HIDDEN until checked: Data Transmission Lab (IGCSE 0478 Unit 2). To show it again, delete the next line and the END HIDDEN line. -->
         <!--
-        <div class="card" data-tags="igcse 0478 year 10 year 11 unit 2 data transmission serial parallel simplex half-duplex full-duplex half duplex full duplex direction usb universal serial bus benefits drawbacks cable skew ascii bits keywords matching">
+        <div class="card" data-years="igcse" data-tags="igcse 0478 year 10 year 11 unit 2 data transmission serial parallel simplex half-duplex full-duplex half duplex full duplex direction usb universal serial bus benefits drawbacks cable skew ascii bits keywords matching">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="8" x2="19" y2="8"/><polyline points="15 4 19 8 15 12"/><line x1="21" y1="16" x2="5" y2="16"/><polyline points="9 12 5 16 9 20"/></svg></span>
@@ -962,7 +1044,7 @@
     </section>
 
     <!-- ===================== YEAR 12–13 (IB) ===================== -->
-    <section class="section section-ib" data-section="ib" id="ib">
+    <section class="section section-ib" data-section="ib">
       <div class="section-header">
         <h2>Year 12–13</h2>
         <span class="section-sub">IB Diploma Computer Science</span>
@@ -970,7 +1052,7 @@
       <div class="grid">
 
         <!-- Control Systems Questions (IB Topic 1) -->
-        <div class="card" data-tags="ib cs dp topic 1 control systems sensors actuators feedback questions hardware">
+        <div class="card" data-years="ib" data-tags="ib cs dp topic 1 control systems sensors actuators feedback questions hardware">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0"/><line x1="12" y1="17" x2="16" y2="11"/><circle cx="12" cy="17" r="1.2"/><line x1="4" y1="21" x2="20" y2="21"/></svg></span>
@@ -987,7 +1069,7 @@
         </div>
 
         <!-- OLAP and Data Mining Lab (IB Topic 3) -->
-        <div class="card" data-tags="ib cs dp topic 3 databases a3.4.3 olap data mining data warehouse">
+        <div class="card" data-years="ib" data-tags="ib cs dp topic 3 databases a3.4.3 olap data mining data warehouse">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="21" x2="21" y2="21"/><rect x="5" y="12" width="3" height="6"/><rect x="10.5" y="7" width="3" height="11"/><rect x="16" y="3" width="3" height="15"/></svg></span>
@@ -1004,7 +1086,7 @@
         </div>
 
         <!-- Distributed Database Lab (IB Topic 3) -->
-        <div class="card" data-tags="ib cs dp topic 3 databases distributed database partitioning fragmentation replication concurrency locking acid transparency scalability security">
+        <div class="card" data-years="ib" data-tags="ib cs dp topic 3 databases distributed database partitioning fragmentation replication concurrency locking acid transparency scalability security">
           <div>
             <div class="card-head">
               <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="5" ry="2"/><path d="M7 5v5c0 1.1 2.2 2 5 2s5-.9 5-2V5"/><line x1="12" y1="12" x2="12" y2="15"/><line x1="5" y1="18" x2="19" y2="18"/><line x1="5" y1="15.5" x2="5" y2="18"/><line x1="19" y1="15.5" x2="19" y2="18"/><circle cx="5" cy="20" r="1.6"/><circle cx="12" cy="20" r="1.6"/><circle cx="19" cy="20" r="1.6"/></svg></span>
@@ -1018,6 +1100,34 @@
             </div>
           </div>
           <a href="./distributedDB.html" class="btn">Open Task</a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== TOOLS (all year groups) ===================== -->
+    <section class="section section-tools" data-section="tools">
+      <div class="section-header">
+        <h2>Tools</h2>
+        <span class="section-sub">For all year groups</span>
+      </div>
+      <div class="grid">
+
+        <!-- Python Coding Workspace (external Google Apps Script app) -->
+        <div class="card" data-years="all" data-tags="python coding programming workspace assignments ide code editor">
+          <div>
+            <div class="card-head">
+              <span class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="8 7 3 12 8 17"/><polyline points="16 7 21 12 16 17"/><line x1="14" y1="4" x2="10" y2="20"/></svg></span>
+              <h3 class="card-title">Python Coding Workspace</h3>
+            </div>
+            <p class="card-description">Online Python coding workspace where assignments are set. Open it to find your current task, write and run your code, and submit your work.</p>
+            <div class="tags">
+              <span class="tag">Python</span>
+              <span class="tag">Coding</span>
+              <span class="tag">Assignments</span>
+            </div>
+          </div>
+          <a href="https://script.google.com/a/macros/nlcsjeju.kr/s/AKfycbybpmoLZUVRSLOjZP1zgMqa2mn4DIL9IxAmBwLKezHLWSlKj4eLqnqKJH0z8_JrIVSsVA/exec?view=teacher" class="btn" target="_blank" rel="noopener">Open Workspace</a>
         </div>
 
       </div>
@@ -1038,10 +1148,9 @@
         <div>
           <h4>Quick links</h4>
           <ul>
-            <li><a href="#tools">Tools</a></li>
-            <li><a href="#lessons">Interactive Lessons</a></li>
-            <li><a href="#igcse">IGCSE</a></li>
-            <li><a href="#ib">IB Diploma</a></li>
+            <li><a href="#y5">Year 5</a> · <a href="#y6">Year 6</a></li>
+            <li><a href="#y7">Year 7</a> · <a href="#y8">Year 8</a> · <a href="#y9">Year 9</a></li>
+            <li><a href="#igcse">IGCSE</a> · <a href="#ib">IB Diploma</a></li>
           </ul>
         </div>
         <div>
@@ -1057,89 +1166,96 @@
     <div class="footer-bottom">
       <div class="container">
         <span>NLCS Jeju Computing Department</span>
-        <a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Back to top &uarr;</a>
+        <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Back to top &uarr;</a>
       </div>
     </div>
   </footer>
 
   <script>
     const searchInput = document.getElementById('searchInput');
-    const chips = document.querySelectorAll('.chip');
     const sections = document.querySelectorAll('.section');
+    const cards = document.querySelectorAll('.card');
     const noResults = document.getElementById('noResults');
-    let activeFilter = 'all';
+    const home = document.getElementById('home');
+    const viewHead = document.getElementById('viewHead');
+    const viewEmpty = document.getElementById('viewEmpty');
 
-    // Overview numbers
-    document.getElementById('statTasks').textContent = document.querySelectorAll('.card').length;
-    document.getElementById('statSections').textContent = sections.length;
+    // Year groups: address (#y7), heading, subheading and colour
+    const YEARS = {
+      '5':     {title: 'Year 5', sub: 'Junior School',               colour: 'var(--primary)'},
+      '6':     {title: 'Year 6', sub: 'Junior School',               colour: 'var(--primary)'},
+      '7':     {title: 'Year 7', sub: 'Key Stage 3',                 colour: 'var(--ks3)'},
+      '8':     {title: 'Year 8', sub: 'Key Stage 3',                 colour: 'var(--ks3)'},
+      '9':     {title: 'Year 9', sub: 'Key Stage 3',                 colour: 'var(--ks3)'},
+      'igcse': {title: 'IGCSE',  sub: 'Years 10–11 · Computer Science 0478', colour: 'var(--igcse)'},
+      'ib':    {title: 'IB',     sub: 'Years 12–13 · IB Diploma Computer Science', colour: 'var(--ib)'}
+    };
+    const yearFromHash = () => { const h = location.hash.replace('#', '').toLowerCase().replace(/^y(?=\d)/, '');
+      return YEARS[h] ? h : null; };
 
-    // A section belongs to a filter if it is that section, or lists it in data-also
-    function inSection(section, filter) {
-      const also = (section.dataset.also || '').split(' ');
-      return section.dataset.section === filter || also.includes(filter);
-    }
+    // Which year groups a card belongs to ("all" = every year group)
+    const yearsOf = card => (card.dataset.years || '').toLowerCase().split(/\s+/).filter(Boolean);
+    const inYear = (card, y) => { const ys = yearsOf(card); return ys.includes(y) || ys.includes('all'); };
 
-    // Show the number of tasks on each chip (only cards in that section, not data-also extras)
-    chips.forEach(chip => {
-      const f = chip.dataset.filter;
-      const count = f === 'all'
-        ? document.querySelectorAll('.card').length
-        : [...sections].filter(sec => sec.dataset.section === f)
-            .reduce((n, sec) => n + sec.querySelectorAll('.card').length, 0);
-      const span = document.createElement('span');
-      span.className = 'count';
-      span.textContent = count;
-      chip.appendChild(span);
+    // Overview number and the count on each tile (tools for every year are not counted)
+    document.getElementById('statTasks').textContent = cards.length;
+    document.querySelectorAll('.year').forEach(tile => {
+      const n = [...cards].filter(c => yearsOf(c).includes(tile.dataset.year)).length;
+      tile.querySelector('.year-count').textContent = n ? `${n} resource${n === 1 ? '' : 's'}` : 'Coming soon';
     });
 
-    function applyFilters() {
+    function show() {
+      const year = yearFromHash();
       const query = searchInput.value.trim().toLowerCase();
-      let anyVisible = false;
+      const searching = query !== '';
+      let visible = 0;
 
-      sections.forEach(section => {
-        const inFilter = activeFilter === 'all' || inSection(section, activeFilter);
-        const cards = section.querySelectorAll('.card');
-        const empty = section.querySelector('.empty');
-        let visibleCards = 0;
-
-        cards.forEach(card => {
-          const text = (
-            card.querySelector('.card-title').textContent + ' ' +
-            card.querySelector('.card-description').textContent + ' ' +
-            card.dataset.tags
-          ).toLowerCase();
-          const match = inFilter && (query === '' || text.includes(query));
-          card.style.display = match ? 'flex' : 'none';
-          if (match) visibleCards++;
-        });
-
-        // Hide a section when nothing in it matches.
-        // Empty "coming soon" sections only show when not searching.
-        const showEmptySection = empty && inFilter && query === '';
-        const showSection = visibleCards > 0 || showEmptySection;
-        section.style.display = showSection ? 'block' : 'none';
-
-        // Hide a unit heading when none of its cards match
-        section.querySelectorAll('.unit').forEach(unit => {
-          const anyCard = [...unit.querySelectorAll('.card')].some(c => c.style.display !== 'none');
-          unit.style.display = anyCard ? 'block' : 'none';
-        });
-        if (visibleCards > 0) anyVisible = true;
+      cards.forEach(card => {
+        const text = (card.querySelector('.card-title').textContent + ' ' +
+          card.querySelector('.card-description').textContent + ' ' + (card.dataset.tags || '')).toLowerCase();
+        const match = searching ? text.includes(query) : (year !== null && inYear(card, year));
+        card.style.display = match ? 'flex' : 'none';
+        if (match) visible++;
+        // the Interactive Lessons card lists only this year's lessons
+        card.querySelectorAll('.lesson-list li[data-year]').forEach(li => li.hidden = !searching && year !== null && li.dataset.year !== year);
+      });
+      sections.forEach(sec => {
+        sec.querySelectorAll('.unit').forEach(u => u.style.display = [...u.querySelectorAll('.card')].some(c => c.style.display !== 'none') ? 'block' : 'none');
+        sec.style.display = [...sec.querySelectorAll('.card')].some(c => c.style.display !== 'none') ? 'block' : 'none';
       });
 
-      noResults.style.display = (!anyVisible && query !== '') ? 'block' : 'none';
+      const inYearView = year !== null && !searching;
+      home.hidden = searching || year !== null;
+      viewHead.hidden = !(inYearView || searching);
+      document.body.classList.toggle('in-year', inYearView);
+      if (inYearView) {
+        viewHead.style.setProperty('--section-colour', YEARS[year].colour);
+        document.getElementById('viewTitle').textContent = YEARS[year].title;
+        document.getElementById('viewSub').textContent = YEARS[year].sub;
+        document.title = `${YEARS[year].title} · NLCS CS Tasks`;
+      } else if (searching) {
+        viewHead.style.removeProperty('--section-colour');
+        document.getElementById('viewTitle').textContent = 'Search results';
+        document.getElementById('viewSub').textContent = `${visible} found in every year group`;
+        document.title = 'NLCS CS Tasks Directory';
+      } else document.title = 'NLCS CS Tasks Directory';
+      document.getElementById('backBtn').textContent = searching ? '← Clear search' : '← All year groups';
+      const own = [...cards].filter(c => c.style.display !== 'none' && !yearsOf(c).includes('all')).length;
+      viewEmpty.hidden = !(inYearView && own === 0);
+      noResults.style.display = (searching && visible === 0) ? 'block' : 'none';
     }
 
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        chips.forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        activeFilter = chip.dataset.filter;
-        applyFilters();
-      });
+    document.getElementById('backBtn').addEventListener('click', e => {
+      e.preventDefault();
+      if (searchInput.value) { searchInput.value = ''; show(); searchInput.focus(); return; }
+      history.pushState(null, '', location.pathname + location.search);
+      show();
     });
-
-    searchInput.addEventListener('input', applyFilters);
+    searchInput.addEventListener('input', show);
+    window.addEventListener('hashchange', () => { searchInput.value = ''; show();
+      if (yearFromHash()) document.querySelector('main').scrollIntoView({behavior: 'smooth'}); });
+    window.addEventListener('popstate', show);
+    show();
   </script>
 </body>
 </html>
