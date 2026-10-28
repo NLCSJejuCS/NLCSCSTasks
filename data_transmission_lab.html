@@ -22,7 +22,8 @@ h1 { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 5vw, 
 h2 { font-family: var(--display); font-size: 15px; letter-spacing: .1em; text-transform: uppercase; margin: 0; color: var(--blue); }
 .logo { height: 56px; width: auto; }
 .intro { margin: 0; max-width: 66ch; }
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.reset { margin-left: auto; border: 2px solid var(--brown); background: var(--paper); color: var(--brown); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: 14px; }
 button { font: inherit; cursor: pointer; }
 .tab { border: 2px solid var(--blue); background: var(--paper); color: var(--blue); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: 14px; }
 .tab[aria-pressed="true"] { background: var(--blue); color: var(--paper); }
@@ -40,7 +41,11 @@ section { display: flex; flex-direction: column; gap: 16px; }
 .btn:disabled { opacity: .45; cursor: default; }
 
 /* Match */
-.board { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 18px; }
+.board { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1.7fr); row-gap: 10px; align-items: stretch; grid-template-rows: auto; grid-auto-rows: 1fr; }
+.board h2 { align-self: end; }
+.links { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.term { display: flex; align-items: center; }
+.meaning { justify-content: center; }
 .col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .term, .meaning { text-align: left; border: 2px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 10px; padding: 12px 14px; min-height: 52px; transition: border-color .15s, background .15s; }
 .term { font-family: var(--display); font-weight: 700; font-size: 17px; }
@@ -54,29 +59,67 @@ section { display: flex; flex-direction: column; gap: 16px; }
 @keyframes shake { 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-3px); } }
 
 /* Race */
+.why-box { border-left: 6px solid var(--blue); background: var(--tint); border-radius: 0 12px 12px 0; padding: 12px 16px; }
+.why-box p { margin: 0; }
+.missions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.mission-tab { border: 2px solid var(--line); background: var(--paper); border-radius: 12px; padding: 10px 12px; text-align: left; display: flex; flex-direction: column; gap: 2px; color: var(--ink); }
+.mission-tab small { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brown); }
+.mission-tab span { font-family: var(--display); font-weight: 700; font-size: 16px; }
+.mission-tab[aria-pressed="true"] { border-color: var(--blue); background: var(--tint); }
+.mission-tab.done small::after { content: " ✓"; color: var(--purple); }
+.mission { border: 2px solid var(--blue); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.mission h3 { margin: 0; font-family: var(--display); font-size: 20px; }
+.mission p { margin: 0; }
+.setup { display: flex; flex-wrap: wrap; gap: 8px; }
+.setup span { font-size: 13px; font-weight: 600; background: var(--tint); color: var(--blue); border-radius: 999px; padding: 4px 12px; }
+.predict { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.predict b { margin-right: 4px; }
 .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end; border: 2px solid var(--line); border-radius: 14px; padding: 14px; }
 .field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; }
 .field input[type=text], .field select { font: inherit; font-weight: 400; border: 2px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; }
-.field input[type=text] { width: 9ch; text-transform: uppercase; font-family: var(--mono); }
+.field input[type=text] { width: 12ch; text-transform: uppercase; font-family: var(--mono); }
+.field select:disabled, .check input:disabled { opacity: .6; }
 .check { display: inline-flex; gap: 8px; align-items: center; font-weight: 600; font-size: 14px; }
 .check input { width: 18px; height: 18px; accent-color: var(--blue); }
+.codes { display: flex; flex-wrap: wrap; gap: 6px; }
+.code { display: inline-flex; gap: 6px; align-items: center; border-radius: 8px; padding: 4px 8px; font-family: var(--mono); font-size: 13px; border: 2px solid; }
+.code b { font-family: var(--display); font-size: 16px; }
 .lane-card { border: 2px solid var(--line); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
 .lane-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
 .lane-head h3 { margin: 0; font-family: var(--display); font-size: 18px; }
+.lane-head h3 small { font-family: var(--body); font-weight: 400; font-size: 14px; color: #3d5566; }
 .badge { font-size: 13px; font-weight: 700; border-radius: 999px; padding: 3px 12px; background: var(--tint); color: var(--blue); }
 .badge.first { background: var(--purple); color: var(--paper); }
+.badge.wait { background: var(--tint-brown); color: var(--brown); }
 .track-row { display: grid; grid-template-columns: 70px minmax(0, 1fr) 70px; gap: 8px; align-items: stretch; }
 .end { border-radius: 10px; color: var(--paper); font: 700 13px var(--display); display: flex; align-items: center; justify-content: center; text-align: center; padding: 4px; }
 .end.s { background: var(--blue); } .end.r { background: var(--ink); }
 .track { position: relative; overflow: hidden; }
-.wire { position: absolute; left: 0; right: 0; height: 3px; background: var(--brown); opacity: .55; }
+.wire { position: absolute; left: 0; right: 0; height: 3px; background: var(--brown); opacity: .45; }
 .bit { position: absolute; width: 22px; height: 18px; margin-top: -9px; margin-left: -11px; border-radius: 4px; font: 700 12px/18px var(--mono); text-align: center; color: var(--paper); }
-.bit.b0 { background: var(--blue); } .bit.b1 { background: var(--sky); color: var(--ink); } .bit.b2 { background: var(--ink); } .bit.b3 { background: #4A90C2; }
+.c0 { background: var(--blue); border-color: var(--blue); color: var(--paper); }
+.c1 { background: var(--sky); border-color: var(--sky); color: var(--ink); }
+.c2 { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.c3 { background: var(--paper); border-color: var(--blue); color: var(--blue); }
+.code.c3 b { color: var(--blue); }
+.bit.c3 { border: 2px solid var(--blue); line-height: 14px; }
 .bit.flip { background: var(--brown) !important; color: var(--paper) !important; outline: 2px solid var(--ink); }
-.recv { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 34px; font-size: 14px; }
-.byte { font-family: var(--mono); background: var(--tint); border-radius: 6px; padding: 3px 8px; display: inline-flex; gap: 8px; align-items: center; }
-.byte b { font-family: var(--display); font-size: 16px; color: var(--blue); }
-.byte.bad { background: var(--tint-brown); } .byte.bad b { color: var(--brown); }
+.recv { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 40px; font-size: 14px; }
+.recv .lbl { font-weight: 600; margin-right: 4px; }
+.letter { font-family: var(--display); font-weight: 700; font-size: 22px; width: 34px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; background: var(--tint); color: var(--blue); }
+.letter.bad { background: var(--brown); color: var(--paper); }
+.letter.empty { background: var(--paper); border: 2px dashed var(--line); color: var(--line); }
+.steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+/* Direction reminder */
+.remind { border: 2px solid var(--line); border-radius: 14px; padding: 4px 14px 14px; }
+.remind summary { cursor: pointer; font-weight: 700; padding: 10px 0; color: var(--blue); }
+.modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mode { background: var(--tint); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.mode h3 { margin: 0; font-family: var(--display); font-size: 18px; color: var(--blue); }
+.mode p { margin: 0; font-size: 14px; }
+.mode .road { color: #3d5566; font-style: italic; }
+.mode svg { width: 100%; height: auto; max-width: 220px; }
+@media (max-width: 640px) { .modes { grid-template-columns: 1fr; } }
 
 /* Sort cards */
 .cards { display: flex; flex-direction: column; gap: 12px; }
@@ -90,7 +133,7 @@ section { display: flex; flex-direction: column; gap: 16px; }
 .why { font-size: 15px; font-weight: 600; color: var(--paper); background: var(--purple); border-radius: 8px; padding: 8px 12px; }
 .why.no { background: var(--purple-tint); color: var(--purple); border: 2px solid var(--purple); }
 
-@media (max-width: 640px) { .board { grid-template-columns: 1fr; } .track-row { grid-template-columns: 52px minmax(0, 1fr) 52px; } }
+@media (max-width: 640px) { .board { grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1.5fr); } .term { font-size: 15px; } .track-row { grid-template-columns: 52px minmax(0, 1fr) 52px; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 
@@ -104,13 +147,12 @@ section { display: flex; flex-direction: column; gap: 16px; }
     <button class="tab" data-view="race" aria-pressed="false">Serial vs parallel</button>
     <button class="tab" data-view="dir" aria-pressed="false">Which direction?</button>
     <button class="tab" data-view="usb" aria-pressed="false">USB</button>
+    <button class="reset" id="resetBtn">↺ Start this activity again</button>
   </div>
 
   <section id="v-match">
     <p class="intro">Click a term, then click the meaning that goes with it. Wrong pairs bounce back.</p>
-    <div class="board">
-      <div class="col"><h2>Terms</h2><div class="col" id="terms"></div></div>
-      <div class="col"><h2>Meanings</h2><div class="col" id="meanings"></div></div>
+    <div class="board" id="board">
     </div>
     <p class="hint" id="matchHint"></p>
     <div class="result" id="matchDone" hidden>
@@ -121,34 +163,59 @@ section { display: flex; flex-direction: column; gap: 16px; }
   </section>
 
   <section id="v-race" hidden>
-    <p class="intro">Type a short word, choose a cable length and press <b>Send</b>. Each letter is sent as 8 bits of ASCII. Watch which one finishes first and whether the word arrives correctly.</p>
+    <div class="why-box"><p><b>The big question:</b> parallel sends 8 bits at once, so why is almost every cable today (USB, phone chargers, internet) serial? Work through the three missions to find out.</p></div>
+    <div class="missions" role="group" aria-label="Missions">
+      <button class="mission-tab" data-m="0" aria-pressed="true"><small>Mission 1</small><span>Inside the computer</span></button>
+      <button class="mission-tab" data-m="1" aria-pressed="false"><small>Mission 2</small><span>A long cable</span></button>
+      <button class="mission-tab" data-m="2" aria-pressed="false"><small>Mission 3</small><span>Modern USB</span></button>
+      <button class="mission-tab" data-m="3" aria-pressed="false"><small>Free play</small><span>Your own test</span></button>
+    </div>
+    <div class="mission">
+      <h3 id="mTitle"></h3>
+      <p id="mText"></p>
+      <div class="setup" id="mSetup"></div>
+      <div class="predict" id="mPredict"></div>
+    </div>
     <div class="controls">
-      <label class="field">Word (up to 4 letters)<input type="text" id="word" maxlength="4" value="CAT" autocomplete="off"></label>
+      <label class="field">Word (up to 8 letters)<input type="text" id="word" maxlength="8" autocomplete="off"></label>
       <label class="field">Cable length
         <select id="len">
           <option value="short">5 cm (CPU to RAM)</option>
-          <option value="mid" selected>2 m (printer cable)</option>
+          <option value="mid">2 m (printer cable)</option>
           <option value="long">20 m (long cable)</option>
         </select>
       </label>
       <label class="check"><input type="checkbox" id="fast"> Modern fast serial (like USB)</label>
       <button class="btn" id="send">Send</button>
     </div>
-    <div class="lane-card">
-      <div class="lane-head"><h3>Serial: one wire</h3><span class="badge" id="sBadge">ready</span></div>
-      <div class="track-row"><div class="end s">Sender</div><div class="track" id="sTrack" style="height:40px"></div><div class="end r">Receiver</div></div>
-      <div class="recv" id="sRecv"></div>
+    <div>
+      <p style="margin:0 0 6px;font-weight:600;font-size:14px">Each letter becomes 8 bits of ASCII. Each letter has its own colour so you can follow it:</p>
+      <div class="codes" id="codes"></div>
     </div>
     <div class="lane-card">
-      <div class="lane-head"><h3>Parallel: eight wires</h3><span class="badge" id="pBadge">ready</span></div>
+      <div class="lane-head"><h3>Serial <small>one wire, one bit after another</small></h3><span class="badge" id="sBadge">ready</span></div>
+      <div class="track-row"><div class="end s">Sender</div><div class="track" id="sTrack" style="height:40px"></div><div class="end r">Receiver</div></div>
+      <div class="recv"><span class="lbl">Received:</span><span id="sRecv"></span></div>
+    </div>
+    <div class="lane-card">
+      <div class="lane-head"><h3>Parallel <small>eight wires, one letter at a time</small></h3><span class="badge" id="pBadge">ready</span></div>
       <div class="track-row"><div class="end s">Sender</div><div class="track" id="pTrack" style="height:176px"></div><div class="end r">Receiver</div></div>
-      <div class="recv" id="pRecv"></div>
+      <div class="recv"><span class="lbl">Received:</span><span id="pRecv"></span></div>
     </div>
     <p class="hint" id="raceHint"></p>
+    <div class="actions"><button class="btn warm" id="nextMission" hidden>Next mission</button></div>
   </section>
 
   <section id="v-dir" hidden>
     <p class="intro">For each situation, choose how the data travels. Then read why.</p>
+    <details class="remind" id="remind" open>
+      <summary>Reminder: the three directions (click to hide when you feel confident)</summary>
+      <div class="modes">
+        <div class="mode"><h3>Simplex</h3><svg viewBox="0 0 220 62" aria-hidden="true"><rect x="0" y="14" width="34" height="34" rx="6" fill="#0076BE"/><rect x="186" y="14" width="34" height="34" rx="6" fill="#000000"/><path d="M44 31 H160 M160 31 l-12 -8 M160 31 l-12 8" stroke="#844D00" stroke-width="5" fill="none" stroke-linecap="round" opacity="1"/></svg><p>Data travels in <b>one direction only</b>.</p><p class="road">A one-way street</p></div>
+        <div class="mode"><h3>Half-duplex</h3><svg viewBox="0 0 220 62" aria-hidden="true"><rect x="0" y="14" width="34" height="34" rx="6" fill="#0076BE"/><rect x="186" y="14" width="34" height="34" rx="6" fill="#000000"/><path d="M44 22 H160 M160 22 l-12 -8 M160 22 l-12 8" stroke="#844D00" stroke-width="5" fill="none" stroke-linecap="round" opacity="1"/><path d="M176 40 H60 M60 40 l12 -8 M60 40 l12 8" stroke="#844D00" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.25"/></svg><p>Both directions, but <b>not at the same time</b>. They take turns.</p><p class="road">A single lane with traffic lights</p></div>
+        <div class="mode"><h3>Full-duplex</h3><svg viewBox="0 0 220 62" aria-hidden="true"><rect x="0" y="14" width="34" height="34" rx="6" fill="#0076BE"/><rect x="186" y="14" width="34" height="34" rx="6" fill="#000000"/><path d="M44 22 H160 M160 22 l-12 -8 M160 22 l-12 8" stroke="#844D00" stroke-width="5" fill="none" stroke-linecap="round" opacity="1"/><path d="M176 40 H60 M60 40 l12 -8 M60 40 l12 8" stroke="#844D00" stroke-width="5" fill="none" stroke-linecap="round" opacity="1"/></svg><p>Both directions <b>at the same time</b>.</p><p class="road">A normal two-way road</p></div>
+      </div>
+    </details>
     <div class="cards" id="dirCards"></div>
     <div class="result" id="dirDone" hidden><h3>✓ All eight correct!</h3><p>Remember the roads: one-way street, single lane with traffic lights, two-way road.</p><div class="actions"><button class="btn" id="toUsb">Next: USB</button></div></div>
   </section>
@@ -166,8 +233,19 @@ section { display: flex; flex-direction: column; gap: 16px; }
   function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 
   /* tabs */
+  var current = 'match';
+  function resetView(v) {
+    if (v === 'match') newMatch();
+    else if (v === 'race') { if (running) return; doneMissions = {}; document.querySelectorAll('.mission-tab').forEach(function (t) { t.classList.remove('done'); }); setMission(0); }
+    else if (v === 'dir') { newDir(); var r = $('remind'); if (r) r.open = true; }
+    else if (v === 'usb') newUsb();
+  }
   function show(v) {
+    if (v !== current) resetView(v);
+    current = v;
+    window.scrollTo(0, 0);
     ['match', 'race', 'dir', 'usb'].forEach(function (k) { $('v-' + k).hidden = k !== v; });
+    if (v === 'match' && typeof drawLinks === 'function') drawLinks();
     document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-pressed', String(t.dataset.view === v)); });
   }
   document.querySelectorAll('.tab').forEach(function (t) { t.addEventListener('click', function () { show(t.dataset.view); }); });
@@ -188,7 +266,8 @@ section { display: flex; flex-direction: column; gap: 16px; }
   var sel = null, done = 0;
   function newMatch() {
     sel = null; done = 0; $('matchHint').textContent = ''; $('matchDone').hidden = true;
-    var T = $('terms'), M = $('meanings'); T.innerHTML = ''; M.innerHTML = '';
+    var B = $('board'); B.innerHTML = '<h2>Terms</h2><span></span><h2>Meanings</h2><svg class="links" id="links" aria-hidden="true"></svg>';
+    var termEls = [], meanEls = [];
     shuffle(PAIRS).forEach(function (p) {
       var b = document.createElement('button'); b.className = 'term'; b.textContent = p[0]; b.dataset.k = p[0];
       b.addEventListener('click', function () {
@@ -196,7 +275,7 @@ section { display: flex; flex-direction: column; gap: 16px; }
         document.querySelectorAll('.term.selected').forEach(function (x) { x.classList.remove('selected'); });
         b.classList.add('selected'); sel = b; $('matchHint').textContent = 'Now click the meaning of “' + p[0] + '”.';
       });
-      T.appendChild(b);
+      termEls.push(b);
     });
     shuffle(PAIRS).forEach(function (p) {
       var m = document.createElement('button'); m.className = 'meaning'; m.dataset.k = p[0];
@@ -207,7 +286,7 @@ section { display: flex; flex-direction: column; gap: 16px; }
         if (sel.dataset.k === m.dataset.k) {
           sel.classList.remove('selected'); sel.classList.add('done'); sel.disabled = true;
           m.classList.add('done'); m.disabled = true;
-          var tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = sel.dataset.k; m.insertBefore(tag, m.firstChild);
+          links.push([sel, m]); drawLinks();
           $('matchHint').textContent = '✓ Correct! “' + sel.dataset.k + '” matched.'; sel = null; done++;
           if (done === PAIRS.length) { $('matchHint').textContent = ''; $('matchDone').hidden = false; }
         } else {
@@ -215,92 +294,170 @@ section { display: flex; flex-direction: column; gap: 16px; }
           $('matchHint').textContent = 'Not that one. “' + sel.dataset.k + '” is still selected, so try another meaning.';
         }
       });
-      M.appendChild(m);
+      meanEls.push(m);
     });
+    links = [];
+    termEls.forEach(function (t, i) { B.appendChild(t); var g = document.createElement('span'); B.appendChild(g); B.appendChild(meanEls[i]); });
+    drawLinks();
   }
+  var links = [];
+  function drawLinks() {
+    var B = $('board'), svg = $('links'); if (!svg) return;
+    var bb = B.getBoundingClientRect();
+    svg.setAttribute('viewBox', '0 0 ' + bb.width + ' ' + bb.height);
+    var h = '<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B2C91"/></marker></defs>';
+    links.forEach(function (pr) {
+      var a = pr[0].getBoundingClientRect(), b = pr[1].getBoundingClientRect();
+      var x1 = a.right - bb.left, y1 = a.top + a.height / 2 - bb.top, x2 = b.left - bb.left - 2, y2 = b.top + b.height / 2 - bb.top, mx = (x1 + x2) / 2;
+      h += '<circle cx="' + x1 + '" cy="' + y1 + '" r="4" fill="#6B2C91"/><path d="M' + x1 + ' ' + y1 + ' C' + mx + ' ' + y1 + ' ' + mx + ' ' + y2 + ' ' + x2 + ' ' + y2 + '" fill="none" stroke="#6B2C91" stroke-width="3" marker-end="url(#ah)"/>';
+    });
+    svg.innerHTML = h;
+  }
+  window.addEventListener('resize', drawLinks);
   $('matchAgain').addEventListener('click', newMatch);
   $('toRace').addEventListener('click', function () { show('race'); });
 
   /* race */
-  var LEN = { short: { spread: 0.03, cross: 0 }, mid: { spread: 0.22, cross: 0 }, long: { spread: 0.6, cross: 1 } };
-  var D = 1100, raf = 0, running = false;
+  var LEN = { short: { spread: 0.03, cross: false, name: '5 cm' }, mid: { spread: 0.22, cross: false, name: '2 m' }, long: { spread: 0.6, cross: true, name: '20 m' } };
+  var D = 1000, running = false, mission = 0, prediction = null, doneMissions = {};
+  var MISSIONS = [
+    { title: 'Mission 1: Inside the computer', text: 'The CPU sends data to RAM, which is only a few centimetres away on the same circuit board.', len: 'short', fast: false, word: 'PACKETS',
+      q: 'Which will finish first?', opts: [['s', 'Serial'], ['p', 'Parallel']], answer: function (r) { return r.first; },
+      learn: 'Over a very short distance the eight parallel bits arrive almost together, so a new letter can go straight away. Parallel is faster here, which is why the CPU and RAM use parallel.' },
+    { title: 'Mission 2: A long cable', text: 'Now the same kind of data has to travel down a 20-metre cable to another room.', len: 'long', fast: false, word: 'NETWORK',
+      q: 'Will parallel deliver the word correctly?', opts: [['y', 'Yes'], ['n', 'No']], answer: function (r) { return r.pOk ? 'y' : 'n'; },
+      learn: 'Watch the parallel bits: they set off together but arrive at different times (skew), so the receiver has to wait for the slowest bit before the next letter. Wires side by side also interfere (crosstalk), which flipped a bit (brown). Serial has one wire, so it has neither problem.' },
+    { title: 'Mission 3: Modern USB', text: 'Modern processors can send serial bits far faster than in the past. This is how USB works over a 2-metre cable.', len: 'mid', fast: true, word: 'COMPUTER',
+      q: 'Which will finish first now?', opts: [['s', 'Serial'], ['p', 'Parallel']], answer: function (r) { return r.first; },
+      learn: 'Fast serial streams its bits so quickly that it beats parallel, and it never has to wait for skew or worry about crosstalk. It needs fewer wires too, so cables are thinner and cheaper. That is why USB replaced old parallel cables.' },
+    { title: 'Free play', text: 'Choose your own word, cable length and type of serial. Can you find a set-up where parallel wins? Where serial wins? Where the word arrives wrong?', free: true }
+  ];
   function bitsOf(ch) { return ch.charCodeAt(0).toString(2).padStart(8, '0').split('').map(Number); }
-  function chip(track, v, cls) { var d = document.createElement('div'); d.className = 'bit ' + cls; d.textContent = v; d.style.left = '0px'; track.appendChild(d); return d; }
-  function byteEl(bits, ok) {
-    var code = parseInt(bits.join(''), 2), s = document.createElement('span');
-    s.className = 'byte' + (ok ? '' : ' bad');
-    var b = document.createElement('b'); b.textContent = String.fromCharCode(code); s.appendChild(b);
-    s.appendChild(document.createTextNode(bits.join('')));
-    return s;
+  function cleanWord() { return ($('word').value || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8); }
+  function showCodes() {
+    var w = cleanWord(), box = $('codes'); box.innerHTML = '';
+    w.split('').forEach(function (ch, i) {
+      var s = document.createElement('span'); s.className = 'code c' + (i % 4);
+      s.innerHTML = '<b></b>'; s.firstChild.textContent = ch; s.appendChild(document.createTextNode(bitsOf(ch).join('')));
+      box.appendChild(s);
+    });
+  }
+  function emptyLetters(el, n) { el.innerHTML = ''; for (var i = 0; i < n; i++) { var l = document.createElement('span'); l.className = 'letter empty'; l.textContent = '?'; el.appendChild(l); } }
+  function setLetter(el, i, ch, ok) { var l = el.children[i]; if (!l) return; l.className = 'letter' + (ok ? '' : ' bad'); l.textContent = ch; }
+  function clearLanes() {
+    $('sTrack').innerHTML = '<div class="wire" style="top:50%"></div>'; $('pTrack').innerHTML = '';
+    for (var w = 0; w < 8; w++) { var wd = document.createElement('div'); wd.className = 'wire'; wd.style.top = (11 + w * 22) + 'px'; $('pTrack').appendChild(wd); }
+    var n = cleanWord().length; emptyLetters($('sRecv'), n); emptyLetters($('pRecv'), n);
+    $('sBadge').textContent = 'ready'; $('pBadge').textContent = 'ready'; $('sBadge').className = 'badge'; $('pBadge').className = 'badge';
+  }
+  function setMission(m) {
+    if (running) return;
+    mission = m; prediction = null; var M = MISSIONS[m];
+    document.querySelectorAll('.mission-tab').forEach(function (t) { t.setAttribute('aria-pressed', String(Number(t.dataset.m) === m)); });
+    $('mTitle').textContent = M.title; $('mText').textContent = M.text;
+    $('raceHint').textContent = ''; $('nextMission').hidden = true;
+    var setup = $('mSetup'); setup.innerHTML = '';
+    var P = $('mPredict'); P.innerHTML = '';
+    $('len').disabled = !M.free; $('fast').disabled = !M.free;
+    if (!M.free) {
+      $('len').value = M.len; $('fast').checked = M.fast; $('word').value = M.word;
+      [LEN[M.len].name + ' cable', M.fast ? 'fast serial' : 'old, slow serial', 'word: ' + M.word].forEach(function (t) { var s = document.createElement('span'); s.textContent = t; setup.appendChild(s); });
+      var b = document.createElement('b'); b.textContent = 'Predict first: ' + M.q; P.appendChild(b);
+      M.opts.forEach(function (o) {
+        var btn = document.createElement('button'); btn.className = 'opt'; btn.textContent = o[1];
+        btn.addEventListener('click', function () {
+          if (running) return;
+          P.querySelectorAll('.opt').forEach(function (x) { x.classList.remove('picked'); }); btn.classList.add('picked');
+          prediction = o[0]; $('send').disabled = false; $('raceHint').textContent = 'Now press Send and watch.';
+        });
+        P.appendChild(btn);
+      });
+      $('send').disabled = true;
+    } else { $('send').disabled = false; if (!cleanWord()) $('word').value = 'DATA'; }
+    showCodes(); clearLanes();
   }
   function send() {
     if (running) return;
-    var word = ($('word').value || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+    var word = cleanWord();
     if (!word) { $('raceHint').textContent = 'Type a word using the letters A to Z.'; return; }
-    $('word').value = word;
-    var L = LEN[$('len').value], fast = $('fast').checked;
+    $('word').value = word; showCodes(); clearLanes();
+    var L = LEN[$('len').value], fast = $('fast').checked, n = word.length;
     var sTrack = $('sTrack'), pTrack = $('pTrack');
-    sTrack.innerHTML = '<div class="wire" style="top:50%"></div>'; pTrack.innerHTML = '';
-    for (var w = 0; w < 8; w++) { var wd = document.createElement('div'); wd.className = 'wire'; wd.style.top = (11 + w * 22) + 'px'; pTrack.appendChild(wd); }
-    $('sRecv').innerHTML = ''; $('pRecv').innerHTML = ''; $('raceHint').textContent = '';
+    $('raceHint').textContent = ''; $('nextMission').hidden = true;
     $('sBadge').textContent = 'sending…'; $('pBadge').textContent = 'sending…';
-    $('sBadge').className = 'badge'; $('pBadge').className = 'badge';
-    var bytes = word.split('').map(bitsOf), n = bytes.length;
+    var bytes = word.split('').map(bitsOf), items = [];
+    function chip(track, v, i) { var d = document.createElement('div'); d.className = 'bit c' + (i % 4); d.textContent = v; d.style.opacity = '0'; track.appendChild(d); return d; }
     // serial: every bit queued on one wire
-    var sSlot = (fast ? 0.045 : 0.2) * D, items = [];
-    var k = 0;
-    bytes.forEach(function (bits, bi) { bits.forEach(function (v) {
-      items.push({ lane: 's', el: chip(sTrack, v, 'b' + bi), start: k * sSlot, dur: D, y: 20, byte: bi }); k++;
-    }); });
+    var sSlot = (fast ? 0.025 : 0.12) * D, k = 0;
+    bytes.forEach(function (bits, bi) { bits.forEach(function (v) { items.push({ lane: 's', el: chip(sTrack, v, bi), start: k * sSlot, dur: D, y: 20 }); k++; }); });
     var sEnd = (k - 1) * sSlot + D;
-    // parallel: one byte at a time across 8 wires; receiver must wait for the slowest bit before the next byte
-    var pSlot = (0.25 + L.spread) * D, pEnd = 0, flip = null;
-    if (L.cross) flip = { byte: Math.floor(Math.random() * n), wire: 2 + Math.floor(Math.random() * 5) };
-    var pRecvBytes = bytes.map(function (b) { return b.slice(); });
-    bytes.forEach(function (bits, bi) { bits.forEach(function (v, wi) {
-      var sk = Math.random() * L.spread * D, isFlip = flip && flip.byte === bi && flip.wire === wi;
-      if (isFlip) pRecvBytes[bi][wi] = 1 - v;
-      var it = { lane: 'p', el: chip(pTrack, v, 'b' + bi), start: bi * pSlot, dur: D + sk, y: 11 + wi * 22, byte: bi, flip: isFlip, flipped: false };
-      pEnd = Math.max(pEnd, it.start + it.dur); items.push(it);
-    }); });
-    var t0 = performance.now(), sW = sTrack.clientWidth, pW = pTrack.clientWidth, sDone = false, pDone = false, firstLane = null;
-    var sShown = 0, pShown = 0;
+    // parallel: one letter at a time across 8 wires; the next letter waits for the slowest bit
+    var pSlot = (0.15 + L.spread) * D, pEnd = 0, flip = null, byteEnd = [];
+    if (L.cross) flip = { byte: Math.floor(Math.random() * n), wire: 2 + Math.floor(Math.random() * 6) };
+    var pGot = bytes.map(function (b) { return b.slice(); });
+    bytes.forEach(function (bits, bi) {
+      byteEnd[bi] = 0;
+      bits.forEach(function (v, wi) {
+        var sk = Math.random() * L.spread * D, isFlip = !!flip && flip.byte === bi && flip.wire === wi;
+        if (isFlip) pGot[bi][wi] = 1 - v;
+        var it = { lane: 'p', el: chip(pTrack, v, bi), start: bi * pSlot, dur: D + sk, y: 11 + wi * 22, flip: isFlip, flipped: false, byte: bi };
+        byteEnd[bi] = Math.max(byteEnd[bi], it.start + it.dur); pEnd = Math.max(pEnd, it.start + it.dur); items.push(it);
+      });
+    });
+    var t0 = performance.now(), sW = sTrack.clientWidth, pW = pTrack.clientWidth, first = null, sDone = false, pDone = false, sShown = 0, pShown = 0;
     running = true; $('send').disabled = true;
     function frame(now) {
-      var t = now - t0;
+      var t = now - t0, waiting = false;
       items.forEach(function (it) {
-        var W = it.lane === 's' ? sW : pW, f = (t - it.start) / it.dur;
-        f = Math.max(0, Math.min(1, f));
+        var W = it.lane === 's' ? sW : pW, f = Math.max(0, Math.min(1, (t - it.start) / it.dur));
         it.el.style.left = (11 + f * (W - 22)) + 'px'; it.el.style.top = it.y + 'px';
-        it.el.style.opacity = (t < it.start) ? '0' : (f >= 1 ? '0.25' : '1');
+        it.el.style.opacity = t < it.start ? '0' : (f >= 1 ? '0.2' : '1');
         if (it.flip && !it.flipped && f > 0.5) { it.flipped = true; it.el.classList.add('flip'); it.el.textContent = String(1 - Number(it.el.textContent)); }
+        if (it.lane === 'p' && f >= 1 && it.byte === pShown && t < byteEnd[it.byte]) waiting = true;
       });
-      // show bytes as they complete
-      while (sShown < n && t >= (sShown * 8 + 7) * sSlot + D) { $('sRecv').appendChild(byteEl(bytes[sShown], true)); sShown++; }
-      while (pShown < n) {
-        var last = 0; items.forEach(function (it) { if (it.lane === 'p' && it.byte === pShown) last = Math.max(last, it.start + it.dur); });
-        if (t < last) break;
-        var ok = pRecvBytes[pShown].join('') === bytes[pShown].join('');
-        $('pRecv').appendChild(byteEl(pRecvBytes[pShown], ok)); pShown++;
+      while (sShown < n && t >= (sShown * 8 + 7) * sSlot + D) { setLetter($('sRecv'), sShown, word[sShown], true); sShown++; }
+      while (pShown < n && t >= byteEnd[pShown]) {
+        var ok = pGot[pShown].join('') === bytes[pShown].join('');
+        setLetter($('pRecv'), pShown, String.fromCharCode(parseInt(pGot[pShown].join(''), 2)), ok); pShown++;
       }
-      if (!sDone && t >= sEnd) { sDone = true; if (!firstLane) firstLane = 's'; $('sBadge').textContent = firstLane === 's' ? 'finished first' : 'finished second'; if (firstLane === 's') $('sBadge').className = 'badge first'; }
-      if (!pDone && t >= pEnd) { pDone = true; if (!firstLane) firstLane = 'p'; $('pBadge').textContent = firstLane === 'p' ? 'finished first' : 'finished second'; if (firstLane === 'p') $('pBadge').className = 'badge first'; }
-      if (sDone && pDone) { running = false; $('send').disabled = false; explain(firstLane, $('len').value, fast, !!flip, word, pRecvBytes); return; }
-      raf = requestAnimationFrame(frame);
+      if (!pDone) { $('pBadge').textContent = waiting ? 'waiting for the slowest bit…' : 'sending…'; $('pBadge').className = 'badge' + (waiting ? ' wait' : ''); }
+      if (!sDone && t >= sEnd) { sDone = true; if (!first) first = 's'; $('sBadge').textContent = first === 's' ? 'finished first' : 'finished second'; $('sBadge').className = 'badge' + (first === 's' ? ' first' : ''); }
+      if (!pDone && t >= pEnd) { pDone = true; if (!first) first = 'p'; $('pBadge').textContent = first === 'p' ? 'finished first' : 'finished second'; $('pBadge').className = 'badge' + (first === 'p' ? ' first' : ''); }
+      if (sDone && pDone) {
+        running = false;
+        var got = pGot.map(function (b) { return String.fromCharCode(parseInt(b.join(''), 2)); }).join('');
+        finish({ first: first, pOk: got === word, got: got, word: word, len: $('len').value, fast: fast });
+        return;
+      }
+      requestAnimationFrame(frame);
     }
-    raf = requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
   }
-  function explain(first, len, fast, crossed, word, pBytes) {
-    var got = pBytes.map(function (b) { return String.fromCharCode(parseInt(b.join(''), 2)); }).join('');
-    var msg;
-    if (len === 'short') msg = 'Over 5 cm parallel ' + (first === 'p' ? 'wins' : 'is close behind') + ': there is almost no skew, so a new byte can go straight away. This is why the CPU and RAM use parallel.';
-    else if (len === 'mid') msg = 'Over 2 m the parallel bits arrive out of step (skew), so the receiver waits for the slowest bit before the next byte can be sent. ' + (fast ? 'Fast serial streams its bits so quickly that it finishes first. This is how USB beat old parallel printer cables.' : 'Parallel still finishes first against old, slow serial. Now tick “Modern fast serial” and send again.');
-    else msg = 'Over 20 m the skew is much worse, and crosstalk flipped a bit (brown), so parallel received “' + got + '” instead of “' + word + '”. Serial has one wire, so no skew and no crosstalk. ' + (fast ? 'Fast serial also finished first.' : 'Tick “Modern fast serial” and compare the speed.');
-    $('raceHint').textContent = '✓ ' + msg;
+  function finish(r) {
+    var M = MISSIONS[mission];
+    if (M.free) {
+      $('send').disabled = false;
+      var who = r.first === 's' ? 'Serial' : 'Parallel';
+      var msg = who + ' finished first over ' + LEN[r.len].name + '. ';
+      if (!r.pOk) msg += 'Crosstalk flipped a bit, so parallel received “' + r.got + '” instead of “' + r.word + '”. ';
+      else if (r.len !== 'short') msg += 'Notice the parallel receiver waiting for the slowest bit each time (skew). ';
+      $('raceHint').textContent = msg + 'Try changing one thing at a time.';
+      return;
+    }
+    var right = M.answer(r) === prediction;
+    doneMissions[mission] = true;
+    document.querySelector('.mission-tab[data-m="' + mission + '"]').classList.add('done');
+    var extra = (mission === 1 && !r.pOk) ? ' Parallel received “' + r.got + '” instead of “' + r.word + '”.' : '';
+    $('raceHint').textContent = (right ? '✓ Your prediction was right! ' : 'Not what you predicted, and that’s fine: now you know why. ') + M.learn + extra;
+    $('send').disabled = false;
+    if (mission < 3) { $('nextMission').hidden = false; $('nextMission').textContent = mission < 2 ? 'Next mission' : 'Try free play'; }
   }
+  document.querySelectorAll('.mission-tab').forEach(function (t) { t.addEventListener('click', function () { setMission(Number(t.dataset.m)); }); });
+  $('nextMission').addEventListener('click', function () { setMission(mission + 1); });
   $('send').addEventListener('click', send);
-  $('word').addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
-
+  $('word').addEventListener('input', function () { if (!running) { showCodes(); clearLanes(); } });
+  $('word').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !$('send').disabled) send(); });
+  setMission(0);
   /* direction */
   var DIR = [
     ['A video call with your grandparents', 'F', 'You can both see and hear each other at the same time.'],
@@ -337,7 +494,7 @@ section { display: flex; flex-direction: column; gap: 16px; }
       box.appendChild(c);
     });
   }
-  function newDir() { buildSort($('dirCards'), DIR, NAMES, $('dirDone'), function (k) { return 'Not ' + NAMES[k].toLowerCase() + '. Think: which way does the data go, and can it go both ways at once?'; }); }
+  function newDir() { buildSort($('dirCards'), DIR, NAMES, $('dirDone'), function (k) { return 'Not ' + NAMES[k].toLowerCase() + '. Think: which way does the data go, and can it go both ways at once? Check the reminder at the top.'; }); }
   $('toUsb').addEventListener('click', function () { show('usb'); });
 
   /* USB */
@@ -356,5 +513,6 @@ section { display: flex; flex-direction: column; gap: 16px; }
   $('usbAgain').addEventListener('click', newUsb);
 
   newMatch(); newDir(); newUsb();
+  $('resetBtn').addEventListener('click', function () { resetView(current); if (current === 'match') drawLinks(); window.scrollTo(0, 0); });
 })();
 </script>
