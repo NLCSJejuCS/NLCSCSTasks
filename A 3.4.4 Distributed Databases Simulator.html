@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Distributed Databases Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14213d; --muted:#5b6478; --line:#d9dde7; --bg:#f4f6fa; --card:#fff;
+  --accent:#2a6fdb; --accent-soft:#e6efff;
+  --ok:#1f9d55; --ok-soft:#e3f6eb; --bad:#d64545; --bad-soft:#fde8e8; --warn:#c98a00; --warn-soft:#fff4d6;
+  --mono:'IBM Plex Mono', ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+header{background:var(--ink);color:#fff;padding:22px 24px 18px}
+header .wrap{max-width:1180px;margin:0 auto}
+header h1{margin:0 0 4px;font-size:1.6rem;letter-spacing:-.01em}
+header p{margin:0;color:#c8d0e3;max-width:820px}
+.tag{display:inline-block;font-family:var(--mono);font-size:.75rem;background:#2a3a62;color:#cfe0ff;padding:2px 8px;border-radius:99px;margin-bottom:8px}
+nav{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line)}
+nav .wrap{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:0 16px}
+nav button{border:0;background:none;font:inherit;font-weight:500;color:var(--muted);padding:13px 14px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent)}
+main{max-width:1180px;margin:0 auto;padding:22px 16px 60px}
+.panel{display:none}.panel.active{display:block}
+.lead{font-size:1.05rem;max-width:860px;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.card h3{margin:0 0 6px;font-size:1.08rem}
+.card h4{margin:12px 0 4px;font-size:.95rem}
+.grid2{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:#fff;font:inherit;font-size:.88rem;padding:6px 11px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--accent);color:#fff}
+.btn{border:1px solid var(--line);background:#fff;font:inherit;font-size:.88rem;padding:6px 12px;border-radius:8px;cursor:pointer;color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+label.lbl{font-size:.85rem;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+select,input[type=number]{font:inherit;font-size:.9rem;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+input[type=number]{width:80px}
+.small{font-size:.85rem;color:var(--muted)}
+svg#net{width:100%;height:auto;display:block;background:linear-gradient(#fbfcfe,#f3f6fb);border:1px solid var(--line);border-radius:10px;touch-action:manipulation}
+svg text{font-family:'IBM Plex Sans',sans-serif;text-anchor:middle}
+.link{stroke:#9fb0d0;stroke-width:3}
+.link.down{stroke:var(--bad);stroke-dasharray:7 6}
+.cut{fill:var(--bad);font-size:12px;font-weight:600}
+.nbox{fill:#fff;stroke:#7d8fb5;stroke-width:2}
+.node.off .nbox{fill:#eceef3;stroke:#b5bbc8;stroke-dasharray:5 4}
+.node.flash .nbox{stroke:var(--bad);stroke-width:4}
+.nname{font-weight:700;font-size:15px;fill:var(--ink)}
+.nstat{font-size:11px;fill:var(--ok)}
+.node.off .nstat{fill:var(--bad)}
+.node.off .nname,.node.off .cv,.node.off .ck{fill:#9aa1b0}
+.cell{fill:#f2f5fb;stroke:#dfe5f0}
+.cell.diff{fill:var(--warn-soft);stroke:var(--warn)}
+.ck{font-size:12px;fill:var(--muted)}
+.cv{font-family:var(--mono);font-size:13px;font-weight:600;fill:var(--ink)}
+.pkt{fill:var(--accent);stroke:#fff;stroke-width:2}
+.pkt.sync{fill:#7b4ddb}
+.pkt.back{fill:var(--ok)}
+.pkt.held{fill:#9aa1b0}
+.pktl{font-size:10px;font-weight:700;fill:#fff;pointer-events:none}
+.client rect{fill:var(--ink)}
+.client text{fill:#fff;font-size:12px}
+.readline{stroke:var(--ok);stroke-width:3;stroke-dasharray:4 4}
+.status{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.pill{padding:7px 11px;border-radius:8px;font-size:.9rem}
+.pill.ok{background:var(--ok-soft);color:#126b39}
+.pill.warn{background:var(--warn-soft);color:#7a5400}
+.pill.bad{background:var(--bad-soft);color:#9b2323}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.8rem;color:var(--muted);margin-top:8px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;margin-right:4px}
+.form-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+#log1{list-style:none;margin:0;padding:0;max-height:250px;overflow:auto;font-size:.85rem}
+#log1 li{padding:5px 0;border-bottom:1px dashed var(--line)}
+#log1 li .t{font-family:var(--mono);color:var(--muted);margin-right:6px;font-size:.78rem}
+#log1 li.bad{color:#9b2323}#log1 li.warn{color:#7a5400}#log1 li.ok{color:#126b39}
+.scen{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.scen .btn{text-align:left;padding:8px 10px}
+.scen .btn b{display:block;font-size:.9rem}
+.scen .btn span{font-size:.78rem;color:var(--muted)}
+#narr{margin:10px 0 0;padding-left:20px;font-size:.92rem}
+#narr li{margin-bottom:6px}
+#narr li:last-child{font-weight:600}
+.hint{background:var(--accent-soft);border-left:4px solid var(--accent);padding:9px 12px;border-radius:6px;font-size:.9rem;margin:10px 0}
+/* transactions */
+.vals{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0}
+.val{flex:1;min-width:120px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:#fafbfd}
+.val .k{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.val .v{font-family:var(--mono);font-size:1.5rem;font-weight:600;transition:color .3s}
+.val.db{background:var(--accent-soft);border-color:#b8cdf5}
+.val.changed .v{color:var(--accent)}
+table.tl{width:100%;border-collapse:collapse;font-size:.88rem}
+table.tl th{text-align:left;font-weight:600;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.tl td{border-bottom:1px solid var(--line);padding:7px 6px;vertical-align:top}
+table.tl td.n{font-family:var(--mono);color:var(--muted);width:30px}
+table.tl tr.newest td{background:#fffbea}
+table.tl .wait{color:var(--warn);font-weight:600}
+table.tl .err{color:var(--bad);font-weight:600}
+.verdict{margin-top:12px}
+.nodes2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0}
+.nodebox{border:2px solid #7d8fb5;border-radius:10px;padding:10px;text-align:center;background:#fff;transition:all .3s}
+.nodebox.down{border-style:dashed;border-color:#b5bbc8;background:#eceef3;color:#9aa1b0}
+.nodebox .nm{font-weight:700}
+.nodebox .bal{font-family:var(--mono);font-size:1.4rem;font-weight:600}
+.nodebox .tent{font-size:.75rem;color:var(--warn);min-height:1.1em}
+.nodebox.total{border-color:var(--line);background:#fafbfd}
+ol.steps{padding-left:22px;margin:8px 0;font-size:.9rem}
+ol.steps li{margin-bottom:5px}
+ol.steps li.bad{color:#9b2323}
+/* scaling */
+.nodecols{display:grid;gap:10px;margin:12px 0}
+.ncol{border:1px solid var(--line);border-radius:10px;padding:8px;background:#fafbfd;min-height:120px}
+.ncol h5{margin:0 0 2px;font-size:.88rem}
+.ncol .rng{font-size:.75rem;color:var(--muted);min-height:1.1em}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.chip{font-size:.74rem;background:#fff;border:1px solid var(--line);border-radius:99px;padding:1px 7px}
+.chip.moved{background:var(--warn-soft);border-color:var(--warn);animation:pop .8s}
+@keyframes pop{0%{transform:scale(1.25)}100%{transform:scale(1)}}
+.bar{height:10px;background:#e7ebf3;border-radius:99px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.bar.hot i{background:var(--warn)}.bar.over i{background:var(--bad)}
+.util{font-size:.75rem;font-family:var(--mono);color:var(--muted)}
+.metrics{display:flex;flex-wrap:wrap;gap:10px}
+.metric{flex:1;min-width:130px;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.metric .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.metric .v{font-family:var(--mono);font-size:1.25rem;font-weight:600}
+input[type=range]{width:180px;accent-color:var(--accent)}
+/* matching */
+table.match{width:100%;border-collapse:collapse}
+table.match td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.match td.f{font-weight:600;width:30%}
+table.match tr.right td{background:var(--ok-soft)}
+table.match tr.wrong td{background:var(--bad-soft)}
+.defs{list-style:none;padding:0;margin:0 0 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;font-size:.92rem}
+@media (max-width:700px){.defs{grid-template-columns:1fr}.scen{grid-template-columns:1fr}.nodes2{grid-template-columns:1fr}}
+.defs b{font-family:var(--mono);color:var(--accent);margin-right:6px}
+/* worksheet */
+details{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-top:10px;background:#fafbfd}
+details summary{cursor:pointer;font-weight:600;color:var(--accent)}
+.check li{margin-bottom:4px}
+.starter{font-style:italic;color:var(--muted);border-left:3px solid var(--line);padding-left:10px;margin:8px 0}
+a{color:var(--accent)}
+.kw{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.kw span{font-size:.78rem;background:#2a3a62;color:#dfe8ff;padding:2px 9px;border-radius:99px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="tag">IB Computer Science · A3.4.4 · HL</div>
+  <h1>Distributed Databases Simulator</h1>
+  <p>A distributed database keeps its data on several computers (nodes) at different sites, joined by a network, yet presents itself to users as one database. Run the simulations to see why that is powerful, and where it gets difficult.</p>
+  <div class="kw"><span>replication</span><span>consistency</span><span>partitioning</span><span>fault tolerance</span><span>transparency</span><span>concurrency control</span><span>ACID</span><span>scalability</span></div>
+</div></header>
+
+<nav><div class="wrap" id="tabs">
+  <button data-tab="replication">1 · Replication &amp; consistency</button>
+  <button data-tab="transactions">2 · Transactions (ACID)</button>
+  <button data-tab="scaling">3 · Partitioning &amp; scaling</button>
+  <button data-tab="match">4 · Feature matching</button>
+</div></nav>
+
+<main>
+<!-- ================= 1. REPLICATION ================= -->
+<section class="panel" id="p-replication">
+  <p class="lead">A bank keeps a copy (replica) of every account on three servers. Make transactions, cut the network, crash servers, and watch whether the copies still agree.</p>
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="toolbar">
+          <span class="small">Replication:</span>
+          <div class="seg" id="modeSeg"><button data-mode="async" class="on">Asynchronous</button><button data-mode="sync">Synchronous</button></div>
+          <label class="lbl">Network delay <input type="range" id="lat" min="500" max="4000" step="250" value="1500"> <span id="latV">1.5 s</span></label>
+        </div>
+        <div class="toolbar">
+          <button class="btn danger" id="partBtn">✂ Cut New York's network link</button>
+          <button class="btn" id="reset1">↺ Reset</button>
+          <span class="small">Tap a server to crash or restart it.</span>
+        </div>
+        <svg id="net" viewBox="0 0 600 410" aria-label="Network of three database servers"></svg>
+        <div class="legend">
+          <span><i class="dot" style="background:#2a6fdb"></i>update being replicated</span>
+          <span><i class="dot" style="background:#7b4ddb"></i>sync: "please confirm"</span>
+          <span><i class="dot" style="background:#1f9d55"></i>sync: "confirmed"</span>
+          <span><i class="dot" style="background:#9aa1b0"></i>queued (can't get through)</span>
+          <span><i class="dot" style="background:#fff4d6;border:1px solid #c98a00"></i>replicas disagree</span>
+        </div>
+        <div class="status" id="status1"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Guided scenarios</h3>
+        <div class="scen">
+          <button class="btn" data-scen="stale"><b>① Stale read</b><span>Why copies can be out of date</span></button>
+          <button class="btn" data-scen="conflict"><b>② Partition conflict</b><span>Two sites, one account</span></button>
+          <button class="btn" data-scen="sync"><b>③ Synchronous replication</b><span>Consistency vs availability</span></button>
+          <button class="btn" data-scen="failure"><b>④ Server failure</b><span>Fault tolerance &amp; transparency</span></button>
+        </div>
+        <ol id="narr"></ol>
+      </div>
+      <div class="card">
+        <h3>Do it yourself</h3>
+        <div class="form-row">
+          <label class="lbl">At <select id="wNode"><option value="SEO">Seoul</option><option value="LON">London</option><option value="NYC">New York</option></select></label>
+          <select id="wOp"><option value="-1">withdraw</option><option value="1">deposit</option></select>
+          <input type="number" id="wAmt" value="100" min="1" step="10">
+          <label class="lbl">from <select id="wAcct"><option>A</option><option>B</option></select></label>
+        </div>
+        <div class="form-row">
+          <button class="btn primary" id="wGo">Run transaction</button>
+          <button class="btn" id="rHere">Read balance at that server</button>
+        </div>
+        <div class="form-row">
+          <button class="btn" id="cA">💻 Client in Jeju: get balance A</button>
+          <button class="btn" id="cB">get balance B</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Event log</h3>
+        <ul id="log1"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2. TRANSACTIONS ================= -->
+<section class="panel" id="p-transactions">
+  <p class="lead">Two people use the same bank account from different sites. Step through each scenario one line at a time. <b>Before each step, predict what will happen.</b></p>
+  <div class="grid2">
+    <div class="card">
+      <h3>Isolation: two withdrawals at the same moment</h3>
+      <p class="small">Account balance is <b>100</b>. Alice (at the Seoul node) withdraws <b>30</b>. Bob (at the London node) withdraws <b>50</b>. The correct final balance is <b>20</b>.</p>
+      <div class="toolbar">
+        <div class="seg" id="concSeg"><button data-m="none" class="on">No concurrency control</button><button data-m="lock">With locking (isolation)</button></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn primary" id="concStep">Step ▶</button>
+        <button class="btn" id="concPlay">Play all</button>
+        <button class="btn" id="concReset">↺ Reset</button>
+      </div>
+      <div class="vals">
+        <div class="val" id="vT1"><div class="k">Alice's working copy</div><div class="v">—</div></div>
+        <div class="val db" id="vDB"><div class="k">Stored balance</div><div class="v">100</div></div>
+        <div class="val" id="vT2"><div class="k">Bob's working copy</div><div class="v">—</div></div>
+        <div class="val" id="vLock"><div class="k">Lock held by</div><div class="v">none</div></div>
+      </div>
+      <table class="tl"><thead><tr><th>#</th><th>T1 · Alice (Seoul)</th><th>T2 · Bob (London)</th><th>Database</th></tr></thead><tbody id="concBody"></tbody></table>
+      <div class="verdict" id="concVerdict"></div>
+    </div>
+
+    <div class="card">
+      <h3>Atomicity: a transfer between two sites</h3>
+      <p class="small">Move <b>200</b> from account A (stored at Seoul) to account B (stored at London). The bank holds 800 in total, and that should still be true afterwards.</p>
+      <div class="toolbar">
+        <div class="seg" id="atomSeg"><button data-m="none" class="on">Without atomicity</button><button data-m="2pc">Atomic (two-phase commit)</button></div>
+      </div>
+      <div class="toolbar">
+        <label class="lbl"><input type="checkbox" id="crash"> London crashes mid-transaction</label>
+      </div>
+      <div class="toolbar">
+        <button class="btn primary" id="atomStep">Step ▶</button>
+        <button class="btn" id="atomPlay">Play all</button>
+        <button class="btn" id="atomReset">↺ Reset</button>
+      </div>
+      <div class="nodes2">
+        <div class="nodebox" id="nbA"><div class="nm">Seoul</div><div class="small">Account A</div><div class="bal">500</div><div class="tent"></div></div>
+        <div class="nodebox" id="nbB"><div class="nm">London</div><div class="small">Account B</div><div class="bal">300</div><div class="tent"></div></div>
+        <div class="nodebox total" id="nbT"><div class="nm">Total</div><div class="small">A + B</div><div class="bal">800</div><div class="tent"></div></div>
+      </div>
+      <ol class="steps" id="atomList"></ol>
+      <div class="verdict" id="atomVerdict"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>The other two ACID properties, briefly</h3>
+    <p><b>Consistency</b>: a transaction moves the database from one valid state to another, so rules such as "balance can't go below 0" or "total money is unchanged by a transfer" are never broken. <b>Durability</b>: once a transaction is committed it survives crashes, because it has been written to permanent storage (and, in a distributed system, usually to more than one node).</p>
+  </div>
+</section>
+
+<!-- ================= 3. SCALING ================= -->
+<section class="panel" id="p-scaling">
+  <p class="lead">An online shop has 24 customers' records and a growing number of queries per second. Split the data across nodes (<b>partitioning</b>), then compare <b>scaling up</b> (a bigger server) with <b>scaling out</b> (more servers).</p>
+  <div class="card">
+    <div class="toolbar">
+      <span class="small">Partitioning:</span>
+      <div class="seg" id="partSeg"><button data-p="hash" class="on">Hash (id mod n)</button><button data-p="range">Range (by name)</button></div>
+      <span class="small" style="margin-left:8px">Scale out:</span>
+      <button class="btn" id="nMinus">− node</button><b id="nVal" style="font-family:var(--mono)">1</b><button class="btn" id="nPlus">+ node</button>
+      <label class="lbl" style="margin-left:8px">Scale up: server size
+        <select id="size"><option value="0">Standard · 100 q/s · £1/h</option><option value="1">Large · 200 q/s · £3/h</option><option value="2">Extra-large · 400 q/s · £8/h</option></select>
+      </label>
+    </div>
+    <div class="toolbar">
+      <label class="lbl">Workload <input type="range" id="load" min="50" max="800" step="25" value="150"> <b id="loadV" style="font-family:var(--mono)">150 q/s</b></label>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="k">Total capacity</div><div class="v" id="mCap"></div></div>
+      <div class="metric"><div class="k">Cost per hour</div><div class="v" id="mCost"></div></div>
+      <div class="metric"><div class="k">Cost per 100 q/s</div><div class="v" id="mEff"></div></div>
+      <div class="metric"><div class="k">If one server fails</div><div class="v" id="mFail" style="font-size:1rem"></div></div>
+    </div>
+    <div class="status" id="status3"></div>
+    <div class="nodecols" id="cols"></div>
+  </div>
+  <div class="card">
+    <h3>Challenges</h3>
+    <ol>
+      <li>Set the workload to <b>600 q/s</b>. Try to handle it with <b>one</b> server by only scaling up. What happens?</li>
+      <li>Now handle 600 q/s by scaling out with Standard servers. Compare the cost per 100 q/s with the Extra-large option.</li>
+      <li>With 4 nodes, crash one in your head: what fraction of the customers can't be reached? (In a real system each partition is also <b>replicated</b>, which fixes this. See tab 1.)</li>
+      <li>Add a node using <b>hash</b> partitioning, then using <b>range</b> partitioning. The highlighted customers had to move to a different node. Which strategy moved more data?</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= 4. MATCHING ================= -->
+<section class="panel" id="p-match">
+  <p class="lead">Match each distributed database feature to its definition. Every definition is used once.</p>
+  <div class="card">
+    <ul class="defs">
+      <li><b>i</b>Hiding the physical location of data from users.</li>
+      <li><b>ii</b>Dividing the database into smaller, independent parts across multiple nodes.</li>
+      <li><b>iii</b>The ability of the system to continue operating correctly despite failures.</li>
+      <li><b>iv</b>Mechanisms to manage simultaneous access to the database by multiple users.</li>
+      <li><b>v</b>Maintaining multiple copies of data on different nodes.</li>
+      <li><b>vi</b>Hiding the distributed nature of the database so it appears as a single system.</li>
+      <li><b>vii</b>The ability of the system to handle increasing workloads by adding more resources.</li>
+    </ul>
+    <table class="match" id="matchT"></table>
+    <div class="toolbar" style="margin-top:12px">
+      <button class="btn primary" id="mCheck">Check answers</button>
+      <button class="btn" id="mReset">↺ Reset</button>
+      <span id="mScore" style="font-weight:600"></span>
+    </div>
+    <div id="mFeedback"></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ---------- Tabs (hash routing) ---------- */
+const TABS=['replication','transactions','scaling','match'];
+function showTab(){
+  let t=location.hash.replace('#','');
+  if(!TABS.includes(t)) t='replication';
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='p-'+t));
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  window.scrollTo({top:0});
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.tab});
+window.addEventListener('hashchange',showTab);
+showTab();
+
+/* =========================================================
+   1. REPLICATION SIMULATION
+   ========================================================= */
+const IDS=['SEO','LON','NYC'];
+const NAMES={SEO:'Seoul',LON:'London',NYC:'New York'};
+const POS={SEO:{x:300,y:72},LON:{x:110,y:330},NYC:{x:490,y:330}};
+const CLIENT={x:300,y:218};
+const PAIRS=[['SEO','LON'],['SEO','NYC'],['LON','NYC']];
+let S1;
+function fresh1(){
+  const mk=()=>({up:true,data:{A:{v:500,ts:0},B:{v:300,ts:0}}});
+  return {mode:S1?S1.mode:'async',latency:S1?S1.latency:1500,partition:false,
+    nodes:{SEO:mk(),LON:mk(),NYC:mk()},packets:[],locks:{A:false,B:false},
+    txns:{},txnId:0,clock:0,ledger:{A:500,B:300},flash:null,readLine:null,start:performance.now()};
+}
+S1=fresh1();
+const svg=document.getElementById('net');
+const logEl=document.getElementById('log1');
+function log(msg,cls=''){
+  const li=document.createElement('li'); if(cls) li.className=cls;
+  const t=((performance.now()-S1.start)/1000).toFixed(1);
+  li.innerHTML=`<span class="t">${t}s</span>${msg}`;
+  logEl.prepend(li);
+}
+function linkUp(a,b){ return !(S1.partition && (a==='NYC'||b==='NYC') && a!==b); }
+function reachable(a,b){ return S1.nodes[a].up && S1.nodes[b].up && linkUp(a,b); }
+function flash(node){ S1.flash={node,until:performance.now()+900}; }
+
+function doWrite(node,acct,delta){
+  const s=S1,n=s.nodes[node];
+  const op=delta<0?`withdraw ${-delta}`:`deposit ${delta}`;
+  if(!n.up){log(`${NAMES[node]} is offline, so the transaction can't run there.`,'bad');flash(node);return false;}
+  if(s.locks[acct]){log(`${NAMES[node]}: ${op} on ${acct} must wait. Account ${acct} is locked by a transaction still waiting for confirmations.`,'warn');flash(node);return false;}
+  const cur=n.data[acct], nv=cur.v+delta;
+  if(nv<0){log(`${NAMES[node]}: ${op} refused. Insufficient funds according to its copy.`,'bad');flash(node);return false;}
+  const ts=++s.clock, others=IDS.filter(x=>x!==node);
+  if(s.mode==='async'){
+    cur.v=nv; cur.ts=ts; s.ledger[acct]+=delta;
+    log(`${NAMES[node]}: ${op} on ${acct}, committed locally (${acct} = ${nv}). Sending the update to the other replicas…`);
+    others.forEach(o=>s.packets.push({from:node,to:o,acct,v:nv,ts,t:0,kind:'repl'}));
+  }else{
+    const un=others.filter(o=>!reachable(node,o));
+    if(un.length){log(`${NAMES[node]}: ${op} on ${acct} <b>REFUSED</b>. It can't contact ${un.map(o=>NAMES[o]).join(' &amp; ')}, and synchronous replication only commits when every replica confirms.`,'bad');flash(node);return false;}
+    const id=++s.txnId; s.txns[id]={acct,v:nv,ts,delta,remaining:others.length,origin:node};
+    s.locks[acct]=true;
+    log(`${NAMES[node]}: ${op} on ${acct}. ${acct} is locked on all nodes while waiting for every replica to confirm…`);
+    others.forEach(o=>s.packets.push({from:node,to:o,acct,v:nv,ts,t:0,kind:'sync',txn:id}));
+  }
+  return true;
+}
+function deliver(p){
+  const s=S1;
+  if(p.kind==='repl'){
+    const cur=s.nodes[p.to].data[p.acct];
+    if(p.ts>cur.ts){cur.v=p.v;cur.ts=p.ts;log(`${NAMES[p.to]} received the update: ${p.acct} = ${p.v}`);}
+    else log(`${NAMES[p.to]} <b>discarded</b> an update (${p.acct} = ${p.v}) from ${NAMES[p.from]} because its own copy is newer ("last write wins").`,'warn');
+  }else{
+    const tx=s.txns[p.txn]; if(!tx) return;
+    tx.remaining--;
+    if(tx.remaining===0){
+      IDS.forEach(i=>{const d=s.nodes[i].data[tx.acct]; d.v=tx.v; d.ts=tx.ts;});
+      s.ledger[tx.acct]+=tx.delta; s.locks[tx.acct]=false; delete s.txns[p.txn];
+      log(`All replicas confirmed. Committed everywhere at the same time: ${tx.acct} = ${tx.v}. Lock released.`,'ok');
+    }
+  }
+}
+function readAt(node,acct){
+  const n=S1.nodes[node];
+  if(!n.up){log(`Can't read at ${NAMES[node]}: it's offline.`,'bad');flash(node);return;}
+  const truth=S1.ledger[acct], v=n.data[acct].v;
+  log(`Read at ${NAMES[node]}: account ${acct} = <b>${v}</b>${v!==truth?` <b>(stale! the latest accepted value is ${truth})</b>`:''}`, v!==truth?'warn':'');
+}
+function clientRead(acct){
+  const order=IDS.filter(i=>S1.nodes[i].up);
+  if(!order.length){log('Client request failed: every server is down.','bad');return;}
+  const to=order[0], v=S1.nodes[to].data[acct].v;
+  S1.readLine={to,until:performance.now()+1800};
+  let extra=to!=='SEO'?' Seoul (the nearest server) is offline, so the request was quietly redirected.':'';
+  log(`💻 Client asked "the database" for account ${acct} and got <b>${v}</b>. It was answered by ${NAMES[to]}, but the client never had to choose a server (location transparency).${extra}`,'ok');
+}
+
+let lastStatus='';
+function render1(now){
+  const s=S1; let h='';
+  PAIRS.forEach(([a,b])=>{const A=POS[a],B=POS[b],up=linkUp(a,b);
+    h+=`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="link ${up?'':'down'}"/>`;
+    if(!up) h+=`<text x="${(A.x+B.x)/2+(a==='SEO'?28:0)}" y="${(A.y+B.y)/2+(a==='SEO'?0:-8)}" class="cut">✂ link down</text>`;
+  });
+  if(s.readLine && now<s.readLine.until){const P=POS[s.readLine.to];
+    h+=`<line x1="${CLIENT.x}" y1="${CLIENT.y}" x2="${P.x}" y2="${P.y}" class="readline"/>`;}
+  h+=`<g class="client"><rect x="${CLIENT.x-48}" y="${CLIENT.y-20}" width="96" height="40" rx="8"/><text x="${CLIENT.x}" y="${CLIENT.y-3}">💻 Client</text><text x="${CLIENT.x}" y="${CLIENT.y+12}" style="font-size:10px;fill:#c8d0e3">Jeju</text></g>`;
+  const diff={};
+  ['A','B'].forEach(a=>{const vals=IDS.map(i=>s.nodes[i].data[a].v);diff[a]=!vals.every(v=>v===vals[0]);});
+  IDS.forEach(id=>{const n=s.nodes[id],P=POS[id],x=P.x-85,y=P.y-54;
+    const fl=s.flash&&s.flash.node===id&&now<s.flash.until;
+    h+=`<g class="node ${n.up?'':'off'} ${fl?'flash':''}" data-node="${id}" style="cursor:pointer">
+      <rect x="${x}" y="${y}" width="170" height="108" rx="10" class="nbox"/>
+      <text x="${P.x}" y="${y+21}" class="nname">${NAMES[id]}</text>
+      <text x="${P.x}" y="${y+37}" class="nstat">${n.up?'● online · tap to crash':'✖ offline · tap to restart'}</text>`;
+    ['A','B'].forEach((a,k)=>{const d=n.data[a],ry=y+47+k*27;
+      h+=`<rect x="${x+12}" y="${ry}" width="146" height="23" rx="5" class="cell ${diff[a]?'diff':''}"/>
+      <text x="${x+22}" y="${ry+16}" class="ck" style="text-anchor:start">Account ${a}</text>
+      <text x="${x+148}" y="${ry+16}" class="cv" style="text-anchor:end">${s.locks[a]?'🔒 ':''}${d.v}</text>`;});
+    h+='</g>';
+  });
+  s.packets.forEach(p=>{const A=POS[p.from],B=POS[p.to];const held=!reachable(p.from,p.to);
+    let t=p.t, back=false; if(t>1){t=2-t;back=true;} if(held) t=Math.max(t,0.28);
+    const x=A.x+(B.x-A.x)*t, y=A.y+(B.y-A.y)*t;
+    const cls=held?'held':(p.kind==='sync'?(back?'back':'sync'):'repl');
+    h+=`<circle cx="${x}" cy="${y}" r="10" class="pkt ${cls}"/><text x="${x}" y="${y+3.5}" class="pktl">${back?'✓':p.acct}</text>`;
+  });
+  svg.innerHTML=h;
+  // status
+  let msgs=[];
+  ['A','B'].forEach(a=>{const vals=IDS.map(i=>s.nodes[i].data[a].v);
+    if(diff[a]) msgs.push(`<div class="pill warn">⚠ Replicas disagree on account ${a}: ${IDS.map(i=>NAMES[i]+' '+s.nodes[i].data[a].v).join(' · ')}</div>`);
+    else if(vals[0]!==s.ledger[a] && !s.packets.some(p=>p.acct===a)) msgs.push(`<div class="pill bad">✖ Lost update! Every replica says ${a} = ${vals[0]}, but the transactions that were accepted add up to ${s.ledger[a]}.</div>`);
+  });
+  if(!msgs.length) msgs.push(`<div class="pill ok">✓ All replicas consistent (A = ${s.nodes.SEO.data.A.v}, B = ${s.nodes.SEO.data.B.v})</div>`);
+  const queued=s.packets.filter(p=>!reachable(p.from,p.to)).length;
+  if(queued) msgs.push(`<div class="pill warn">${queued} update message${queued>1?'s':''} queued, waiting for a server or link to come back.</div>`);
+  const st=msgs.join('');
+  if(st!==lastStatus){document.getElementById('status1').innerHTML=st;lastStatus=st;}
+}
+let last=performance.now();
+function tick(now){
+  const dt=Math.min(60,now-last); last=now;
+  for(const p of [...S1.packets]){
+    if(!reachable(p.from,p.to)) continue;
+    p.t+=dt/S1.latency;
+    const end=p.kind==='sync'?2:1;
+    if(p.t>=end){S1.packets.splice(S1.packets.indexOf(p),1);deliver(p);}
+  }
+  render1(now);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+svg.addEventListener('pointerdown',e=>{
+  const g=e.target.closest('[data-node]'); if(!g) return;
+  const id=g.dataset.node, n=S1.nodes[id];
+  n.up=!n.up;
+  log(n.up?`${NAMES[id]} restarted${S1.packets.some(p=>p.to===id)?'. Catching up on queued updates…':'.'}`:`💥 ${NAMES[id]} crashed.`, n.up?'ok':'bad');
+});
+function setMode(m){S1.mode=m;document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));}
+document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>{setMode(b.dataset.mode);log(`Replication mode: <b>${b.dataset.mode==='async'?'asynchronous':'synchronous'}</b>.`);});
+const lat=document.getElementById('lat');
+function setLat(v){S1.latency=v;lat.value=v;document.getElementById('latV').textContent=(v/1000).toFixed(1)+' s';}
+lat.oninput=()=>setLat(+lat.value);
+const partBtn=document.getElementById('partBtn');
+function setPartition(on){S1.partition=on;partBtn.classList.toggle('on',on);partBtn.textContent=on?'🔗 Repair New York\'s network link':'✂ Cut New York\'s network link';}
+partBtn.onclick=()=>{setPartition(!S1.partition);log(S1.partition?'✂ Network partition: New York is cut off from Seoul and London.':'🔗 Network repaired. Queued messages can now get through.',S1.partition?'bad':'ok');};
+function reset1(){const m=S1.mode,l=S1.latency;S1=fresh1();S1.mode=m;S1.latency=l;setPartition(false);logEl.innerHTML='';lastStatus='';}
+document.getElementById('reset1').onclick=()=>{cancelScen();reset1();document.getElementById('narr').innerHTML='';log('Simulation reset. Every replica holds A = 500, B = 300.');};
+document.getElementById('wGo').onclick=()=>doWrite(wNode.value,wAcct.value,(+wOp.value)*Math.abs(+wAmt.value||0));
+document.getElementById('rHere').onclick=()=>readAt(wNode.value,wAcct.value);
+document.getElementById('cA').onclick=()=>clientRead('A');
+document.getElementById('cB').onclick=()=>clientRead('B');
+
+/* scenarios */
+let scenTimers=[];
+function cancelScen(){scenTimers.forEach(clearTimeout);scenTimers=[];}
+const narr=document.getElementById('narr');
+function say(t){const li=document.createElement('li');li.innerHTML=t;narr.appendChild(li);}
+function run(steps){cancelScen();narr.innerHTML='';steps.forEach(([ms,fn])=>scenTimers.push(setTimeout(fn,ms)));}
+const SCEN={
+  stale:()=>run([
+    [0,()=>{reset1();setMode('async');setLat(3000);say('Asynchronous replication with a slow network (3 s delay).');}],
+    [900,()=>{doWrite('SEO','A',-100);say('A customer in Seoul withdraws 100 from account A. Seoul updates its own copy straight away and sends the change to the others.');}],
+    [2000,()=>{readAt('LON','A');say('A London bank teller checks account A and sees <b>500</b>. This is a <b>stale read</b>: the update is still travelling.');}],
+    [5200,()=>{say('The update arrives and the replicas agree again. This is <b>eventual consistency</b>: correct in the end, but not at every moment.');}],
+  ]),
+  conflict:()=>run([
+    [0,()=>{reset1();setMode('async');setLat(1500);setPartition(true);log('✂ Network partition: New York is cut off.','bad');say('The transatlantic link fails, so New York is cut off. This is a <b>network partition</b>.');}],
+    [1300,()=>{doWrite('SEO','A',-100);say('Seoul: a customer withdraws 100. Seoul now thinks A = 400.');}],
+    [2900,()=>{doWrite('NYC','A',-200);say('New York doesn\'t know about that and lets another customer withdraw 200. New York now thinks A = 300.');}],
+    [4600,()=>{say('Both withdrawals were accepted: 300 paid out in total, so A <b>should</b> be 200.');}],
+    [6200,()=>{setPartition(false);log('🔗 Network repaired.','ok');say('The link is repaired. The nodes swap updates and resolve the clash with "last write wins".');}],
+    [10200,()=>{say('Every replica now says <b>300</b>, but it should be 200. Seoul\'s withdrawal was silently overwritten. Inconsistent data has cost the bank 100.');}],
+  ]),
+  sync:()=>run([
+    [0,()=>{reset1();setMode('sync');setLat(1500);say('<b>Synchronous</b> replication: a write commits only when every replica has confirmed it.');}],
+    [900,()=>{doWrite('SEO','B',50);say('Deposit 50 into B at Seoul. B is locked 🔒 on every node until both confirmations (green ✓) come back. Nobody ever sees a mismatch.');}],
+    [5000,()=>{setPartition(true);log('✂ Network partition: New York is cut off.','bad');say('Now New York gets cut off…');}],
+    [6200,()=>{doWrite('SEO','B',50);say('Try another deposit at Seoul. It\'s <b>refused</b>: Seoul can\'t reach New York, so it won\'t risk the copies disagreeing.');}],
+    [8000,()=>{say('Trade-off: synchronous replication keeps the data <b>consistent</b>, but writes are slower and the system becomes <b>unavailable</b> for updates when the network fails.');}],
+  ]),
+  failure:()=>run([
+    [0,()=>{reset1();setMode('async');setLat(1500);say('Normal operation: three replicas of every account.');}],
+    [900,()=>{S1.nodes.SEO.up=false;log('💥 Seoul crashed.','bad');say('💥 The Seoul server crashes.');}],
+    [2100,()=>{clientRead('A');say('A client in Jeju asks for account A and still gets an answer, from London. This is <b>fault tolerance</b> through replication. The client never chose a server, which is <b>location transparency</b>.');}],
+    [4200,()=>{doWrite('LON','A',-50);say('London handles a withdrawal. The update for Seoul is queued (grey) because Seoul is down.');}],
+    [6800,()=>{S1.nodes.SEO.up=true;log('Seoul restarted. Catching up on queued updates…','ok');say('Seoul restarts and catches up from the queued update, so all replicas agree again.');}],
+  ]),
+};
+document.querySelectorAll('[data-scen]').forEach(b=>b.onclick=()=>SCEN[b.dataset.scen]());
+log('Every replica holds A = 500, B = 300. Pick a guided scenario or run your own transactions.');
+
+/* =========================================================
+   2a. ISOLATION / CONCURRENCY
+   ========================================================= */
+const CONC={
+  none:[
+    {c:1,txt:'READ balance → 100',t1:100},
+    {c:2,txt:'READ balance → 100',t2:100,db:'Both have read 100'},
+    {c:1,txt:'CALCULATE 100 − 30 = 70',t1:70},
+    {c:2,txt:'CALCULATE 100 − 50 = 50',t2:50},
+    {c:1,txt:'WRITE 70',bal:70,db:'balance = 70'},
+    {c:2,txt:'WRITE 50',bal:50,db:'<span class="err">balance = 50. Alice\'s update is overwritten!</span>'},
+  ],
+  lock:[
+    {c:1,txt:'LOCK account → granted',lock:'Alice',db:'🔒 locked by T1'},
+    {c:1,txt:'READ balance → 100',t1:100},
+    {c:2,txt:'<span class="wait">LOCK account → WAIT</span> (T1 holds the lock)',db:'T2 queued'},
+    {c:1,txt:'CALCULATE 100 − 30 = 70',t1:70},
+    {c:1,txt:'WRITE 70',bal:70,db:'balance = 70'},
+    {c:1,txt:'COMMIT &amp; UNLOCK',lock:'none',db:'🔓 released'},
+    {c:2,txt:'LOCK account → granted',lock:'Bob',db:'🔒 locked by T2'},
+    {c:2,txt:'READ balance → 70',t2:70},
+    {c:2,txt:'CALCULATE 70 − 50 = 20',t2:20},
+    {c:2,txt:'WRITE 20',bal:20,db:'balance = 20'},
+    {c:2,txt:'COMMIT &amp; UNLOCK',lock:'none',db:'🔓 released'},
+  ]
+};
+let cm='none',ci=0,cTimer=null;
+function renderConc(changed){
+  const steps=CONC[cm]; let st={t1:'—',t2:'—',bal:100,lock:'none'};
+  let rows='';
+  for(let k=0;k<ci;k++){const s=steps[k];
+    ['t1','t2','bal','lock'].forEach(f=>{if(s[f]!==undefined) st[f]=s[f];});
+    rows+=`<tr class="${k===ci-1?'newest':''}"><td class="n">${k+1}</td><td>${s.c===1?s.txt:''}</td><td>${s.c===2?s.txt:''}</td><td>${s.db||''}</td></tr>`;
+  }
+  if(ci<steps.length) rows+=`<tr><td class="n">${ci+1}</td><td colspan="3" class="small">What happens next? Predict, then press Step.</td></tr>`;
+  document.getElementById('concBody').innerHTML=rows;
+  const set=(id,v,f)=>{const el=document.getElementById(id);el.querySelector('.v').textContent=v;el.classList.toggle('changed',!!(changed&&changed[f]!==undefined));};
+  const lastS=ci?steps[ci-1]:null;
+  set('vT1',st.t1,lastS&&lastS.t1!==undefined?{t1:1}:null);
+  set('vT2',st.t2,lastS&&lastS.t2!==undefined?{t2:1}:null);
+  set('vDB',st.bal,lastS&&lastS.bal!==undefined?{bal:1}:null);
+  set('vLock',st.lock,lastS&&lastS.lock!==undefined?{lock:1}:null);
+  const v=document.getElementById('concVerdict');
+  if(ci===steps.length){
+    v.innerHTML=st.bal===20?`<div class="pill ok">✓ Final balance 20, which is correct. Locking made the transactions behave as if they ran one after the other: <b>isolation</b>.</div>`
+      :`<div class="pill bad">✖ Final balance ${st.bal}, but it should be 20. Both transactions read 100 before either wrote, so Bob's write overwrote Alice's. This is a <b>lost update</b>, caused by a lack of isolation.</div>`;
+  } else v.innerHTML='';
+  document.getElementById('concStep').disabled=ci>=steps.length;
+}
+function concReset(){clearInterval(cTimer);cTimer=null;ci=0;renderConc();}
+document.querySelectorAll('#concSeg button').forEach(b=>b.onclick=()=>{cm=b.dataset.m;document.querySelectorAll('#concSeg button').forEach(x=>x.classList.toggle('on',x===b));concReset();});
+document.getElementById('concStep').onclick=()=>{if(ci<CONC[cm].length){ci++;renderConc(true);}};
+document.getElementById('concPlay').onclick=()=>{concReset();cTimer=setInterval(()=>{if(ci>=CONC[cm].length){clearInterval(cTimer);return;}ci++;renderConc(true);},900);};
+document.getElementById('concReset').onclick=concReset;
+renderConc();
+
+/* =========================================================
+   2b. ATOMICITY / TWO-PHASE COMMIT
+   ========================================================= */
+let am='none',ai=0,aTimer=null;
+function atomSteps(){
+  const crash=document.getElementById('crash').checked, S=[];
+  if(am==='none'){
+    S.push({txt:'Seoul debits 200 from account A and saves it.',A:300});
+    if(crash){
+      S.push({txt:'💥 The London server crashes.',Bup:false,bad:true});
+      S.push({txt:'Seoul → London: "credit 200 to B". No reply, so the credit never happens.',bad:true});
+      S.push({txt:'Seoul has already saved its change and nothing undoes it.',bad:true});
+    }else{
+      S.push({txt:'London credits 200 to account B and saves it.',B:500});
+      S.push({txt:'Done. (It worked this time, but only because nothing failed.)'});
+    }
+  }else{
+    S.push({txt:'Seoul acts as <b>coordinator</b> and starts transaction T: move 200 from A to B.'});
+    S.push({txt:'Seoul tentatively debits A. The change is written to a log but is not final yet.',A:300,tA:'tentative (logged)'});
+    if(crash){
+      S.push({txt:'💥 The London server crashes.',Bup:false,bad:true});
+      S.push({txt:'<b>Phase 1 · PREPARE:</b> coordinator asks London "can you commit?" No vote arrives before the timeout.'});
+      S.push({txt:'<b>Phase 2 · ABORT:</b> not every node voted YES, so the whole transaction is cancelled.'});
+      S.push({txt:'Seoul uses its log to <b>roll back</b>: A is restored to 500. When London restarts, it asks the coordinator and learns T was aborted.',A:500,tA:''});
+    }else{
+      S.push({txt:'<b>Phase 1 · PREPARE:</b> London tentatively credits B, logs it and votes <b>YES</b>.',B:500,tB:'tentative (logged)'});
+      S.push({txt:'<b>Phase 2 · COMMIT:</b> every node voted YES, so the coordinator sends COMMIT and both changes become permanent.',tA:'',tB:''});
+    }
+  }
+  return S;
+}
+function renderAtom(){
+  const steps=atomSteps(); let st={A:500,B:300,Bup:true,tA:'',tB:''};
+  let li='';
+  for(let k=0;k<ai;k++){const s=steps[k];['A','B','Bup','tA','tB'].forEach(f=>{if(s[f]!==undefined) st[f]=s[f];});li+=`<li class="${s.bad?'bad':''}">${s.txt}</li>`;}
+  if(ai<steps.length) li+=`<li class="small" style="list-style:none;margin-left:-22px">Predict the next step, then press Step.</li>`;
+  document.getElementById('atomList').innerHTML=li;
+  const nA=document.getElementById('nbA'),nB=document.getElementById('nbB'),nT=document.getElementById('nbT');
+  nA.querySelector('.bal').textContent=st.A; nA.querySelector('.tent').textContent=st.tA;
+  nB.querySelector('.bal').textContent=st.B; nB.querySelector('.tent').textContent=st.Bup?st.tB:'offline';
+  nB.classList.toggle('down',!st.Bup);
+  const tot=st.A+st.B; nT.querySelector('.bal').textContent=tot;
+  nT.querySelector('.tent').textContent=(st.tA||st.tB)?'includes tentative values':'';
+  nT.style.borderColor=(ai===steps.length&&tot!==800)?'var(--bad)':'';
+  const v=document.getElementById('atomVerdict');
+  if(ai===steps.length){
+    if(tot!==800) v.innerHTML=`<div class="pill bad">✖ Total is ${tot}: 200 has vanished. Half the transaction happened and half didn't. This is exactly what <b>atomicity</b> prevents.</div>`;
+    else if(am==='2pc'&&st.A===500) v.innerHTML=`<div class="pill ok">✓ The transfer didn't happen, but no money was lost. All or nothing: here, <b>nothing</b>. The customer can simply try again.</div>`;
+    else v.innerHTML=`<div class="pill ok">✓ Transfer complete and the total is still 800. All or nothing: here, <b>all</b>.</div>`;
+  } else v.innerHTML='';
+  document.getElementById('atomStep').disabled=ai>=steps.length;
+}
+function atomReset(){clearInterval(aTimer);aTimer=null;ai=0;renderAtom();}
+document.querySelectorAll('#atomSeg button').forEach(b=>b.onclick=()=>{am=b.dataset.m;document.querySelectorAll('#atomSeg button').forEach(x=>x.classList.toggle('on',x===b));atomReset();});
+document.getElementById('crash').onchange=atomReset;
+document.getElementById('atomStep').onclick=()=>{if(ai<atomSteps().length){ai++;renderAtom();}};
+document.getElementById('atomPlay').onclick=()=>{atomReset();aTimer=setInterval(()=>{if(ai>=atomSteps().length){clearInterval(aTimer);return;}ai++;renderAtom();},1100);};
+document.getElementById('atomReset').onclick=atomReset;
+renderAtom();
+
+/* =========================================================
+   3. PARTITIONING & SCALING
+   ========================================================= */
+const CUST=['Aiko','Ben','Chloe','Daniel','Eun-ji','Farah','George','Hana','Isaac','Jin','Kofi','Lena','Min-jun','Nadia','Omar','Priya','Quinn','Ravi','Sofia','Tom','Uma','Victor','Wei','Yuna'];
+const SIZES=[{cap:100,cost:1,name:'Standard'},{cap:200,cost:3,name:'Large'},{cap:400,cost:8,name:'Extra-large'}];
+let P3={n:1,strat:'hash',size:0,load:150,prev:null};
+function assign(){
+  const n=P3.n, per=Math.ceil(CUST.length/n);
+  return CUST.map((c,i)=>P3.strat==='hash'?((i+1)%n):Math.min(n-1,Math.floor(i/per)));
+}
+function render3(){
+  const a=assign(), n=P3.n, sz=SIZES[P3.size];
+  const cols=document.getElementById('cols');
+  cols.style.gridTemplateColumns=`repeat(${Math.min(n,4)},minmax(0,1fr))`;
+  let h='', anyOver=false, moved=0;
+  for(let k=0;k<n;k++){
+    const mine=CUST.map((c,i)=>({c,i})).filter(o=>a[o.i]===k);
+    const share=mine.length/CUST.length, load=P3.load*share, util=load/sz.cap;
+    if(util>1) anyOver=true;
+    const rng=P3.strat==='range'&&mine.length?`names ${mine[0].c[0]}–${mine[mine.length-1].c[0]}`:(P3.strat==='hash'?`customer id mod ${n} = ${k}`:'');
+    h+=`<div class="ncol"><h5>Node ${k+1} <span class="small">(${sz.name})</span></h5><div class="rng">${rng}</div><div class="chips">`;
+    mine.forEach(o=>{const mv=P3.prev&&P3.prev[o.i]!==k; if(mv) moved++; h+=`<span class="chip ${mv?'moved':''}" title="customer id ${o.i+1}">${o.c}</span>`;});
+    h+=`</div><div class="bar ${util>1?'over':util>.8?'hot':''}"><i style="width:${Math.min(100,util*100)}%"></i></div>
+      <div class="util">${Math.round(load)} / ${sz.cap} q/s · ${Math.round(util*100)}%</div></div>`;
+  }
+  cols.innerHTML=h;
+  const cap=n*sz.cap, cost=n*sz.cost;
+  document.getElementById('mCap').textContent=cap+' q/s';
+  document.getElementById('mCost').textContent='£'+cost;
+  document.getElementById('mEff').textContent='£'+(cost/(cap/100)).toFixed(2);
+  document.getElementById('mFail').textContent=n===1?'everything is offline':`${Math.round(100/n)}% of customers unreachable`;
+  let msg='';
+  if(anyOver){
+    msg+=`<div class="pill bad">✖ Overloaded: some nodes receive more queries than they can handle, so customers get timeouts.</div>`;
+    if(n===1&&P3.size===2) msg+=`<div class="pill warn">You're already on the biggest server available. Scaling <b>up</b> has hit its ceiling. The only way forward is to scale <b>out</b>.</div>`;
+  } else msg+=`<div class="pill ok">✓ Every node is coping with the workload.</div>`;
+  if(P3.prev&&moved) msg+=`<div class="pill warn">${moved} of 24 customer records had to move to a different node after that change (highlighted).</div>`;
+  document.getElementById('status3').innerHTML=msg;
+  document.getElementById('nVal').textContent=n;
+  document.getElementById('nMinus').disabled=n<=1; document.getElementById('nPlus').disabled=n>=8;
+}
+function change3(fn){P3.prev=assign();fn();render3();}
+document.getElementById('nPlus').onclick=()=>change3(()=>P3.n++);
+document.getElementById('nMinus').onclick=()=>change3(()=>P3.n--);
+document.querySelectorAll('#partSeg button').forEach(b=>b.onclick=()=>{P3.strat=b.dataset.p;P3.prev=null;document.querySelectorAll('#partSeg button').forEach(x=>x.classList.toggle('on',x===b));render3();});
+document.getElementById('size').onchange=e=>{P3.size=+e.target.value;P3.prev=null;render3();};
+document.getElementById('load').oninput=e=>{P3.load=+e.target.value;P3.prev=null;document.getElementById('loadV').textContent=P3.load+' q/s';render3();};
+render3();
+
+/* =========================================================
+   4. MATCHING
+   ========================================================= */
+const FEAT=[['a','Data Partitioning','ii'],['b','Fault Tolerance','iii'],['c','Location Transparency','i'],['d','Concurrency Control','iv'],['e','Replication','v'],['f','Distribution Transparency','vi'],['g','Scalability','vii']];
+const ROMAN=['i','ii','iii','iv','v','vi','vii'];
+const WHY={
+  'Location Transparency':'A user asks for a customer record without needing to know whether it sits in Seoul or London.',
+  'Distribution Transparency':'The broader idea: the whole system looks like one database. Location transparency is one part of it.',
+  'Data Partitioning':'Tab 3: customers split across nodes by hash or by range.',
+  'Fault Tolerance':'Tab 1, scenario ④: Seoul crashed and the client still got an answer.',
+  'Concurrency Control':'Tab 2: locking stopped Alice\'s and Bob\'s updates clashing.',
+  'Replication':'Tab 1: every account was copied on three servers.',
+  'Scalability':'Tab 3: adding nodes raised the capacity.'
+};
+function renderMatch(){
+  document.getElementById('matchT').innerHTML=FEAT.map(([l,f])=>`<tr id="mr-${l}"><td class="f">${l}) ${f}</td><td><select data-l="${l}"><option value="">choose…</option>${ROMAN.map(r=>`<option>${r}</option>`).join('')}</select></td><td class="small fb"></td></tr>`).join('');
+  document.getElementById('mScore').textContent='';document.getElementById('mFeedback').innerHTML='';
+}
+document.getElementById('mCheck').onclick=()=>{
+  let score=0;
+  FEAT.forEach(([l,f,ans])=>{const sel=document.querySelector(`select[data-l="${l}"]`),row=document.getElementById('mr-'+l);
+    const ok=sel.value===ans; if(ok) score++;
+    row.className=sel.value?(ok?'right':'wrong'):'';
+    row.querySelector('.fb').textContent=sel.value?(ok?'✓ '+WHY[f]:'✗ Not quite. Try again.'):'';
+  });
+  document.getElementById('mScore').textContent=`${score} / 7`;
+  document.getElementById('mFeedback').innerHTML=score===7?'<div class="pill ok" style="margin-top:10px">All correct! Notice how c) and f) differ: location transparency hides <i>where</i> the data is, while distribution transparency hides the fact that it is distributed at all.</div>':'';
+};
+document.getElementById('mReset').onclick=renderMatch;
+renderMatch();
+</script>
+</body>
+</html>
