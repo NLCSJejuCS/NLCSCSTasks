@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Data Transmission Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap">
@@ -23,7 +28,11 @@ h2 { font-family: var(--display); font-size: 15px; letter-spacing: .1em; text-tr
 .logo { height: 56px; width: auto; }
 .intro { margin: 0; max-width: 66ch; }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.reset { margin-left: auto; border: 2px solid var(--brown); background: var(--paper); color: var(--brown); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: 14px; }
+.reset-row { display: flex; justify-content: flex-end; }
+section { position: relative; }
+@media (min-width: 761px) { .reset-row { position: absolute; top: 0; right: 0; margin: 0; } .why-box, section > .intro:first-of-type { margin-right: 160px; } }
+
+.reset { border: 2px solid var(--brown); background: var(--paper); color: var(--brown); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: 14px; }
 button { font: inherit; cursor: pointer; }
 .tab { border: 2px solid var(--blue); background: var(--paper); color: var(--blue); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: 14px; }
 .tab[aria-pressed="true"] { background: var(--blue); color: var(--paper); }
@@ -41,8 +50,9 @@ section { display: flex; flex-direction: column; gap: 16px; }
 .btn:disabled { opacity: .45; cursor: default; }
 
 /* Match */
-.board { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1.7fr); row-gap: 10px; align-items: stretch; grid-template-rows: auto; grid-auto-rows: 1fr; }
+.board { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1.7fr); row-gap: 10px; align-items: stretch; grid-template-rows: auto; grid-auto-rows: auto; }
 .board h2 { align-self: end; }
+.board .group-head { grid-column: 1 / -1; margin: 14px 0 0; padding-bottom: 6px; border-bottom: 2px solid var(--purple); color: var(--purple); font-family: var(--display); font-weight: 700; font-size: 16px; }
 .links { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 .term { display: flex; align-items: center; }
 .meaning { justify-content: center; }
@@ -72,8 +82,12 @@ section { display: flex; flex-direction: column; gap: 16px; }
 .mission p { margin: 0; }
 .setup { display: flex; flex-wrap: wrap; gap: 8px; }
 .setup span { font-size: 13px; font-weight: 600; background: var(--tint); color: var(--blue); border-radius: 999px; padding: 4px 12px; }
-.predict { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.predict { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.opts-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .predict b { margin-right: 4px; }
+.step { display: inline-block; align-self: flex-start; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper); background: var(--brown); border-radius: 999px; padding: 2px 10px; }
+.go-row { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; border: 2px solid var(--line); border-radius: 14px; padding: 14px; }
+.lanes { display: flex; flex-direction: column; gap: 16px; }
 .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end; border: 2px solid var(--line); border-radius: 14px; padding: 14px; }
 .field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; }
 .field input[type=text], .field select { font: inherit; font-weight: 400; border: 2px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; }
@@ -135,8 +149,21 @@ section { display: flex; flex-direction: column; gap: 16px; }
 
 @media (max-width: 640px) { .board { grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1.5fr); } .term { font-size: 15px; } .track-row { grid-template-columns: 52px minmax(0, 1fr) 52px; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* compact match view so it fits one screen */
+body { padding-top: 12px; }
+#v-match { gap: 10px; }
+#v-match .board { grid-template-columns: minmax(0, 1fr) 48px minmax(0, 2.6fr); row-gap: 5px; }
+#v-match .board .group-head { margin: 6px 0 0; padding-bottom: 4px; font-size: 15px; }
+#v-match .board .group-head:first-of-type { margin-top: 0; }
+#v-match .board > h2, #v-match .board > h2 + span { display: none; }
+#v-match .term, #v-match .meaning { padding: 5px 12px; min-height: 36px; }
+#v-match .term { font-size: 16px; }
+#v-match .hint { position: absolute; top: -4px; left: 0; right: 170px; z-index: 5; padding: 4px 12px; font-size: 15px; }
+@media (max-width: 760px) { #v-match .hint { right: 0; } }
+@media (max-width: 640px) { #v-match .board { grid-template-columns: minmax(0, 1fr) 28px minmax(0, 2fr); } }
 </style>
-
+</head>
+<body>
 <div class="wrap">
   <header>
     <div><span class="eyebrow">IGCSE CS · Unit 2 · Data transmission</span><h1>Data Transmission Lab</h1></div>
@@ -147,10 +174,10 @@ section { display: flex; flex-direction: column; gap: 16px; }
     <button class="tab" data-view="race" aria-pressed="false">Serial vs parallel</button>
     <button class="tab" data-view="dir" aria-pressed="false">Which direction?</button>
     <button class="tab" data-view="usb" aria-pressed="false">USB</button>
-    <button class="reset" id="resetBtn">↺ Start this activity again</button>
   </div>
 
   <section id="v-match">
+    <div class="reset-row" id="resetRow"><button class="reset" id="resetBtn">↺ Start again</button></div>
     <p class="intro">Click a term, then click the meaning that goes with it. Wrong pairs bounce back.</p>
     <div class="board" id="board">
     </div>
@@ -174,24 +201,32 @@ section { display: flex; flex-direction: column; gap: 16px; }
       <h3 id="mTitle"></h3>
       <p id="mText"></p>
       <div class="setup" id="mSetup"></div>
-      <div class="predict" id="mPredict"></div>
     </div>
     <div class="controls">
-      <label class="field">Word (up to 8 letters)<input type="text" id="word" maxlength="8" autocomplete="off"></label>
-      <label class="field">Cable length
+      <label class="field"><span class="step">Step 1</span>Type a word (4 to 8 letters)<input type="text" id="word" maxlength="8" autocomplete="off" placeholder="HELLO"></label>
+      <label class="field" id="lenField">Cable length
         <select id="len">
           <option value="short">5 cm (CPU to RAM)</option>
           <option value="mid">2 m (printer cable)</option>
           <option value="long">20 m (long cable)</option>
         </select>
       </label>
-      <label class="check"><input type="checkbox" id="fast"> Modern fast serial (like USB)</label>
-      <button class="btn" id="send">Send</button>
+      <label class="field" id="fastField">Type of serial
+        <select id="fast">
+          <option value="0">Old, slow serial</option>
+          <option value="1">Modern, fast serial (like USB)</option>
+        </select>
+      </label>
     </div>
-    <div>
+    <div id="codesWrap" hidden>
       <p style="margin:0 0 6px;font-weight:600;font-size:14px">Each letter becomes 8 bits of ASCII. Each letter has its own colour so you can follow it:</p>
       <div class="codes" id="codes"></div>
     </div>
+    <div class="go-row" id="goRow" hidden>
+      <div class="predict" id="mPredict"></div>
+      <button class="btn" id="send">Send</button>
+    </div>
+    <div id="lanes" class="lanes" hidden>
     <div class="lane-card">
       <div class="lane-head"><h3>Serial <small>one wire, one bit after another</small></h3><span class="badge" id="sBadge">ready</span></div>
       <div class="track-row"><div class="end s">Sender</div><div class="track" id="sTrack" style="height:40px"></div><div class="end r">Receiver</div></div>
@@ -201,6 +236,7 @@ section { display: flex; flex-direction: column; gap: 16px; }
       <div class="lane-head"><h3>Parallel <small>eight wires, one letter at a time</small></h3><span class="badge" id="pBadge">ready</span></div>
       <div class="track-row"><div class="end s">Sender</div><div class="track" id="pTrack" style="height:176px"></div><div class="end r">Receiver</div></div>
       <div class="recv"><span class="lbl">Received:</span><span id="pRecv"></span></div>
+    </div>
     </div>
     <p class="hint" id="raceHint"></p>
     <div class="actions"><button class="btn warm" id="nextMission" hidden>Next mission</button></div>
@@ -242,6 +278,7 @@ section { display: flex; flex-direction: column; gap: 16px; }
   }
   function show(v) {
     if (v !== current) resetView(v);
+    var sec = $('v-' + v); sec.insertBefore($('resetRow'), sec.firstChild);
     current = v;
     window.scrollTo(0, 0);
     ['match', 'race', 'dir', 'usb'].forEach(function (k) { $('v-' + k).hidden = k !== v; });
@@ -252,23 +289,27 @@ section { display: flex; flex-direction: column; gap: 16px; }
 
   /* match */
   var PAIRS = [
-    ['Serial', 'Data is sent one bit at a time down a single wire.'],
-    ['Parallel', 'Several bits are sent at the same time, each down its own wire.'],
-    ['Skew', 'Bits sent at the same time down different wires arrive at slightly different times.'],
-    ['Crosstalk', 'A signal on one wire interferes with a wire next to it, which can flip a bit.'],
-    ['Simplex', 'Data travels in one direction only.'],
-    ['Half-duplex', 'Data travels in both directions, but not at the same time.'],
-    ['Full-duplex', 'Data travels in both directions at the same time.'],
-    ['USB', 'A standard serial connection with 2 wires for power and 2 for data.'],
-    ['Device driver', 'Software that lets the computer communicate with a device that has been plugged in.'],
-    ['USB hub', 'A device that adds more USB ports, or extends a connection beyond about 5 metres.']
+    ['Serial', 'Data is sent one bit at a time down a single wire.', 'type'],
+    ['Parallel', 'Several bits are sent at the same time, each down its own wire.', 'type'],
+    ['Skew', 'Bits sent at the same time down different wires arrive at slightly different times.', 'type'],
+    ['Crosstalk', 'A signal on one wire interferes with a wire next to it, which can flip a bit.', 'type'],
+    ['USB', 'Universal Serial Bus, an industry-standard way of connecting devices to a computer.', 'type'],
+    ['Simplex', 'Data travels in one direction only.', 'dir'],
+    ['Half-duplex', 'Data travels in both directions, but not at the same time.', 'dir'],
+    ['Full-duplex', 'Data travels in both directions at the same time.', 'dir']
   ];
+  var GROUPS = [['type', 'Type of transmission'], ['dir', 'Direction of transmission']];
   var sel = null, done = 0;
   function newMatch() {
     sel = null; done = 0; $('matchHint').textContent = ''; $('matchDone').hidden = true;
     var B = $('board'); B.innerHTML = '<h2>Terms</h2><span></span><h2>Meanings</h2><svg class="links" id="links" aria-hidden="true"></svg>';
-    var termEls = [], meanEls = [];
-    shuffle(PAIRS).forEach(function (p) {
+    var termEls = [], meanEls = [], tOrder = [], mOrder = [], heads = {};
+    GROUPS.forEach(function (g) {
+      var items = PAIRS.filter(function (p) { return p[2] === g[0]; });
+      heads[tOrder.length] = g[1];
+      tOrder = tOrder.concat(shuffle(items)); mOrder = mOrder.concat(shuffle(items));
+    });
+    tOrder.forEach(function (p) {
       var b = document.createElement('button'); b.className = 'term'; b.textContent = p[0]; b.dataset.k = p[0];
       b.addEventListener('click', function () {
         if (b.disabled) return;
@@ -277,7 +318,7 @@ section { display: flex; flex-direction: column; gap: 16px; }
       });
       termEls.push(b);
     });
-    shuffle(PAIRS).forEach(function (p) {
+    mOrder.forEach(function (p) {
       var m = document.createElement('button'); m.className = 'meaning'; m.dataset.k = p[0];
       var s = document.createElement('span'); s.textContent = p[1]; m.appendChild(s);
       m.addEventListener('click', function () {
@@ -288,7 +329,7 @@ section { display: flex; flex-direction: column; gap: 16px; }
           m.classList.add('done'); m.disabled = true;
           links.push([sel, m]); drawLinks();
           $('matchHint').textContent = '✓ Correct! “' + sel.dataset.k + '” matched.'; sel = null; done++;
-          if (done === PAIRS.length) { $('matchHint').textContent = ''; $('matchDone').hidden = false; }
+          if (done === PAIRS.length) { $('matchHint').textContent = ''; $('matchDone').hidden = false; $('matchDone').scrollIntoView({ behavior: 'smooth', block: 'end' }); }
         } else {
           [sel, m].forEach(function (x) { x.classList.remove('wrong'); void x.offsetWidth; x.classList.add('wrong'); setTimeout(function () { x.classList.remove('wrong'); }, 600); });
           $('matchHint').textContent = 'Not that one. “' + sel.dataset.k + '” is still selected, so try another meaning.';
@@ -297,12 +338,19 @@ section { display: flex; flex-direction: column; gap: 16px; }
       meanEls.push(m);
     });
     links = [];
-    termEls.forEach(function (t, i) { B.appendChild(t); var g = document.createElement('span'); B.appendChild(g); B.appendChild(meanEls[i]); });
+    termEls.forEach(function (t, i) { if (heads[i]) { var hd = document.createElement('h3'); hd.className = 'group-head'; hd.textContent = heads[i]; B.appendChild(hd); } B.appendChild(t); var g = document.createElement('span'); B.appendChild(g); B.appendChild(meanEls[i]); });
     drawLinks();
   }
   var links = [];
+  function equalBoxes() {
+    var bx = document.querySelectorAll('#board .term, #board .meaning'), mx = 0;
+    bx.forEach(function (x) { x.style.minHeight = ''; });
+    bx.forEach(function (x) { mx = Math.max(mx, x.offsetHeight); });
+    if (mx > 0) bx.forEach(function (x) { x.style.minHeight = mx + 'px'; });
+  }
   function drawLinks() {
     var B = $('board'), svg = $('links'); if (!svg) return;
+    equalBoxes();
     var bb = B.getBoundingClientRect();
     svg.setAttribute('viewBox', '0 0 ' + bb.width + ' ' + bb.height);
     var h = '<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B2C91"/></marker></defs>';
@@ -336,6 +384,8 @@ section { display: flex; flex-direction: column; gap: 16px; }
   function cleanWord() { return ($('word').value || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8); }
   function showCodes() {
     var w = cleanWord(), box = $('codes'); box.innerHTML = '';
+    var has = w.length > 0; $('codesWrap').hidden = !has; $('goRow').hidden = !has; $('lanes').hidden = !(has && (MISSIONS[mission].free || prediction));
+    if (!running) $('raceHint').textContent = !has ? '' : (w.length < 4 ? 'Keep going, use at least 4 letters.' : $('raceHint').textContent.indexOf('Keep going') === 0 ? '' : $('raceHint').textContent);
     w.split('').forEach(function (ch, i) {
       var s = document.createElement('span'); s.className = 'code c' + (i % 4);
       s.innerHTML = '<b></b>'; s.firstChild.textContent = ch; s.appendChild(document.createTextNode(bitsOf(ch).join('')));
@@ -358,30 +408,36 @@ section { display: flex; flex-direction: column; gap: 16px; }
     $('raceHint').textContent = ''; $('nextMission').hidden = true;
     var setup = $('mSetup'); setup.innerHTML = '';
     var P = $('mPredict'); P.innerHTML = '';
-    $('len').disabled = !M.free; $('fast').disabled = !M.free;
+    $('lenField').hidden = !M.free; $('fastField').hidden = !M.free;
     if (!M.free) {
-      $('len').value = M.len; $('fast').checked = M.fast; $('word').value = M.word;
-      [LEN[M.len].name + ' cable', M.fast ? 'fast serial' : 'old, slow serial', 'word: ' + M.word].forEach(function (t) { var s = document.createElement('span'); s.textContent = t; setup.appendChild(s); });
-      var b = document.createElement('b'); b.textContent = 'Predict first: ' + M.q; P.appendChild(b);
+      $('len').value = M.len; $('fast').value = M.fast ? '1' : '0'; $('word').value = '';
+      ['Cable: ' + $('len').options[$('len').selectedIndex].text, 'Serial: ' + $('fast').options[$('fast').selectedIndex].text].forEach(function (t) { var s = document.createElement('span'); s.textContent = t; setup.appendChild(s); });
+      var st = document.createElement('span'); st.className = 'step'; st.textContent = 'Step 2'; P.appendChild(st);
+      var b = document.createElement('b'); b.textContent = 'Predict: ' + M.q; P.appendChild(b);
+      var row = document.createElement('div'); row.className = 'opts-row'; P.appendChild(row);
       M.opts.forEach(function (o) {
         var btn = document.createElement('button'); btn.className = 'opt'; btn.textContent = o[1];
         btn.addEventListener('click', function () {
           if (running) return;
           P.querySelectorAll('.opt').forEach(function (x) { x.classList.remove('picked'); }); btn.classList.add('picked');
-          prediction = o[0]; $('send').disabled = false; $('raceHint').textContent = 'Now press Send and watch.';
+          prediction = o[0]; updateSend(); $('lanes').hidden = false; $('raceHint').textContent = 'Now press Send and watch.';
         });
-        P.appendChild(btn);
+        row.appendChild(btn);
       });
-      $('send').disabled = true;
-    } else { $('send').disabled = false; if (!cleanWord()) $('word').value = 'DATA'; }
-    showCodes(); clearLanes();
+    } else { var st2 = document.createElement('span'); st2.className = 'step'; st2.textContent = 'Step 2'; P.appendChild(st2); var b2 = document.createElement('b'); b2.textContent = 'Press Send and watch.'; P.appendChild(b2); }
+    showCodes(); clearLanes(); updateSend();
+  }
+  function updateSend() {
+    var M = MISSIONS[mission], n = cleanWord().length;
+    $('send').disabled = running || n < 4 || (!M.free && !prediction);
+    $('send').textContent = M.free ? 'Send' : 'Step 3 · Send';
   }
   function send() {
     if (running) return;
     var word = cleanWord();
-    if (!word) { $('raceHint').textContent = 'Type a word using the letters A to Z.'; return; }
+    if (word.length < 4) { $('raceHint').textContent = 'Type a word of 4 to 8 letters using A to Z.'; return; }
     $('word').value = word; showCodes(); clearLanes();
-    var L = LEN[$('len').value], fast = $('fast').checked, n = word.length;
+    var L = LEN[$('len').value], fast = $('fast').value === '1', n = word.length;
     var sTrack = $('sTrack'), pTrack = $('pTrack');
     $('raceHint').textContent = ''; $('nextMission').hidden = true;
     $('sBadge').textContent = 'sending…'; $('pBadge').textContent = 'sending…';
@@ -436,7 +492,7 @@ section { display: flex; flex-direction: column; gap: 16px; }
   function finish(r) {
     var M = MISSIONS[mission];
     if (M.free) {
-      $('send').disabled = false;
+      updateSend();
       var who = r.first === 's' ? 'Serial' : 'Parallel';
       var msg = who + ' finished first over ' + LEN[r.len].name + '. ';
       if (!r.pOk) msg += 'Crosstalk flipped a bit, so parallel received “' + r.got + '” instead of “' + r.word + '”. ';
@@ -449,13 +505,13 @@ section { display: flex; flex-direction: column; gap: 16px; }
     document.querySelector('.mission-tab[data-m="' + mission + '"]').classList.add('done');
     var extra = (mission === 1 && !r.pOk) ? ' Parallel received “' + r.got + '” instead of “' + r.word + '”.' : '';
     $('raceHint').textContent = (right ? '✓ Your prediction was right! ' : 'Not what you predicted, and that’s fine: now you know why. ') + M.learn + extra;
-    $('send').disabled = false;
+    updateSend();
     if (mission < 3) { $('nextMission').hidden = false; $('nextMission').textContent = mission < 2 ? 'Next mission' : 'Try free play'; }
   }
   document.querySelectorAll('.mission-tab').forEach(function (t) { t.addEventListener('click', function () { setMission(Number(t.dataset.m)); }); });
   $('nextMission').addEventListener('click', function () { setMission(mission + 1); });
   $('send').addEventListener('click', send);
-  $('word').addEventListener('input', function () { if (!running) { showCodes(); clearLanes(); } });
+  $('word').addEventListener('input', function () { if (!running) { showCodes(); clearLanes(); updateSend(); } });
   $('word').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !$('send').disabled) send(); });
   setMission(0);
   /* direction */
@@ -516,3 +572,5 @@ section { display: flex; flex-direction: column; gap: 16px; }
   $('resetBtn').addEventListener('click', function () { resetView(current); if (current === 'match') drawLinks(); window.scrollTo(0, 0); });
 })();
 </script>
+</body>
+</html>
