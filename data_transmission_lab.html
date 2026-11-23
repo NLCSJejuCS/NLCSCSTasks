@@ -152,15 +152,15 @@ section { display: flex; flex-direction: column; gap: 16px; }
 /* compact match view so it fits one screen */
 body { padding-top: 12px; }
 #v-match { gap: 10px; }
-#v-match .board { grid-template-columns: minmax(0, 1fr) 48px minmax(0, 2.6fr); row-gap: 5px; }
-#v-match .board .group-head { margin: 6px 0 0; padding-bottom: 4px; font-size: 15px; }
+#v-match .board { grid-template-columns: minmax(0, 1fr) 110px minmax(0, 2.6fr); row-gap: 9px; }
+#v-match .board .group-head { margin: 12px 0 2px; padding-bottom: 4px; font-size: 15px; }
 #v-match .board .group-head:first-of-type { margin-top: 0; }
 #v-match .board > h2, #v-match .board > h2 + span { display: none; }
-#v-match .term, #v-match .meaning { padding: 5px 12px; min-height: 36px; }
+#v-match .term, #v-match .meaning { padding: 7px 14px; min-height: 40px; }
 #v-match .term { font-size: 16px; }
-#v-match .hint { position: absolute; top: -4px; left: 0; right: 170px; z-index: 5; padding: 4px 12px; font-size: 15px; }
-@media (max-width: 760px) { #v-match .hint { right: 0; } }
-@media (max-width: 640px) { #v-match .board { grid-template-columns: minmax(0, 1fr) 28px minmax(0, 2fr); } }
+#v-match .hint { display: block; min-height: 36px; padding: 6px 14px; font-size: 15px; text-align: center; }
+#v-match .hint:empty { visibility: hidden; }
+@media (max-width: 640px) { #v-match .board { grid-template-columns: minmax(0, 1fr) 36px minmax(0, 2fr); } }
 </style>
 </head>
 <body>
@@ -356,8 +356,8 @@ body { padding-top: 12px; }
     var h = '<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B2C91"/></marker></defs>';
     links.forEach(function (pr) {
       var a = pr[0].getBoundingClientRect(), b = pr[1].getBoundingClientRect();
-      var x1 = a.right - bb.left, y1 = a.top + a.height / 2 - bb.top, x2 = b.left - bb.left - 2, y2 = b.top + b.height / 2 - bb.top, mx = (x1 + x2) / 2;
-      h += '<circle cx="' + x1 + '" cy="' + y1 + '" r="4" fill="#6B2C91"/><path d="M' + x1 + ' ' + y1 + ' C' + mx + ' ' + y1 + ' ' + mx + ' ' + y2 + ' ' + x2 + ' ' + y2 + '" fill="none" stroke="#6B2C91" stroke-width="3" marker-end="url(#ah)"/>';
+      var x1 = a.right - bb.left, y1 = a.top + a.height / 2 - bb.top, x2 = b.left - bb.left, y2 = b.top + b.height / 2 - bb.top, mx = (x1 + x2) / 2;
+      h += '<path d="M' + x1 + ' ' + y1 + ' C' + mx + ' ' + y1 + ' ' + mx + ' ' + y2 + ' ' + x2 + ' ' + y2 + '" fill="none" stroke="#6B2C91" stroke-width="3"/><circle cx="' + x1 + '" cy="' + y1 + '" r="6" fill="#6B2C91" stroke="#fff" stroke-width="2"/><circle cx="' + x2 + '" cy="' + y2 + '" r="6" fill="#6B2C91" stroke="#fff" stroke-width="2"/>';
     });
     svg.innerHTML = h;
   }
